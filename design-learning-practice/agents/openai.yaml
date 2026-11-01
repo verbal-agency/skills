@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Learning Practice"
+  short_description: "Create evidence-based exercises and labs"
+  default_prompt: "Use $design-learning-practice to create exercises and labs that produce direct evidence of learning."

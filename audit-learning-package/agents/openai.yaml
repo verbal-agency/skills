@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audit Learning Package"
+  short_description: "Verify learning package accuracy and coverage"
+  default_prompt: "Use $audit-learning-package to audit a learning package for accuracy, coverage, coherence, and teachability."

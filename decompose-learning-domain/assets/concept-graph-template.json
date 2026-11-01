@@ -1,0 +1,34 @@
+{
+  "schema": "learning-package-graph/v1",
+  "package_id": "replace-me",
+  "generated_from_scope_version": "0.1.0",
+  "nodes": [
+    {
+      "id": "CON-001",
+      "type": "concept",
+      "canonical_name": "Replace me",
+      "aliases": [],
+      "boundary_definition": "",
+      "purpose": "",
+      "cluster_ids": [],
+      "claim_ids": [],
+      "status": "stub"
+    }
+  ],
+  "edges": [
+    {
+      "source": "CON-001",
+      "relation": "supports-capability",
+      "target": "CAP-001",
+      "claim_ids": []
+    }
+  ],
+  "clusters": [
+    {
+      "id": "SUB-001",
+      "name": "Replace me",
+      "purpose": ""
+    }
+  ],
+  "unresolved": []
+}

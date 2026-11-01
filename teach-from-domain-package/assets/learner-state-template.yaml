@@ -1,0 +1,32 @@
+schema: learner-state/v1
+learner_id: replace-me
+package_id: replace-me
+curriculum_id: CUR-001
+updated_at: YYYY-MM-DDTHH:MM:SSZ
+
+goals: []
+constraints: []
+
+capabilities:
+  CAP-001:
+    status: unassessed
+    levels:
+      explain: unassessed
+      apply: unassessed
+    evidence_refs: []
+    confidence: null
+    misconceptions: []
+    next_review: null
+    next_action: ""
+
+attempts:
+  - id: ATT-001
+    occurred_at: YYYY-MM-DDTHH:MM:SSZ
+    exercise_id: EX-001
+    response_ref: ""
+    result: unscored
+    hints_used: []
+    diagnosis: ""
+    evidence_added: []
+
+suspected_package_defects: []

@@ -1,0 +1,25 @@
+schema: learning-package-manifest/v1
+package_id: replace-me
+title: Replace me
+version: 0.1.0
+stage: scoped
+language: en
+created_at: YYYY-MM-DD
+updated_at: YYYY-MM-DD
+
+artifacts:
+  scope: scope.yaml
+  sources: sources.jsonl
+  claims: claims.jsonl
+  graph: null
+  concepts: null
+  exercises: null
+  curricula: null
+  audits: null
+
+stage_history:
+  - stage: scoped
+    occurred_at: YYYY-MM-DD
+    evidence: []
+
+known_gaps: []

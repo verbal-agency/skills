@@ -1,0 +1,4 @@
+interface:
+  display_name: "Teach from Domain Package"
+  short_description: "Teach interactively from structured material"
+  default_prompt: "Use $teach-from-domain-package to teach a learner from a structured domain package and adapt to their evidence."

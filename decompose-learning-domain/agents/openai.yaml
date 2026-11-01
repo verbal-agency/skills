@@ -1,0 +1,4 @@
+interface:
+  display_name: "Decompose Learning Domain"
+  short_description: "Build a typed concept and capability graph"
+  default_prompt: "Use $decompose-learning-domain to turn a scoped subject into a typed prerequisite and capability graph."

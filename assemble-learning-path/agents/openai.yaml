@@ -1,0 +1,4 @@
+interface:
+  display_name: "Assemble Learning Path"
+  short_description: "Sequence concepts into adaptive curricula"
+  default_prompt: "Use $assemble-learning-path to assemble a coherent curriculum from a concept graph and learning units."

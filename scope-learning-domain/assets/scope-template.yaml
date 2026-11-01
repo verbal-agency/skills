@@ -1,0 +1,36 @@
+schema: learning-scope/v1
+package_id: replace-me
+research_cutoff: YYYY-MM-DD
+
+outcome_contract:
+  learner: ""
+  real_world_outcome: ""
+  authentic_situations: []
+  completion_evidence: []
+  constraints: []
+  non_goals: []
+  stop_conditions: []
+
+capabilities:
+  - id: CAP-001
+    statement: ""
+    required_levels: [explain, apply]
+    evidence: []
+    source_ids: []
+
+boundary:
+  included: []
+  excluded: []
+  adjacent_optional: []
+  assumed_prerequisites: []
+
+open_questions:
+  - id: Q-001
+    question: ""
+    owner: ""
+    impact_if_wrong: ""
+    next_probe: ""
+
+refresh_policy:
+  default_horizon_days: 180
+  volatile_areas: []

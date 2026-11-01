@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scope Learning Domain"
+  short_description: "Research and bound a learning domain"
+  default_prompt: "Use $scope-learning-domain to research and bound a learning goal into a sourced domain package."

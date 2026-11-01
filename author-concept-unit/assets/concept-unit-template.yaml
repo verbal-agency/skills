@@ -1,0 +1,50 @@
+schema: learning-concept/v1
+id: CON-001
+canonical_name: Replace me
+aliases: []
+type: concept
+status: draft
+
+target:
+  capability_ids: []
+  learner_outcome: ""
+  exclusions: []
+
+boundary:
+  formal_definition: ""
+  prerequisites: []
+  contrasts: []
+  purpose: ""
+
+explanations:
+  gist: ""
+  plain: ""
+  precise: ""
+  mechanics: ""
+
+representations:
+  mental_model: ""
+  analogy:
+    text: ""
+    mapping: []
+    limits: []
+  examples: []
+  counterexamples: []
+  trace: []
+  diagram: ""
+  code:
+    applicability: ""
+    environment: ""
+    snippet: ""
+    expected_result: ""
+    failure_case: ""
+
+misconceptions:
+  - belief: ""
+    why_tempting: ""
+    correction: ""
+    diagnostic_question: ""
+
+retrieval_seeds: []
+claim_ids: []
+uncertainties: []

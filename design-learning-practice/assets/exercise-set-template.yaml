@@ -1,0 +1,30 @@
+schema: learning-exercises/v1
+id: EXSET-001
+title: Replace me
+capability_ids: []
+concept_ids: []
+audience: ""
+
+items:
+  - id: EX-001
+    mode: question
+    level: discriminate
+    prompt: ""
+    prerequisites: []
+    estimated_minutes: 5
+    environment: []
+    claim_ids: []
+    hints: []
+    rubric:
+      required_evidence: []
+      partial_evidence: []
+      disqualifying_errors: []
+      misconception_routes: []
+    solution_ref: solutions/EX-001.yaml
+    variant_guidance: ""
+
+coverage_gaps: []
+validation:
+  reviewed: false
+  executed: false
+  notes: []

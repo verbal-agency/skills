@@ -1,0 +1,38 @@
+schema: learning-curriculum/v1
+id: CUR-001
+title: Replace me
+package_id: replace-me
+package_version: 0.1.0
+
+contract:
+  audience: ""
+  assumptions: []
+  target_capability_ids: []
+  time_budget_hours: 0
+  environment: []
+  non_goals: []
+  final_evidence: []
+
+diagnostic:
+  exercise_refs: []
+  exemption_rules: []
+
+modules:
+  - id: MOD-001
+    title: Replace me
+    primary_capability_id: CAP-001
+    prerequisite_evidence: []
+    motivating_problem: ""
+    concept_ids: []
+    exercise_refs: []
+    closure_evidence: []
+    remediation_routes: []
+    review_after: P3D
+    unlocks: []
+
+capstone:
+  exercise_ref: ""
+  integrated_capability_ids: []
+
+coverage: []
+known_gaps: []

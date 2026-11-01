@@ -1,0 +1,4 @@
+interface:
+  display_name: "Author Concept Unit"
+  short_description: "Explain concepts through multiple representations"
+  default_prompt: "Use $author-concept-unit to create a sourced, multi-representation learning unit for one concept."
