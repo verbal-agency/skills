@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-LC-005
+canonical_name: Evaluator selection
+aliases: [code eval, LLM-as-judge, pairwise eval, evaluator alignment]
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-LC-002]
+  learner_outcome: "Choose and defend an evaluator based on the quality question, ground truth, cost, and failure tolerance."
+  exclusions: ["Treating an LLM judge as objective truth", "Statistical power calculations"]
+boundary:
+  formal_definition: "Evaluator selection matches a code-based rule, model-based judgment, or pairwise comparison to the property being measured, the available evidence, and whether feedback is online or offline; evaluator alignment checks that the score tracks the intended quality question."
+  prerequisites: [CON-LC-004]
+  contrasts: ["Tracing", "Human review", "Prompt-only intuition"]
+  purpose: "Prevent a convenient evaluator from silently becoming the product definition of quality."
+explanations:
+  gist: "Choose the evaluator that can actually observe the quality property you care about."
+  plain: "Use code when correctness is mechanically checkable, an LLM judge for nuanced criteria with guardrails, and pairwise comparison when relative preference is easier than absolute scoring."
+  precise: "Each evaluator has blind spots; use references, calibration, sampling, and human review where the consequence of error warrants it."
+  mechanics: "Quality question -> available evidence -> evaluator choice -> calibration -> run -> inspect disagreement and failure cases."
+representations:
+  mental_model: "Choosing a measuring instrument for a physical quantity."
+  analogy:
+    text: "A ruler, scale, and thermometer are all instruments, but none measures every property."
+    mapping: ["ruler -> code assertion", "expert instrument -> LLM or human judge", "side-by-side comparison -> pairwise eval"]
+    limits: ["Evaluation is not physics; judgments can drift and require calibration. "]
+  examples: ["Use code to check JSON schema validity; use pairwise evaluation for two writing styles; use a judge with references for grounded answer quality."]
+  counterexamples: ["Using string equality to score a response when many valid answers exist."]
+  trace: ["Name quality property", "List observable evidence", "Select evaluator", "Calibrate", "Review disagreement", "Decide"]
+  diagram: "quality question -> evidence -> evaluator -> score/comparison -> intervention"
+  code: {applicability: "Use a small evaluator decision table rather than code in this unit.", environment: "None", snippet: "", expected_result: "The learner can justify an evaluator and its limitations.", failure_case: "The evaluator rewards superficial wording or misses the failure the test was meant to catch."}
+misconceptions:
+  - belief: "An LLM-as-judge score is an objective quality measurement."
+    why_tempting: "It produces a numeric result at scale."
+    correction: "The judge is another model with bias and a rubric; calibrate and inspect it."
+    diagnostic_question: "What reference or human sample would you use to check judge agreement?"
+retrieval_seeds: ["When is code evaluation stronger than a model judge?", "Why use pairwise comparison?"]
+claim_ids: [CLM-LC-006, CLM-LC-012]
+uncertainties: []

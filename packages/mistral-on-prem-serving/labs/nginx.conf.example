@@ -1,0 +1,15 @@
+# Put vLLM on 127.0.0.1:8080 and expose only this authenticated proxy.
+# Create /etc/nginx/.htpasswd with a local operator-managed credential.
+server {
+    listen 127.0.0.1:8081;
+    server_name _;
+
+    location /v1/ {
+        auth_basic "private model endpoint";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header Authorization "";
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}

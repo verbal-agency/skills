@@ -1,0 +1,43 @@
+{
+  "schema": "learning-package-graph/v1",
+  "package_id": "aws-vpc-three-tier",
+  "generated_from_scope_version": "0.1.1",
+  "nodes": [
+    {"id":"CON-AWS-001","type":"concept","canonical_name":"VPC and CIDR range","aliases":["virtual private cloud"],"boundary_definition":"A logically isolated virtual network with an IP address range.","purpose":"Defines the address and isolation boundary for the workload.","cluster_ids":["SUB-AWS-NETWORK"],"claim_ids":["CLM-AWS-001"],"status":"enriched"},
+    {"id":"CON-AWS-002","type":"concept","canonical_name":"Subnet and Availability Zone","aliases":[],"boundary_definition":"A subnet is an IP range placed within one Availability Zone.","purpose":"Provides a placement and failure-domain boundary.","cluster_ids":["SUB-AWS-NETWORK","SUB-AWS-RESILIENCE"],"claim_ids":["CLM-AWS-002"],"status":"enriched"},
+    {"id":"CON-AWS-003","type":"mechanism","canonical_name":"Route table and gateway path","aliases":["routing"],"boundary_definition":"A route table selects a target for traffic leaving a subnet; gateways provide selected connectivity paths.","purpose":"Explains how packets move between tiers and outside the VPC.","cluster_ids":["SUB-AWS-NETWORK"],"claim_ids":["CLM-AWS-003"],"status":"enriched"},
+    {"id":"CON-AWS-008","type":"mechanism","canonical_name":"Gateway endpoint path","aliases":["VPC gateway endpoint"],"boundary_definition":"A route-table-integrated private path from a VPC to a supported AWS service, without traversing an internet gateway or NAT gateway.","purpose":"Helps choose a narrower private service path when the dependency is supported.","cluster_ids":["SUB-AWS-NETWORK","SUB-AWS-SECURITY"],"claim_ids":["CLM-AWS-007"],"status":"enriched"},
+    {"id":"CON-AWS-004","type":"decision","canonical_name":"Public versus private subnet","aliases":[],"boundary_definition":"A workload placement decision based on whether direct inbound internet reachability is required.","purpose":"Limits exposure while preserving required connectivity.","cluster_ids":["SUB-AWS-SECURITY"],"claim_ids":["CLM-AWS-005"],"status":"enriched"},
+    {"id":"CON-AWS-005","type":"concept","canonical_name":"Security group versus network ACL","aliases":["SG","NACL"],"boundary_definition":"Two different traffic-control layers with different attachment points and state behavior.","purpose":"Provides least-exposure controls and a diagnosis contrast.","cluster_ids":["SUB-AWS-SECURITY"],"claim_ids":["CLM-AWS-004"],"status":"enriched"},
+    {"id":"CON-AWS-006","type":"failure-mode","canonical_name":"Broken return path","aliases":[],"boundary_definition":"A request appears permitted in one direction but fails because the reverse path or stateless rule is absent.","purpose":"Makes stateful versus stateless behavior operationally testable.","cluster_ids":["SUB-AWS-SECURITY"],"claim_ids":["CLM-AWS-004"],"status":"enriched"},
+    {"id":"CON-AWS-007","type":"principle","canonical_name":"Two-AZ resilience","aliases":[],"boundary_definition":"Place replaceable workload capacity across separate Availability Zones and test the failure assumption.","purpose":"Connects subnet placement to recovery from a zone disruption.","cluster_ids":["SUB-AWS-RESILIENCE"],"claim_ids":["CLM-AWS-002","CLM-AWS-006"],"status":"enriched"},
+    {"id":"CAP-AWS-001","type":"capability","canonical_name":"Explain VPC traffic objects","aliases":[],"boundary_definition":"Explain the roles and relationships of the core VPC objects.","purpose":"Foundation for all later design work.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-AWS-002","type":"capability","canonical_name":"Design least-exposure traffic paths","aliases":[],"boundary_definition":"Design routes and placement so only required paths exist.","purpose":"Applies network concepts to an architecture.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-AWS-003","type":"capability","canonical_name":"Diagnose layered traffic controls","aliases":[],"boundary_definition":"Use observed symptoms to identify the failing control or path.","purpose":"Tests transferable operational reasoning.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-AWS-004","type":"capability","canonical_name":"Defend two-AZ design","aliases":[],"boundary_definition":"Explain how the design behaves under a zone-level disruption and what it does not guarantee.","purpose":"Tests resilience reasoning rather than diagram memorization.","cluster_ids":[],"claim_ids":[],"status":"modeled"}
+  ],
+  "edges": [
+    {"source":"CON-AWS-002","relation":"requires","target":"CON-AWS-001","claim_ids":["CLM-AWS-001","CLM-AWS-002"]},
+    {"source":"CON-AWS-003","relation":"requires","target":"CON-AWS-001","claim_ids":["CLM-AWS-001","CLM-AWS-003"]},
+    {"source":"CON-AWS-003","relation":"requires","target":"CON-AWS-002","claim_ids":["CLM-AWS-002"]},
+    {"source":"CON-AWS-008","relation":"requires","target":"CON-AWS-003","claim_ids":["CLM-AWS-003","CLM-AWS-007"]},
+    {"source":"CON-AWS-004","relation":"requires","target":"CON-AWS-003","claim_ids":["CLM-AWS-003","CLM-AWS-005"]},
+    {"source":"CON-AWS-005","relation":"contrasts-with","target":"CON-AWS-004","claim_ids":["CLM-AWS-004","CLM-AWS-005"]},
+    {"source":"CON-AWS-005","relation":"causes","target":"CON-AWS-006","claim_ids":["CLM-AWS-004"]},
+    {"source":"CON-AWS-007","relation":"requires","target":"CON-AWS-002","claim_ids":["CLM-AWS-002","CLM-AWS-006"]},
+    {"source":"CON-AWS-001","relation":"supports-capability","target":"CAP-AWS-001","claim_ids":["CLM-AWS-001"]},
+    {"source":"CON-AWS-002","relation":"supports-capability","target":"CAP-AWS-001","claim_ids":["CLM-AWS-002"]},
+    {"source":"CON-AWS-003","relation":"supports-capability","target":"CAP-AWS-002","claim_ids":["CLM-AWS-003"]},
+    {"source":"CON-AWS-004","relation":"supports-capability","target":"CAP-AWS-002","claim_ids":["CLM-AWS-005"]},
+    {"source":"CON-AWS-008","relation":"supports-capability","target":"CAP-AWS-002","claim_ids":["CLM-AWS-007"]},
+    {"source":"CON-AWS-005","relation":"supports-capability","target":"CAP-AWS-003","claim_ids":["CLM-AWS-004"]},
+    {"source":"CON-AWS-006","relation":"supports-capability","target":"CAP-AWS-003","claim_ids":["CLM-AWS-004"]},
+    {"source":"CON-AWS-007","relation":"supports-capability","target":"CAP-AWS-004","claim_ids":["CLM-AWS-006"]}
+  ],
+  "clusters": [
+    {"id":"SUB-AWS-NETWORK","name":"Network objects and traffic","purpose":"Understand what exists and how traffic flows."},
+    {"id":"SUB-AWS-SECURITY","name":"Exposure and layered controls","purpose":"Control and diagnose reachability."},
+    {"id":"SUB-AWS-RESILIENCE","name":"Failure domains","purpose":"Place capacity and reason about disruption."}
+  ],
+  "unresolved": ["Live lab validation of the broken return path"]
+}

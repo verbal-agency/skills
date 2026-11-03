@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-BAY-001: "Sensitivity is P(positive | disease); P(disease | positive) also needs prevalence and false-positive behavior."

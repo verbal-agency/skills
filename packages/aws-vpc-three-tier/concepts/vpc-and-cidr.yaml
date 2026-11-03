@@ -1,0 +1,49 @@
+schema: learning-concept/v1
+id: CON-AWS-001
+canonical_name: VPC and CIDR range
+aliases: [virtual private cloud]
+type: concept
+status: approved
+target:
+  capability_ids: [CAP-AWS-001]
+  learner_outcome: "Explain the network and address boundary before discussing routes or firewall rules."
+  exclusions: ["IPv6 allocation", "VPC peering design"]
+boundary:
+  formal_definition: "A VPC is a logically isolated virtual network; its CIDR range defines the IPv4 address space available to subnets and resources."
+  prerequisites: ["Basic IPv4 addresses and prefixes"]
+  contrasts: ["On-premises physical LAN", "Subnet"]
+  purpose: "Provide a stable address and isolation boundary for the workload."
+explanations:
+  gist: "A VPC is the private neighborhood; its CIDR block is the range of street addresses available inside it."
+  plain: "Start with the whole address space, then divide it into smaller subnet ranges. Routing and traffic controls operate inside and around that boundary."
+  precise: "A VPC has an IPv4 CIDR range. Subnets consume non-overlapping portions of that range and are associated with a single Availability Zone."
+  mechanics: "A packet can only be routed to an address that is represented by a reachable route and an allowed interface path; the CIDR range alone does not create reachability."
+representations:
+  mental_model: "A neighborhood map: the VPC is the municipality, subnet ranges are districts, and routes are roads."
+  analogy:
+    text: "Think of the VPC as a fenced campus with a master address plan."
+    mapping: ["fence -> logical isolation", "address plan -> CIDR range", "buildings -> resources"]
+    limits: ["The fence does not automatically block every packet; route and traffic-control rules still matter."]
+  examples:
+    - "10.0.0.0/16 as a VPC range divided into 10.0.1.0/24 and 10.0.2.0/24 subnets"
+  counterexamples:
+    - "Two subnets with overlapping address ranges cannot be treated as cleanly separated districts."
+  trace:
+    - "Choose destination address"
+    - "Find a route from the source subnet"
+    - "Apply security controls and the target interface path"
+  diagram: "VPC 10.0.0.0/16 -> public subnet 10.0.1.0/24 and private subnet 10.0.2.0/24"
+  code:
+    applicability: "Not required; use an address calculation exercise instead."
+    environment: "None"
+    snippet: ""
+    expected_result: ""
+    failure_case: ""
+misconceptions:
+  - belief: "A VPC CIDR range makes every address reachable."
+    why_tempting: "The range looks like a complete network definition."
+    correction: "Address membership and reachability are different; routes and controls determine traffic."
+    diagnostic_question: "What additional object would a private subnet need to reach an external address?"
+retrieval_seeds: ["What does the VPC boundary provide?", "Why can two subnets in the same VPC still fail to communicate?"]
+claim_ids: [CLM-AWS-001, CLM-AWS-002]
+uncertainties: []

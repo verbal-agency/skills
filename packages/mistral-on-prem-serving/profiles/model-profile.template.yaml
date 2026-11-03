@@ -1,0 +1,32 @@
+schema: mistral-serving-profile/v1
+profile_id: replace-with-profile-id
+model:
+  id: replace-with-exact-model-id
+  revision: replace-with-immutable-revision
+  license: replace-with-model-card-license
+  tokenizer_source: replace-with-same-artifact-or-approved-source
+  chat_template: "model-provided"
+runtime:
+  server: vLLM
+  version: replace-with-pinned-version
+  precision: replace-with-precision
+  context_length: replace-with-target-context
+  tensor_parallel_size: 1
+hardware:
+  device: replace-with-device
+  vram_gb: replace-with-vram
+  system_ram_gb: replace-with-system-ram
+  driver_and_cuda: replace-with-runtime-versions
+workload:
+  request_shape: replace-with-prompt-and-output-target
+  concurrency_targets: [1, 4]
+  latency_target_ms: replace-with-target
+  throughput_target_tokens_per_second: replace-with-target
+security:
+  bind_address: 127.0.0.1
+  proxy: replace-with-proxy-and-auth-boundary
+risks:
+  - replace-with-known-model-or-runtime-risk
+rejected_alternative:
+  id: replace-with-alternative
+  reason: replace-with-evidence-based-rejection

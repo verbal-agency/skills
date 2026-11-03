@@ -1,0 +1,40 @@
+schema: learning-concept/v1
+id: CON-AWS-006
+canonical_name: Broken return path
+aliases: [asymmetric connectivity]
+type: failure-mode
+status: approved
+target:
+  capability_ids: [CAP-AWS-003]
+  learner_outcome: "Diagnose a request that is allowed in one direction but fails on the response path."
+  exclusions: ["Packet capture tooling in production"]
+boundary:
+  formal_definition: "A traffic flow fails because the response route or an applicable stateless control is missing even though the initial direction appears allowed."
+  prerequisites: [CON-AWS-003, CON-AWS-005]
+  contrasts: ["No route at all", "Application-level timeout"]
+  purpose: "Turn state behavior and route reasoning into a diagnostic method."
+explanations:
+  gist: "A successful outbound trip is not proof that the return trip can find its way home."
+  plain: "Trace both directions. First check where the request goes, then how the response returns, then which controls inspect each direction."
+  precise: "Stateful security groups track an allowed flow, while stateless network ACLs require matching directional rules. Route tables must also support the reverse path."
+  mechanics: "Request path succeeds -> response route lookup -> NACL return evaluation -> SG flow state -> client."
+representations:
+  mental_model: "A taxi reaches a destination, but the passenger cannot return because the road home is closed."
+  analogy:
+    text: "The trip out and the trip back use related but separately testable paths."
+    mapping: ["outbound trip -> request", "road home -> return route", "checkpoint -> stateless ACL"]
+    limits: ["Real network state and ephemeral ports are more detailed than the story."
+    ]
+  examples: ["Inbound HTTPS appears allowed, but the NACL denies ephemeral return traffic."]
+  counterexamples: ["A missing route to the target is not a return-path-only failure."]
+  trace: ["Observe symptom", "Trace request route", "Trace return route", "Inspect SG and NACL directionality"]
+  diagram: "client -> request path -> service -> missing return route/control -> client"
+  code: {applicability: "No code; use a route/control table", environment: "None", snippet: "", expected_result: "", failure_case: ""}
+misconceptions:
+  - belief: "An allowed inbound security-group rule proves the connection can complete."
+    why_tempting: "The request visibly reaches the service."
+    correction: "Completion requires a valid reverse path and all applicable controls."
+    diagnostic_question: "Which rule or route would you inspect for the response direction?"
+retrieval_seeds: ["What three layers should you trace in a broken response path?", "Why is a stateless ACL a common suspect?"]
+claim_ids: [CLM-AWS-003, CLM-AWS-004]
+uncertainties: []

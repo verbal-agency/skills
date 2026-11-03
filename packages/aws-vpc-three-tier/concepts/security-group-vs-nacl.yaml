@@ -1,0 +1,50 @@
+schema: learning-concept/v1
+id: CON-AWS-005
+canonical_name: Security group versus network ACL
+aliases: [SG, NACL]
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-AWS-003]
+  learner_outcome: "Choose the appropriate control layer and diagnose a rule that blocks valid traffic."
+  exclusions: ["IAM policy evaluation", "AWS WAF"]
+boundary:
+  formal_definition: "Security groups are stateful controls associated with network interfaces; network ACLs are stateless controls applied at subnet boundaries."
+  prerequisites: [CON-AWS-003]
+  contrasts: ["Route table", "Public versus private subnet"]
+  purpose: "Provide distinct layers for resource-level and subnet-level traffic control."
+explanations:
+  gist: "Security groups are the bouncer for a resource; a network ACL is the checkpoint at the subnet boundary."
+  plain: "A security group usually describes which traffic a resource may accept or send, and return traffic for an allowed flow is handled statefully. A network ACL evaluates each direction independently at the subnet boundary."
+  precise: "AWS documentation recommends security groups as the primary mechanism and network ACLs as stateless, coarse-grained or defense-in-depth controls."
+  mechanics: "For a request to succeed, routing must find a path and every applicable control must allow the relevant direction. A stateless ACL needs corresponding return rules."
+representations:
+  mental_model: "A building's unit door versus the building's perimeter gate."
+  analogy:
+    text: "A security group is an apartment door; a network ACL is the building entrance."
+    mapping: ["unit door -> interface-level control", "building gate -> subnet-level control"]
+    limits: ["Real AWS evaluation has more detail than a physical building, and the analogy does not model every rule interaction."]
+  examples:
+    - "Allow HTTPS to the web tier security group; allow application-to-database traffic only from the application security group."
+  counterexamples:
+    - "Adding an inbound security-group rule cannot repair a subnet ACL that denies the return path."
+  trace:
+    - "Packet enters subnet"
+    - "Subnet ACL evaluates direction"
+    - "Interface security group evaluates resource-level rule"
+    - "Return packet is evaluated independently by a stateless ACL"
+  diagram: "subnet boundary NACL -> network interface SG -> resource"
+  code:
+    applicability: "Use a small rule table or AWS CLI in a lab; no code is required for the conceptual unit."
+    environment: "AWS account or rule-table exercise"
+    snippet: ""
+    expected_result: ""
+    failure_case: ""
+misconceptions:
+  - belief: "A security group and NACL are interchangeable firewalls."
+    why_tempting: "Both contain allow and deny-looking traffic rules."
+    correction: "They differ in attachment point, state behavior, and intended granularity."
+    diagnostic_question: "Which control would you inspect first if only one subnet has asymmetric connectivity?"
+retrieval_seeds: ["Why can a return packet fail even when the inbound security-group rule allows the connection?", "Which control is the primary resource-level mechanism?"]
+claim_ids: [CLM-AWS-004]
+uncertainties: []

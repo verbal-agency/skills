@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+items:
+  EX-MIS-001: "Copy profiles/model-profile.template.yaml and include exact model revision, license, tokenizer/template, context, precision, device, workload, security boundary, risks, and a rejected alternative."
+  EX-MIS-002: "Start the selected model on a loopback/private interface, place an authenticated proxy in front using the example configuration, and record a successful authorized request plus a rejected unauthenticated request after checking the selected model's template and response metadata."
+  EX-MIS-003: "Use the reusable benchmark harness at labs/benchmark.py to run defined workloads at concurrency 1 and 4, report p50/p95 latency, token throughput, memory observations, and the resulting capacity decision."
+  EX-MIS-004: "Test the selected model's actual tokenizer/template and inspect every exposed endpoint; bind the server privately, require proxy authentication, and verify both authorized and unauthorized paths."

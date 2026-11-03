@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-AWS-008
+canonical_name: Gateway endpoint path
+aliases: [VPC gateway endpoint]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-AWS-002]
+  learner_outcome: "Choose when a supported AWS service dependency should use a gateway endpoint instead of an internet or NAT path."
+  exclusions: ["Interface endpoints", "PrivateLink design", "Every supported AWS service"]
+boundary:
+  formal_definition: "A gateway endpoint adds a private route-table-integrated path from a VPC to supported AWS services without requiring an internet gateway or NAT gateway path."
+  prerequisites: [CON-AWS-003]
+  contrasts: ["NAT gateway", "Internet gateway", "Interface endpoint"]
+  purpose: "Make private service dependencies explicit and reduce unnecessary internet egress paths."
+explanations:
+  gist: "A gateway endpoint is a private service door selected by a route, not a general-purpose route to the internet."
+  plain: "If the dependency is a supported service, the private subnet can use an endpoint route rather than sending that traffic through NAT."
+  precise: "The endpoint changes the route target for supported service prefixes; it does not make arbitrary external destinations reachable or replace all endpoint types."
+  mechanics: "Private subnet -> route table -> endpoint prefix -> supported AWS service; other destinations still follow their own routes."
+representations:
+  mental_model: "A private loading dock reserved for named suppliers."
+  analogy:
+    text: "The endpoint is a dedicated loading dock for approved services, while NAT is a guarded road to the wider internet."
+    mapping: ["named supplier -> supported service", "loading dock -> endpoint route", "guarded road -> NAT path"]
+    limits: ["The dock cannot receive every kind of delivery; service support and policy still matter."]
+  examples: ["A private subnet uses a gateway endpoint for supported object-storage traffic while retaining no general internet route."]
+  counterexamples: ["Replacing a default route to NAT with an endpoint does not provide access to arbitrary package repositories or APIs."]
+  trace: ["Name the dependency", "Check endpoint support", "Inspect route-table prefix", "Confirm policy and response path"]
+  diagram: "private subnet -> route table -> gateway endpoint -> supported AWS service"
+  code:
+    applicability: "Use a route-table exercise or AWS CLI in a disposable lab."
+    environment: "AWS account or local diagram simulator"
+    snippet: ""
+    expected_result: "The learner can justify an endpoint route and identify traffic that still needs another path."
+    failure_case: "The service is unsupported, the endpoint policy denies access, or the route is absent."
+misconceptions:
+  - belief: "A gateway endpoint is a private internet gateway."
+    why_tempting: "Both can appear as route targets."
+    correction: "A gateway endpoint is scoped to supported services and does not provide arbitrary internet reachability."
+    diagnostic_question: "Which destination prefixes would remain unreachable if the NAT route were removed?"
+retrieval_seeds: ["When should a private subnet use a gateway endpoint?", "What does a gateway endpoint not replace?"]
+claim_ids: [CLM-AWS-007]
+uncertainties: ["Supported service coverage and endpoint policy behavior must be checked for the selected AWS Region and service."]

@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-LC-006
+canonical_name: Deployment, threads, memory, and auth
+aliases: [LangSmith Deployment, graph, deployment, revision, assistant, thread, run]
+type: procedure
+status: approved
+target:
+  capability_ids: [CAP-LC-003]
+  learner_outcome: "Describe or implement a deployment boundary with explicit thread state, memory, authentication, and authorization decisions."
+  exclusions: ["Cloud provider networking in full", "Enterprise identity-provider administration"]
+boundary:
+  formal_definition: "Deployment turns a graph into a reachable runtime with revisions, assistants, threads, and runs; multi-region serving, secret handling, durable storage, authentication, and authorization determine how the runtime behaves safely."
+  prerequisites: [CON-LC-002]
+  contrasts: ["Local notebook", "Unauthenticated endpoint", "Stateless request"]
+  purpose: "Prevent a working prototype from becoming an uncontrolled service."
+explanations:
+  gist: "Deployment is a boundary decision: who can call the agent, what state they can access, and how the service recovers."
+  plain: "A graph is the executable design, a deployment serves a revision, an assistant selects configuration, a thread groups conversation state, and a run records execution; secrets, durable storage, region choice, authentication, and authorization determine whether the service is safe and resilient."
+  precise: "State scope, tenant isolation, auth, and recovery must be tested separately; a logged-in caller is not automatically authorized for every thread."
+  mechanics: "Request identity -> auth -> authorization -> thread lookup -> agent execution -> state write -> response and trace."
+representations:
+  mental_model: "A hotel front desk, room key, guest record, and staff-only areas."
+  analogy:
+    text: "Authentication checks who arrives, authorization checks which room they may enter, and memory is the guest record."
+    mapping: ["identity check -> authentication", "room key -> authorization", "guest record -> thread/memory"]
+    limits: ["Real systems also require storage, network, and incident controls beyond the hotel analogy. "]
+  examples: ["A user can read their own thread but cannot retrieve another tenant's memory.", "A deployment can roll back to a prior agent version while preserving an audit trail."]
+  counterexamples: ["A shared API key proves access to the service but does not establish per-user thread authorization."]
+  trace: ["Receive request", "Authenticate", "Authorize thread", "Load state", "Run agent", "Persist state", "Return response"]
+  diagram: "caller -> auth -> authorization -> thread/memory -> agent -> trace/state"
+  code: {applicability: "Use the official deployment course or a local boundary diagram.", environment: "Deployment account or dry-run design", snippet: "", expected_result: "The learner can name identity, state, and recovery boundaries.", failure_case: "Cross-tenant state access, lost thread state, or unauthenticated mutation path."}
+misconceptions:
+  - belief: "A thread ID is an authorization boundary."
+    why_tempting: "The ID identifies the conversation."
+    correction: "Authorization must independently verify that the caller may access the thread."
+    diagnostic_question: "What prevents a caller from guessing another thread ID?"
+retrieval_seeds: ["What is the difference between a thread and memory?", "Where should authorization occur?"]
+claim_ids: [CLM-LC-007, CLM-LC-013]
+uncertainties: []

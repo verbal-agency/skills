@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-AWS-002
+canonical_name: Subnet and Availability Zone
+aliases: []
+type: concept
+status: approved
+target:
+  capability_ids: [CAP-AWS-001, CAP-AWS-004]
+  learner_outcome: "Explain why a subnet is both an address range and a placement boundary."
+  exclusions: ["Cross-Region topology"]
+boundary:
+  formal_definition: "A subnet is an IP address range in a VPC and is associated with one Availability Zone."
+  prerequisites: [CON-AWS-001]
+  contrasts: ["VPC", "Availability Zone"]
+  purpose: "Give resources an address range and a failure-domain placement."
+explanations:
+  gist: "A subnet is a smaller address neighborhood placed in one Availability Zone."
+  plain: "To use two zones, create separate subnets in each zone; one subnet cannot span zones."
+  precise: "Subnet placement and route-table association influence both traffic design and resilience reasoning."
+  mechanics: "VPC range -> non-overlapping subnet range -> zone placement -> route-table association -> resource placement."
+representations:
+  mental_model: "A district inside a city, built on one physical campus."
+  analogy:
+    text: "A subnet is a district, while an Availability Zone is the campus where that district exists."
+    mapping: ["district -> IP range", "campus -> zone placement"]
+    limits: ["The analogy does not imply physical distance or a complete failure model."]
+  examples: ["10.0.1.0/24 in AZ-a and 10.0.2.0/24 in AZ-b"]
+  counterexamples: ["A single subnet cannot be the only placement object for a two-AZ capacity plan."]
+  trace: ["Choose AZ", "Allocate non-overlapping CIDR", "Associate route table", "Place resources"]
+  diagram: "VPC -> subnet-a (AZ-a) and subnet-b (AZ-b)"
+  code: {applicability: "No code required", environment: "None", snippet: "", expected_result: "", failure_case: ""}
+misconceptions:
+  - belief: "Adding two subnets automatically makes the workload resilient."
+    why_tempting: "The diagram shows two boxes."
+    correction: "The workload, routes, data, and operations must all use the separate failure domains."
+    diagnostic_question: "Which components would you inspect before declaring the service two-AZ?"
+retrieval_seeds: ["Why can a subnet not span two Availability Zones?", "What does subnet placement contribute beyond addressing?"]
+claim_ids: [CLM-AWS-002]
+uncertainties: []

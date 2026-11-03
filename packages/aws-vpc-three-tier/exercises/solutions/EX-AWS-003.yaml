@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-AWS-003: "Use public web subnets, private application/data subnets, two AZs, controlled route tables, a deliberate NAT or gateway-endpoint choice for a supported dependency, and a documented failure assumption."

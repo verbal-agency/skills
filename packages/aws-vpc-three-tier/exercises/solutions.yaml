@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+items:
+  EX-AWS-001: "Classify by route target and explicitly distinguish outbound NAT from direct internet routing."
+  EX-AWS-002: "Inspect return routes and stateless subnet ACL behavior separately from the stateful security group."
+  EX-AWS-003: "Use public web subnets, private application/data subnets, two AZs, controlled route tables, a deliberate NAT or gateway-endpoint choice for a supported dependency, and a documented failure assumption."
+  EX-AWS-004: "Use security groups for resource-level primary control and NACLs for subnet-level stateless defense in depth."

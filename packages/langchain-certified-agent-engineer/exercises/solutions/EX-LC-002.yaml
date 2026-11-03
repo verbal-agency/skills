@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-LC-002: "Trace user message -> retrieval tool -> result -> agent state -> draft response. Include successful, empty, contradictory, prompt-injection, and tool-failure cases; add any newly discovered failure as a labeled dataset example. Use offline code checks for schema/citation presence, online or offline calibrated judge/human review for grounded helpfulness, and pairwise comparison in an experiment for response preference; check evaluator alignment and state each limitation."

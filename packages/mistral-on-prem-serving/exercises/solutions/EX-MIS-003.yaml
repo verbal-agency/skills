@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-MIS-003: "Use the reusable benchmark harness at labs/benchmark.py to run defined workloads at concurrency 1 and 4, report p50/p95 latency, token throughput, memory observations, and the resulting capacity decision."

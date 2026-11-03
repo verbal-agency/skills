@@ -11,8 +11,11 @@ prose, file presence, or a successful lesson alone.
 ## Inputs and independence
 
 Read the package manifest, scope, sources, claims, graph, required concept units,
-exercise sets, curricula, prior audits, and changed files. Preserve the authored
-artifacts during audit unless the caller separately authorizes repairs.
+exercise sets, curricula, prior audits, and changed files. If learner state is
+available, read it from its private ignored location, not from the publishable
+package artifact set. Do not copy learner responses, misconceptions, or outcomes
+into a package audit. Preserve the authored artifacts during audit unless the
+caller separately authorizes repairs.
 
 Read [references/audit-rubric.md](references/audit-rubric.md) before a full audit.
 Copy [assets/audit-report-template.md](assets/audit-report-template.md) for the

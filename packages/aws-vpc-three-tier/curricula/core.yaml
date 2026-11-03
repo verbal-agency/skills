@@ -1,0 +1,75 @@
+schema: learning-curriculum/v1
+id: CUR-AWS-001
+title: Secure and resilient three-tier VPC
+package_id: aws-vpc-three-tier
+package_version: 0.1.1
+contract:
+  audience: "Learner with basic IP and HTTP knowledge"
+  assumptions: ["Can read a simple network diagram", "Can reason about allow and deny rules"]
+  target_capability_ids: [CAP-AWS-001, CAP-AWS-002, CAP-AWS-003, CAP-AWS-004]
+  time_budget_hours: 6
+  environment: ["Diagramming tool", "Optional disposable AWS account"]
+  non_goals: ["Full AWS certification preparation", "Hybrid networking"]
+  final_evidence: ["Annotated design", "Broken-path diagnosis", "Short architecture defense"]
+diagnostic:
+  exercise_refs: [EX-AWS-001, EX-AWS-002]
+  exemption_rules: ["Skip address refresher only if subnet and CIDR reasoning are demonstrated."]
+modules:
+  - id: MOD-AWS-001
+    title: Objects and packet paths
+    primary_capability_id: CAP-AWS-001
+    prerequisite_evidence: []
+    motivating_problem: "A private application cannot reach its update repository."
+    concept_ids: [CON-AWS-001, CON-AWS-002, CON-AWS-003, CON-AWS-008]
+    exercise_refs: [EX-AWS-001]
+    closure_evidence: ["Correctly trace one inbound and one outbound path"]
+    remediation_routes: ["Revisit VPC, subnet, and route definitions with a diagram"]
+    review_after: P2D
+    unlocks: [CAP-AWS-002]
+  - id: MOD-AWS-002
+    title: Exposure and layered controls
+    primary_capability_id: CAP-AWS-003
+    prerequisite_evidence: ["Can trace a route target"]
+    motivating_problem: "A request reaches a subnet but the response fails."
+    concept_ids: [CON-AWS-004, CON-AWS-005, CON-AWS-006]
+    exercise_refs: [EX-AWS-002, EX-AWS-004]
+    closure_evidence: ["Diagnose a return-path or stateless-control failure"]
+    remediation_routes: ["Contrast route tables, security groups, and NACLs"]
+    review_after: P4D
+    unlocks: [CAP-AWS-002, CAP-AWS-004]
+  - id: MOD-AWS-003
+    title: Resilient design defense
+    primary_capability_id: CAP-AWS-004
+    prerequisite_evidence: ["Can design least-exposure paths"]
+    motivating_problem: "One Availability Zone becomes unavailable during a deployment."
+    concept_ids: [CON-AWS-007]
+    exercise_refs: [EX-AWS-003]
+    closure_evidence: ["Defend what survives and what remains a dependency"]
+    remediation_routes: ["Map every shared dependency and failure assumption"]
+    review_after: P7D
+    unlocks: []
+capstone:
+  exercise_ref: EX-AWS-003
+  integrated_capability_ids: [CAP-AWS-001, CAP-AWS-002, CAP-AWS-003, CAP-AWS-004]
+coverage:
+  - capability_id: CAP-AWS-001
+    introduce: [MOD-AWS-001]
+    practice: [EX-AWS-001]
+    assess: [EX-AWS-003]
+    revisit: [MOD-AWS-003]
+  - capability_id: CAP-AWS-002
+    introduce: [MOD-AWS-001]
+    practice: [EX-AWS-003]
+    assess: [EX-AWS-003]
+    revisit: [MOD-AWS-003]
+  - capability_id: CAP-AWS-003
+    introduce: [MOD-AWS-002]
+    practice: [EX-AWS-002, EX-AWS-004]
+    assess: [EX-AWS-003]
+    revisit: [MOD-AWS-003]
+  - capability_id: CAP-AWS-004
+    introduce: [MOD-AWS-003]
+    practice: [EX-AWS-003]
+    assess: [EX-AWS-003]
+    revisit: []
+known_gaps: ["Live AWS lab and cost evidence"]

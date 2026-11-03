@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-MIS-004: "Test the selected model's actual tokenizer/template and inspect every exposed endpoint; bind the server privately, require proxy authentication, and verify both authorized and unauthorized paths."

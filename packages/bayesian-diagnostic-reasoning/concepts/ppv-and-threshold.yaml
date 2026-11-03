@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-BAY-005
+canonical_name: Positive predictive value and decision threshold
+aliases: [PPV]
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-BAY-004]
+  learner_outcome: "Separate a posterior probability from the action threshold chosen under consequences."
+  exclusions: ["Clinical treatment decisions"]
+boundary:
+  formal_definition: "Positive predictive value is P(condition | positive); a decision threshold is the probability or evidence level at which an action is chosen under stated costs and alternatives."
+  prerequisites: [CON-BAY-004]
+  contrasts: ["Sensitivity", "Certainty"]
+  purpose: "Prevent a probability estimate from being mistaken for an automatic action."
+explanations:
+  gist: "The posterior tells you what is plausible; the decision threshold tells you what you will do and why."
+  plain: "A low-risk action may be justified at a lower probability than a high-cost or harmful action."
+  precise: "Threshold selection depends on consequences, alternatives, uncertainty, and the use context; it is not determined by Bayes' formula alone."
+  mechanics: "Compute posterior -> identify decision options and costs -> choose threshold -> communicate uncertainty and limits."
+representations:
+  mental_model: "A smoke alarm threshold: the same evidence can justify different actions in a kitchen and a museum."
+  analogy:
+    text: "The probability is the estimated chance of smoke; the threshold is how much evidence triggers evacuation."
+    mapping: ["posterior -> estimated condition probability", "threshold -> action rule", "cost -> consequence of false alarm or miss"]
+    limits: ["Medical decisions involve human values and domain expertise that this analogy cannot supply."]
+  examples: ["Compare a low-cost confirmatory test with an irreversible action; the same posterior need not imply the same action."]
+  counterexamples: ["Calling a 15% posterior 'false' or 'true' discards uncertainty rather than interpreting it."]
+  trace: ["Estimate posterior", "List decisions", "State false-positive and false-negative costs", "Choose or defer action"]
+  diagram: "evidence -> posterior -> costs/alternatives -> action threshold"
+  code: {applicability: "Use a decision table", environment: "None", snippet: "", expected_result: "", failure_case: ""}
+misconceptions:
+  - belief: "A positive predictive value is the correct action threshold."
+    why_tempting: "Both appear after a positive test."
+    correction: "PPV describes probability; a threshold is a policy choice under consequences."
+    diagnostic_question: "What additional information would you need before selecting an action?"
+retrieval_seeds: ["What is the difference between PPV and a threshold?", "Why can the same posterior lead to different actions?"]
+claim_ids: [CLM-BAY-003, CLM-BAY-005]
+uncertainties: []

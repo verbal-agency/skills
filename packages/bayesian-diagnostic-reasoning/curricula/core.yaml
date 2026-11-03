@@ -1,0 +1,75 @@
+schema: learning-curriculum/v1
+id: CUR-BAY-001
+title: Bayesian diagnostic reasoning
+package_id: bayesian-diagnostic-reasoning
+package_version: 0.1.1
+contract:
+  audience: "Learner with basic fractions and probability notation"
+  assumptions: ["Can multiply and divide fractions", "Can read a two-by-two table"]
+  target_capability_ids: [CAP-BAY-001, CAP-BAY-002, CAP-BAY-003, CAP-BAY-004]
+  time_budget_hours: 4
+  environment: ["Paper", "Optional Python 3"]
+  non_goals: ["Clinical advice", "Advanced Bayesian modeling"]
+  final_evidence: ["Natural-frequency calculation", "Conditional reversal explanation", "Base-rate defense"]
+diagnostic:
+  exercise_refs: [EX-BAY-001]
+  exemption_rules: ["Skip notation review only if the learner can label both conditionals and denominators."]
+modules:
+  - id: MOD-BAY-001
+    title: Read the condition
+    primary_capability_id: CAP-BAY-001
+    prerequisite_evidence: []
+    motivating_problem: "A plausible-sounding test claim reverses the conditional."
+    concept_ids: [CON-BAY-001, CON-BAY-003]
+    exercise_refs: [EX-BAY-001]
+    closure_evidence: ["Correctly label P(positive | disease) and P(disease | positive)"]
+    remediation_routes: ["Return to filtered-population analogy and a two-by-two table"]
+    review_after: P2D
+    unlocks: [CAP-BAY-002]
+  - id: MOD-BAY-002
+    title: Update with a frequency table
+    primary_capability_id: CAP-BAY-003
+    prerequisite_evidence: ["Can identify sensitivity and specificity denominators"]
+    motivating_problem: "A high-quality test produces a surprising number of false alarms."
+    concept_ids: [CON-BAY-002, CON-BAY-004]
+    exercise_refs: [EX-BAY-002, EX-BAY-003]
+    closure_evidence: ["Compute posterior and explain every denominator"]
+    remediation_routes: ["Use 1,000-person table before symbolic formula"]
+    review_after: P4D
+    unlocks: [CAP-BAY-004]
+  - id: MOD-BAY-003
+    title: Interpret and defend
+    primary_capability_id: CAP-BAY-004
+    prerequisite_evidence: ["Can compute positive predictive value"]
+    motivating_problem: "The same test result has different usefulness in two populations."
+    concept_ids: [CON-BAY-005]
+    exercise_refs: [EX-BAY-004]
+    closure_evidence: ["Explain prevalence effect and name decision limits"]
+    remediation_routes: ["Compare natural-frequency tables across populations"]
+    review_after: P7D
+    unlocks: []
+capstone:
+  exercise_ref: EX-BAY-004
+  integrated_capability_ids: [CAP-BAY-001, CAP-BAY-002, CAP-BAY-003, CAP-BAY-004]
+coverage:
+  - capability_id: CAP-BAY-001
+    introduce: [MOD-BAY-001]
+    practice: [EX-BAY-001]
+    assess: [EX-BAY-002]
+    revisit: [MOD-BAY-002]
+  - capability_id: CAP-BAY-002
+    introduce: [MOD-BAY-001]
+    practice: [EX-BAY-002]
+    assess: [EX-BAY-002]
+    revisit: [MOD-BAY-003]
+  - capability_id: CAP-BAY-003
+    introduce: [MOD-BAY-002]
+    practice: [EX-BAY-002, EX-BAY-003]
+    assess: [EX-BAY-003]
+    revisit: [MOD-BAY-003]
+  - capability_id: CAP-BAY-004
+    introduce: [MOD-BAY-003]
+    practice: [EX-BAY-004]
+    assess: [EX-BAY-004]
+    revisit: []
+known_gaps: ["Non-medical transfer example and learner response data"]

@@ -1,0 +1,36 @@
+schema: learning-package-manifest/v1
+package_id: mistral-on-prem-serving
+title: Single-node on-premises Mistral inference
+version: 0.1.1
+stage: assembled
+language: en
+created_at: 2026-10-31
+updated_at: 2026-10-31
+artifacts:
+  scope: scope.yaml
+  sources: sources.jsonl
+  claims: claims.jsonl
+  graph: graph.json
+  concepts: concepts/
+  exercises: exercises/core.yaml
+  exercise_solutions: exercises/solutions/
+  profiles: profiles/
+  labs: labs/
+  curricula: curricula/core.yaml
+  audits: audits/initial.md
+stage_history:
+  - stage: scoped
+    occurred_at: 2026-10-31
+    evidence: [scope.yaml, sources.jsonl, claims.jsonl]
+  - stage: modeled
+    occurred_at: 2026-10-31
+    evidence: [graph.json]
+  - stage: enriched
+    occurred_at: 2026-10-31
+    evidence: [concepts/]
+  - stage: assembled
+    occurred_at: 2026-10-31
+    evidence: [exercises/core.yaml, curricula/core.yaml]
+known_gaps:
+  - No local GPU server has been executed in this package seed.
+  - Fine-tuning, multi-node scheduling, RAG, and production HA are out of scope.

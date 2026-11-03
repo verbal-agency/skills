@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-LC-001: "Use create_agent for the simple tool-using assistant, LangGraph when explicit branching/checkpoints/control are required, and deepagents/Deep Agents for the long-running delegated workflow; place middleware and context engineering around the loop, package durable guidance in AGENTS.md or SKILL.md, sandbox risky work, and explain that higher abstraction trades direct control for built-in behavior while layers can compose."

@@ -1,0 +1,52 @@
+schema: learning-concept/v1
+id: CON-MIS-002
+canonical_name: Tokenizer and chat template
+aliases: [prompt format]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-MIS-002]
+  learner_outcome: "Explain why a compatible model server must format messages using the model's expected tokenizer and chat template."
+  exclusions: ["Training tokenizers", "Prompt engineering as a discipline"]
+boundary:
+  formal_definition: "The tokenizer maps text to model tokens and the chat template maps structured messages to the model's expected serialized input."
+  prerequisites: [CON-MIS-001]
+  contrasts: ["Raw string concatenation", "Llama 2 instruction markers"]
+  purpose: "Preserve the input contract that the model was trained to interpret."
+explanations:
+  gist: "The server must speak the model's input dialect, not just send readable text."
+  plain: "Two systems can receive the same human conversation but produce different model inputs if their tokenization or message markers differ."
+  precise: "Mistral documentation recommends its tokenizer or Transformers chat-template support and warns that Llama 2 markers can degrade output."
+  mechanics: "messages -> chat template -> token IDs -> model -> generated token IDs -> decoded response."
+representations:
+  mental_model: "A translator and grammar checker between an application and a model."
+  analogy:
+    text: "The tokenizer is the alphabet converter; the chat template is the grammar for roles and turns."
+    mapping: ["alphabet converter -> tokenization", "grammar -> role markers and ordering"]
+    limits: ["The model does not reason about the analogy; the formatting is part of the learned input distribution."]
+  examples: ["Use `apply_chat_template` for structured messages rather than manually inserting Llama-style markers."]
+  counterexamples: ["A response that is syntactically valid but consistently degraded can indicate a formatting mismatch."]
+  trace: ["User and system messages", "Model-specific chat template", "Token IDs", "Generation", "Decoded text"]
+  diagram: "OpenAI-style messages -> template -> tokens -> Mistral model"
+  code:
+    applicability: "Yes; this is an executable correctness check."
+    environment: "Python with Transformers and a downloaded tokenizer"
+    snippet: |
+      import os
+      from transformers import AutoTokenizer
+      model_id = os.environ["MODEL_ID"]
+      revision = os.environ.get("MODEL_REVISION")
+      tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
+      messages = [{"role": "user", "content": "Hello"}]
+      formatted = tokenizer.apply_chat_template(messages, tokenize=False)
+      print(model_id, formatted)
+    expected_result: "A model-specific serialized prompt is produced without manually writing instruction markers."
+    failure_case: "MODEL_ID or revision is wrong, the chosen tokenizer has no chat template, or the server uses an incompatible template."
+misconceptions:
+  - belief: "Any readable prompt string is equivalent to the model's chat input."
+    why_tempting: "The application-level messages look semantically identical."
+    correction: "Formatting and tokenization are part of the model interface."
+    diagnostic_question: "What would you compare if the same prompt quality drops after migrating a local model?"
+retrieval_seeds: ["What does a chat template do?", "Why can Llama-style markers harm a Mistral model?"]
+claim_ids: [CLM-MIS-003]
+uncertainties: []

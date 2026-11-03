@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-MIS-002: "Start the selected model on a loopback/private interface, place an authenticated proxy in front using the example configuration, and record a successful authorized request plus a rejected unauthenticated request after checking the selected model's template and response metadata."

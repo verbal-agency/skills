@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-LC-003: "Define the graph, deploy a revision, use an assistant to select configuration, group execution into a thread and run, authenticate the caller, authorize tenant and thread access independently, load scoped memory, handle secrets outside source, choose a region or multi-region strategy, write durable trace/state, and retain a versioned rollback path. A guessed thread ID is insufficient because authorization must verify ownership."

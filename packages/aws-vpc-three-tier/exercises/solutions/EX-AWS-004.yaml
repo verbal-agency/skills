@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-AWS-004: "Use security groups for resource-level primary control and NACLs for subnet-level stateless defense in depth."

@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-LC-003
+canonical_name: Context, middleware, and human approval
+aliases: [HITL, MCP, AGENTS.md, SKILL.md, sandboxing]
+type: procedure
+status: approved
+target:
+  capability_ids: [CAP-LC-001]
+  learner_outcome: "Choose where context shaping, middleware, external tool connection, or human approval belongs in an agent workflow."
+  exclusions: ["General prompt engineering", "Building an MCP server from scratch"]
+boundary:
+  formal_definition: "Context carries relevant information, middleware intercepts or modifies execution, MCP connects compatible external tools or resources, AGENTS.md and SKILL.md provide durable instructions or capabilities, sandboxing limits execution, and human-in-the-loop pauses for approval or input."
+  prerequisites: [CON-LC-002]
+  contrasts: ["Unbounded context growth", "Implicit approval"]
+  purpose: "Control risk, context, and long-running behavior."
+explanations:
+  gist: "Put control at the boundary where the risk or context change occurs."
+  plain: "Use context to supply what the agent needs, middleware to shape execution, AGENTS.md or SKILL.md to package durable guidance, a sandbox to limit risky work, external protocols to connect tools, and human approval before consequential actions."
+  precise: "These mechanisms solve different problems and should not be collapsed into one generic prompt or callback."
+  mechanics: "Incoming request -> context selection -> middleware checks -> model/tool step -> approval gate if required -> state update."
+representations:
+  mental_model: "A train station with luggage limits, inspectors, and a human-controlled switch."
+  analogy:
+    text: "Context is the luggage allowed on board, middleware is inspection, and human approval is the switch operator for risky routes."
+    mapping: ["luggage -> relevant context", "inspection -> middleware", "switch operator -> human approval"]
+    limits: ["An analogy does not guarantee that an automated check catches every risky action. "]
+  examples: ["Require approval before an agent sends an email or mutates a production record.", "Use middleware to redact or summarize context before a model call."]
+  counterexamples: ["Putting 'ask for approval' in a system prompt is not the same as enforcing an approval gate."]
+  trace: ["Receive intent", "Build context", "Run guard", "Pause for approval", "Execute tool", "Record decision"]
+  diagram: "request -> context -> middleware -> approval gate -> tool -> state"
+  code: {applicability: "Use a design trace or the official course project.", environment: "Python agent project", snippet: "", expected_result: "The learner can place a control at the correct lifecycle boundary.", failure_case: "A dangerous action executes before approval or context grows without a limit."}
+misconceptions:
+  - belief: "A prompt instruction is an enforceable safety boundary."
+    why_tempting: "The instruction is visible and easy to write."
+    correction: "Enforcement requires a runtime check, explicit pause, or authorization boundary."
+    diagnostic_question: "What happens if the model ignores the instruction?"
+retrieval_seeds: ["Which control belongs before a consequential tool call?", "When should context be summarized?"]
+claim_ids: [CLM-LC-005, CLM-LC-011]
+uncertainties: []

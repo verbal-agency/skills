@@ -1,0 +1,60 @@
+schema: learning-scope/v1
+package_id: mistral-on-prem-serving
+research_cutoff: 2026-10-31
+outcome_contract:
+  learner: "An engineer with basic Linux, Python, HTTP, and container knowledge"
+  real_world_outcome: "Deploy one Mistral-family open model behind a private OpenAI-compatible endpoint and evaluate whether it meets a stated workload target"
+  authentic_situations:
+    - "Choose a model and precision that fit the available machine"
+    - "Serve chat requests with correct tokenizer and chat-template behavior"
+    - "Measure latency, throughput, context, and failure behavior"
+    - "Keep the endpoint private and understand which paths are authenticated"
+  completion_evidence:
+    - "Produce a model profile with version, license, hardware assumptions, and risks"
+    - "Run a reproducible serving command or explain why the hardware blocks it"
+    - "Send a chat request and verify output and token usage"
+    - "Report a small benchmark and one failure diagnosis"
+  constraints:
+    - "Prefer official Mistral and vLLM documentation"
+    - "Use a single node and a reversible deployment"
+  non_goals:
+    - "Fine-tuning and training"
+    - "Production Kubernetes HA"
+    - "RAG and agent evaluation"
+  stop_conditions:
+    - "Model choice, serving, benchmark, and security evidence are all documented"
+capabilities:
+  - id: CAP-MIS-001
+    statement: "Select an open model and state its license, version, context, precision, and hardware assumptions"
+    required_levels: [explain, apply]
+    evidence: ["Model profile", "Rejected alternative with reason"]
+    source_ids: [SRC-MIS-001, SRC-MIS-002]
+  - id: CAP-MIS-002
+    statement: "Serve the model through an OpenAI-compatible HTTP endpoint with correct chat formatting"
+    required_levels: [apply, diagnose]
+    evidence: ["Server command", "Client request", "Tokenizer/template check"]
+    source_ids: [SRC-MIS-001, SRC-MIS-002, SRC-MIS-003]
+  - id: CAP-MIS-003
+    statement: "Measure and interpret latency, throughput, context, and memory tradeoffs"
+    required_levels: [explain, apply, diagnose]
+    evidence: ["Benchmark table", "Interpretation of one bottleneck"]
+    source_ids: [SRC-MIS-001, SRC-MIS-004]
+  - id: CAP-MIS-004
+    statement: "Harden the private endpoint and state what the serving server does and does not authenticate"
+    required_levels: [explain, apply, defend]
+    evidence: ["Network and auth boundary diagram", "Security limitation and mitigation"]
+    source_ids: [SRC-MIS-003]
+boundary:
+  included: [model artifact, license, tokenizer, chat template, vLLM, OpenAI-compatible API, precision, context length, VRAM, tensor parallelism, latency, throughput, private network, endpoint authentication]
+  excluded: [fine-tuning, training, RAG, agents, Kubernetes HA, multi-node scheduling, production secrets management]
+  adjacent_optional: [llama.cpp, Ollama, quantization benchmarks, Prometheus, reverse proxy]
+  assumed_prerequisites: ["Linux shell", "Python HTTP client", "Basic GPU and memory terminology"]
+open_questions:
+  - id: Q-MIS-001
+    question: "Which GPU or CPU/RAM machine will be used for execution?"
+    owner: learner
+    impact_if_wrong: "The server command and benchmark remain unexecuted"
+    next_probe: "Record device model, VRAM, system RAM, driver, and CUDA/runtime versions"
+refresh_policy:
+  default_horizon_days: 30
+  volatile_areas: ["model versions", "hardware recommendations", "vLLM flags", "license terms"]

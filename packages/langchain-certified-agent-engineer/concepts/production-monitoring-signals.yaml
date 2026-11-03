@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-LC-007
+canonical_name: Production monitoring signals
+aliases: [cost, latency, errors, quality, security, Insights, Online Evals, user sentiment]
+type: measurement
+status: approved
+target:
+  capability_ids: [CAP-LC-004]
+  learner_outcome: "Use multiple production signals to diagnose an agent issue and choose a measurable intervention."
+  exclusions: ["Generic infrastructure monitoring", "A universal SLO template"]
+boundary:
+  formal_definition: "Production monitoring combines trace reading and thread grouping with cost, user sentiment, latency, errors, quality, security, Insights, Online Evals, and alerts to detect and interpret agent behavior over time."
+  prerequisites: [CON-LC-004]
+  contrasts: ["One successful demo", "Single metric optimization"]
+  purpose: "Connect observations to operational decisions."
+explanations:
+  gist: "A dashboard is useful only when a signal changes what you do next."
+  plain: "Read traces in the context of their thread, then use cost, user sentiment, latency, quality, security, Insights, Online Evals, and alerts to distinguish symptoms from causes."
+  precise: "Interpret a signal with workload, version, traffic, and quality context; define an intervention and the follow-up metric before changing the system."
+  mechanics: "Collect signal -> segment by version/workload -> identify correlated change -> choose intervention -> monitor outcome."
+representations:
+  mental_model: "A vehicle dashboard plus a mechanic's diagnostic history."
+  analogy:
+    text: "A warning light points to a subsystem, but the repair requires context and a test drive."
+    mapping: ["warning light -> metric alert", "diagnostic history -> traces and cohorts", "test drive -> post-change evaluation"]
+    limits: ["Agent quality is partly semantic and cannot be inferred from a single gauge. "]
+  examples: ["Latency rises only for long contexts while cost stays stable; inspect context growth and summarization before changing models.", "Quality drops after a tool update while latency is unchanged; compare traces and evaluator results."]
+  counterexamples: ["Scaling hardware solely because latency rose when the real cause is a failing external tool."]
+  trace: ["Alert", "Segment", "Correlate", "Hypothesize", "Intervene", "Re-evaluate"]
+  diagram: "signals -> context -> diagnosis -> intervention -> follow-up signal"
+  code: {applicability: "Use a monitoring incident table or LangSmith dashboard.", environment: "LangSmith or dry-run JSON metrics", snippet: "", expected_result: "The learner connects an incident to a testable intervention.", failure_case: "A metric is optimized in isolation and worsens quality, cost, or security elsewhere."}
+misconceptions:
+  - belief: "Lower latency always means a better agent."
+    why_tempting: "Latency is easy to measure."
+    correction: "Quality, cost, reliability, and security must remain within their required bounds."
+    diagnostic_question: "What evidence would you check before accepting a latency improvement?"
+retrieval_seeds: ["Which signal would distinguish cost growth from latency growth?", "What should follow an alert? "]
+claim_ids: [CLM-LC-008, CLM-LC-014]
+uncertainties: []

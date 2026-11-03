@@ -1,0 +1,45 @@
+schema: learning-concept/v1
+id: CON-MIS-005
+canonical_name: Inference benchmark
+aliases: [latency and throughput]
+type: measurement
+status: approved
+target:
+  capability_ids: [CAP-MIS-003]
+  learner_outcome: "Report repeatable serving measurements and interpret at least one bottleneck."
+  exclusions: ["Benchmark leaderboard claims", "Model quality evaluation beyond a smoke set"]
+boundary:
+  formal_definition: "A benchmark measures a defined workload under defined runtime and hardware conditions, including latency, throughput, concurrency, context, and memory where relevant."
+  prerequisites: [CON-MIS-003, CON-MIS-004]
+  contrasts: ["Single successful prompt", "Uncontrolled anecdotal speed"]
+  purpose: "Connect deployment settings to an evidence-backed decision."
+explanations:
+  gist: "A benchmark is a controlled question about a workload, not a stopwatch reading from one prompt."
+  plain: "Record the prompt shape, output length, concurrency, warm-up, hardware, precision, context, and server version."
+  precise: "Interpret metrics only within the workload that produced them; a change in context, concurrency, or server flags can change the result."
+  mechanics: "Define workload -> warm up -> run repeated samples -> collect latency/throughput/memory -> compare against target -> identify bottleneck."
+representations:
+  mental_model: "A road test with a stated route, cargo, weather, and traffic."
+  analogy:
+    text: "A single fast drive does not characterize a vehicle under traffic and cargo."
+    mapping: ["route -> prompt workload", "traffic -> concurrency", "cargo -> context/output length"]
+    limits: ["Model quality and safety are separate dimensions from serving performance."
+    ]
+  examples: ["Compare p50/p95 time-to-first-token and generation throughput at concurrency 1 and 4."]
+  counterexamples: ["Claiming a model is production-ready from one warm-cache response."]
+  trace: ["Define target", "Warm server", "Run repeated trials", "Collect metrics", "Interpret bottleneck"]
+  diagram: "workload contract -> benchmark harness -> metrics -> architecture decision"
+  code:
+    applicability: "Yes; use a small client or benchmark tool."
+    environment: "Python client and running endpoint"
+    snippet: "Run labs/benchmark.py with the selected model, endpoint, prompt, request count, and concurrency values."
+    expected_result: "The harness reports p50/p95 full-response latency, completion-token throughput, request failures, and the workload parameters for concurrency 1 and 4."
+    failure_case: "The client model name, endpoint, authentication, or usage fields do not match the server; record the failure instead of treating the run as a benchmark."
+misconceptions:
+  - belief: "Lower latency always means a better serving configuration."
+    why_tempting: "Latency is immediately visible."
+    correction: "Quality, throughput, cost, context, and reliability may move in the opposite direction."
+    diagnostic_question: "Which workload and quality evidence would you pair with a latency result?"
+retrieval_seeds: ["What must a benchmark record?", "Why are p50 and p95 different evidence? "]
+claim_ids: [CLM-MIS-002, CLM-MIS-005]
+uncertainties: []

@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-AWS-001: "Classify by route target and explicitly distinguish outbound NAT from direct internet routing."

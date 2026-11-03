@@ -1,0 +1,39 @@
+{
+  "schema": "learning-package-graph/v1",
+  "package_id": "mistral-on-prem-serving",
+  "generated_from_scope_version": "0.1.1",
+  "nodes": [
+    {"id":"CON-MIS-001","type":"decision","canonical_name":"Model artifact and license","aliases":[],"boundary_definition":"The exact model revision, weight format, license, and intended usage constraints selected for serving.","purpose":"Prevents an infrastructure plan from hiding a model or license decision.","cluster_ids":["SUB-MIS-MODEL"],"claim_ids":["CLM-MIS-001","CLM-MIS-002"],"status":"enriched"},
+    {"id":"CON-MIS-002","type":"mechanism","canonical_name":"Tokenizer and chat template","aliases":["prompt format"],"boundary_definition":"The encoding and message formatting used to turn structured chat messages into model input.","purpose":"Preserves model behavior during local serving and migration.","cluster_ids":["SUB-MIS-MODEL"],"claim_ids":["CLM-MIS-003"],"status":"enriched"},
+    {"id":"CON-MIS-003","type":"procedure","canonical_name":"vLLM OpenAI-compatible serving","aliases":["vllm serve"],"boundary_definition":"Starting an HTTP inference server and calling its compatible chat endpoint.","purpose":"Creates a concrete, testable local deployment.","cluster_ids":["SUB-MIS-SERVE"],"claim_ids":["CLM-MIS-001","CLM-MIS-004"],"status":"enriched"},
+    {"id":"CON-MIS-004","type":"decision","canonical_name":"Precision, context, and memory fit","aliases":["VRAM sizing"],"boundary_definition":"Choosing precision and context limits that fit hardware while meeting quality and latency requirements.","purpose":"Connects model selection to a measurable capacity constraint.","cluster_ids":["SUB-MIS-CAPACITY"],"claim_ids":["CLM-MIS-002"],"status":"enriched"},
+    {"id":"CON-MIS-005","type":"measurement","canonical_name":"Inference benchmark","aliases":["latency and throughput"],"boundary_definition":"A repeatable measurement of response latency, throughput, concurrency, context, and memory under stated workload conditions.","purpose":"Turns serving into an evaluated system rather than a successful process launch.","cluster_ids":["SUB-MIS-CAPACITY"],"claim_ids":["CLM-MIS-002","CLM-MIS-005"],"status":"enriched"},
+    {"id":"CON-MIS-006","type":"principle","canonical_name":"Private endpoint hardening","aliases":[],"boundary_definition":"Keep the endpoint on a controlled network and add an explicit authentication and proxy boundary.","purpose":"Prevents an inference server from becoming an accidental public service.","cluster_ids":["SUB-MIS-SECURITY"],"claim_ids":["CLM-MIS-004"],"status":"enriched"},
+    {"id":"CAP-MIS-001","type":"capability","canonical_name":"Select a serving profile","aliases":[],"boundary_definition":"Choose a model and hardware/precision profile with documented tradeoffs.","purpose":"Makes the initial deployment decision explicit.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-MIS-002","type":"capability","canonical_name":"Serve and call a local model","aliases":[],"boundary_definition":"Run a compatible endpoint and send correctly formatted requests.","purpose":"Provides an end-to-end local inference path.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-MIS-003","type":"capability","canonical_name":"Evaluate serving performance","aliases":[],"boundary_definition":"Measure and interpret performance under a stated workload.","purpose":"Supports capacity and architecture decisions.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-MIS-004","type":"capability","canonical_name":"Harden the endpoint","aliases":[],"boundary_definition":"Describe and implement a network and authentication boundary around the server.","purpose":"Makes local serving safe enough for controlled use.","cluster_ids":[],"claim_ids":[],"status":"modeled"}
+  ],
+  "edges": [
+    {"source":"CON-MIS-002","relation":"requires","target":"CON-MIS-001","claim_ids":["CLM-MIS-003"]},
+    {"source":"CON-MIS-003","relation":"requires","target":"CON-MIS-001","claim_ids":["CLM-MIS-001"]},
+    {"source":"CON-MIS-003","relation":"requires","target":"CON-MIS-002","claim_ids":["CLM-MIS-003"]},
+    {"source":"CON-MIS-003","relation":"requires","target":"CON-MIS-004","claim_ids":["CLM-MIS-002"]},
+    {"source":"CON-MIS-004","relation":"used-to-decide","target":"CON-MIS-001","claim_ids":["CLM-MIS-002"]},
+    {"source":"CON-MIS-005","relation":"measured-by","target":"CON-MIS-004","claim_ids":["CLM-MIS-002"]},
+    {"source":"CON-MIS-006","relation":"prevents","target":"CON-MIS-003","claim_ids":["CLM-MIS-004"]},
+    {"source":"CON-MIS-001","relation":"supports-capability","target":"CAP-MIS-001","claim_ids":["CLM-MIS-001","CLM-MIS-002"]},
+    {"source":"CON-MIS-002","relation":"supports-capability","target":"CAP-MIS-002","claim_ids":["CLM-MIS-003"]},
+    {"source":"CON-MIS-003","relation":"supports-capability","target":"CAP-MIS-002","claim_ids":["CLM-MIS-001"]},
+    {"source":"CON-MIS-004","relation":"supports-capability","target":"CAP-MIS-003","claim_ids":["CLM-MIS-002"]},
+    {"source":"CON-MIS-005","relation":"supports-capability","target":"CAP-MIS-003","claim_ids":["CLM-MIS-005"]},
+    {"source":"CON-MIS-006","relation":"supports-capability","target":"CAP-MIS-004","claim_ids":["CLM-MIS-004"]}
+  ],
+  "clusters": [
+    {"id":"SUB-MIS-MODEL","name":"Model correctness","purpose":"Choose artifacts and preserve input semantics."},
+    {"id":"SUB-MIS-SERVE","name":"Serving path","purpose":"Start and call a local endpoint."},
+    {"id":"SUB-MIS-CAPACITY","name":"Capacity and evidence","purpose":"Measure before scaling."},
+    {"id":"SUB-MIS-SECURITY","name":"Private operation","purpose":"Control network and identity boundaries."}
+  ],
+  "unresolved": ["Exact GPU profile and executable benchmark run"]
+}

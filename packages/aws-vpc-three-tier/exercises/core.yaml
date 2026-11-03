@@ -1,0 +1,76 @@
+schema: learning-exercises/v1
+id: EXSET-AWS-001
+title: Three-tier VPC reasoning
+capability_ids: [CAP-AWS-001, CAP-AWS-002, CAP-AWS-003, CAP-AWS-004]
+concept_ids: [CON-AWS-001, CON-AWS-002, CON-AWS-003, CON-AWS-005, CON-AWS-007, CON-AWS-008]
+audience: "Learner with basic IPv4 and HTTP knowledge"
+items:
+  - id: EX-AWS-001
+    mode: question
+    level: discriminate
+    prompt: "Classify these subnets as public or private and justify the classification: a subnet with a default route to an internet gateway; a subnet with a default route to a NAT gateway; a subnet with no external route."
+    prerequisites: [CON-AWS-001, CON-AWS-003]
+    estimated_minutes: 8
+    environment: [none]
+    claim_ids: [CLM-AWS-003, CLM-AWS-005]
+    hints: ["Look at the route target, not the subnet name.", "Ask whether direct inbound internet reachability is intended."]
+    rubric:
+      required_evidence: ["Uses route target as evidence", "Distinguishes outbound NAT from direct internet path", "Notes that no external route does not imply no east-west routes"]
+      partial_evidence: ["Correctly labels two cases but treats public/private as a tag rather than a route property"]
+      disqualifying_errors: ["Claims NAT makes the private subnet directly reachable from the internet"]
+      misconception_routes: ["route-versus-firewall confusion"]
+    solution_ref: solutions/EX-AWS-001.yaml
+    variant_guidance: "Change the destination route and ask the learner to update the classification."
+  - id: EX-AWS-002
+    mode: question
+    level: diagnose
+    prompt: "A web request enters a subnet successfully, but the response never reaches the client. The security group allows HTTPS. Give two distinct hypotheses and identify which object you would inspect first for each."
+    prerequisites: [CON-AWS-003, CON-AWS-005]
+    estimated_minutes: 10
+    environment: [none]
+    claim_ids: [CLM-AWS-003, CLM-AWS-004]
+    hints: ["Separate routing from traffic controls.", "Remember that a stateless control evaluates return traffic independently."]
+    rubric:
+      required_evidence: ["Names a return-route hypothesis", "Names a NACL or other control hypothesis", "Chooses an inspection order based on symptoms"]
+      partial_evidence: ["Lists plausible objects without causal reasoning"]
+      disqualifying_errors: ["Treats a security group rule as proof that routing exists"]
+      misconception_routes: ["stateful-versus-stateless confusion", "route-versus-control confusion"]
+    solution_ref: solutions/EX-AWS-002.yaml
+    variant_guidance: "Change whether the failure affects one subnet or all subnets."
+  - id: EX-AWS-003
+    mode: design
+    level: design
+    prompt: "Design a two-AZ three-tier network for a small web application. Expose only the web tier, allow application-to-database traffic, and allow private instances to fetch updates without accepting unsolicited inbound internet traffic. For one supported AWS-service dependency, choose between a gateway endpoint and NAT and justify the route. Submit a diagram, route table summary, and control rationale."
+    prerequisites: [CON-AWS-001, CON-AWS-002, CON-AWS-003, CON-AWS-005, CON-AWS-007, CON-AWS-008]
+    estimated_minutes: 45
+    environment: [diagramming]
+    claim_ids: [CLM-AWS-002, CLM-AWS-003, CLM-AWS-004, CLM-AWS-005]
+    hints: ["Start with failure domains.", "Trace one inbound request and one private outbound update.", "Name every shared dependency."]
+    rubric:
+      required_evidence: ["Separate web, application, and data placement", "Shows valid route targets", "Chooses and justifies a gateway endpoint or NAT path", "Uses layered controls", "States a two-AZ assumption and a limitation"]
+      partial_evidence: ["Correct topology but no return-path reasoning or failure assumption"]
+      disqualifying_errors: ["Places database directly on an internet route", "Claims two AZs guarantee all dependencies survive"]
+      misconception_routes: ["public-private confusion", "diagram-equals-resilience confusion"]
+    solution_ref: solutions/EX-AWS-003.yaml
+    variant_guidance: "Vary the outbound dependency or require a private service endpoint."
+  - id: EX-AWS-004
+    mode: oral-defense
+    level: defend
+    prompt: "Defend why a security group is the primary control for application-to-database access while a network ACL may be retained as a coarse subnet guardrail."
+    prerequisites: [CON-AWS-005]
+    estimated_minutes: 12
+    environment: [none]
+    claim_ids: [CLM-AWS-004]
+    hints: ["Compare attachment point, state behavior, and granularity."]
+    rubric:
+      required_evidence: ["Explains stateful versus stateless behavior", "Explains resource versus subnet scope", "Acknowledges operational tradeoffs"]
+      partial_evidence: ["Uses correct labels without explaining consequences"]
+      disqualifying_errors: ["Says NACL and security group are interchangeable"]
+      misconception_routes: ["firewall-equivalence confusion"]
+    solution_ref: solutions/EX-AWS-004.yaml
+    variant_guidance: "Ask how the answer changes when one subnet is suspected of compromise."
+coverage_gaps: ["Live AWS execution", "Cost and quota evidence"]
+validation:
+  reviewed: true
+  executed: false
+  notes: ["Conceptual and diagram items reviewed; live lab deferred pending account choice."]

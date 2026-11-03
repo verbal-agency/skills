@@ -1,0 +1,45 @@
+schema: learning-concept/v1
+id: CON-MIS-006
+canonical_name: Private endpoint hardening
+aliases: []
+type: principle
+status: approved
+target:
+  capability_ids: [CAP-MIS-004]
+  learner_outcome: "State and implement the network and authentication boundary for a local model server."
+  exclusions: ["Enterprise IAM platform design"]
+boundary:
+  formal_definition: "Keep inference traffic on a controlled network and add explicit authentication, proxy, and endpoint exposure controls."
+  prerequisites: [CON-MIS-003]
+  contrasts: ["API key alone", "Publicly bound development server"]
+  purpose: "Prevent private model serving from becoming accidental data egress or unauthorized compute."
+explanations:
+  gist: "A local server is private only when its network and identity boundaries are explicit and tested."
+  plain: "Bind to a controlled interface, put a reverse proxy or equivalent boundary in front, restrict access, and verify which endpoints are actually protected."
+  precise: "vLLM documentation warns that its API-key option does not protect every endpoint; the network boundary cannot be delegated to the key alone."
+  mechanics: "Client identity -> proxy/network policy -> authenticated API path -> server -> model; audit unprotected paths and logs."
+representations:
+  mental_model: "A private workshop with a guarded entrance, not a machine hidden by its location."
+  analogy:
+    text: "The server is the workshop; the proxy and network controls are the guarded entrance."
+    mapping: ["workshop -> inference process", "guarded entrance -> auth and network boundary"]
+    limits: ["The analogy does not model data retention, prompt logging, or side-channel risk."
+    ]
+  examples: ["Bind the server to a private interface and expose only a reverse-proxy path to approved clients."]
+  counterexamples: ["Setting an API key while exposing unauthenticated health or invocation paths to an untrusted network."]
+  trace: ["Client request", "Network allow/deny", "Proxy authentication", "Protected API path", "Server response and logs"]
+  diagram: "approved client -> private network -> reverse proxy/auth -> vLLM -> model"
+  code:
+    applicability: "Use the included reverse-proxy example and verification script in labs/"
+    environment: "Private Linux host with vLLM, nginx, curl, and ss"
+    snippet: "Start vLLM on 127.0.0.1:8080, apply labs/nginx.conf.example on 127.0.0.1:8081, then run labs/verify-private-endpoint.sh."
+    expected_result: "The model port is loopback-only, unauthenticated proxy requests receive 401 or 403, and an authorized request reaches /v1/models."
+    failure_case: "A public bind, missing auth challenge, or failed authorized request identifies the boundary that needs repair."
+misconceptions:
+  - belief: "A local hostname makes the server safe."
+    why_tempting: "It is not hosted in a public cloud account."
+    correction: "Local networks can be shared, bridged, or exposed; security is a tested boundary."
+    diagnostic_question: "Which endpoint would you test if the API key appears to work but inference is still reachable elsewhere?"
+retrieval_seeds: ["Why is an API key alone insufficient here?", "What must be tested beyond a successful authenticated request?"]
+claim_ids: [CLM-MIS-004]
+uncertainties: []

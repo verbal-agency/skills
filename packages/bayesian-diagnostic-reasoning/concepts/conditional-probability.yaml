@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-BAY-001
+canonical_name: Conditional probability
+aliases: [given probability]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-BAY-001]
+  learner_outcome: "Read the vertical bar as a change in the reference population."
+  exclusions: ["Measure-theoretic probability"]
+boundary:
+  formal_definition: "P(A|B) is the probability of A within the cases where B is known to have occurred."
+  prerequisites: ["Basic probability and fractions"]
+  contrasts: ["P(B|A)", "Joint probability"]
+  purpose: "Prevent the reversal error that drives diagnostic misinterpretation."
+explanations:
+  gist: "The condition after the bar tells you which group forms the denominator."
+  plain: "Ask 'out of which people or cases am I counting?' before calculating."
+  precise: "P(A|B) and P(B|A) are generally different because they condition on different reference sets."
+  mechanics: "Select the B group -> count A within B -> divide by the size of B."
+representations:
+  mental_model: "A filter that changes the population you are looking at."
+  analogy:
+    text: "First filter a box to red objects, then ask what fraction are circles."
+    mapping: ["filter -> condition", "remaining box -> denominator", "circles -> event A"]
+    limits: ["Real diagnostic evidence can be noisy and overlapping, unlike a perfect sorting filter."]
+  examples: ["P(positive | disease) is the positive rate among people who have disease."]
+  counterexamples: ["P(positive | disease) is not the probability of disease among positive tests."]
+  trace: ["Write the event after the bar", "Define its reference group", "Count the target event inside it"]
+  diagram: "all cases -> condition B -> cases satisfying A"
+  code:
+    applicability: "Optional; use a two-by-two table first."
+    environment: "None"
+    snippet: ""
+    expected_result: ""
+    failure_case: ""
+misconceptions:
+  - belief: "The order of the two events does not matter."
+    why_tempting: "The same words appear in both expressions."
+    correction: "The condition changes the denominator and therefore the question."
+    diagnostic_question: "In P(disease | positive), which group is the denominator?"
+retrieval_seeds: ["Read P(positive | disease) aloud.", "Why can P(disease | positive) differ from sensitivity?"]
+claim_ids: [CLM-BAY-001]
+uncertainties: []

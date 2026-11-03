@@ -1,0 +1,86 @@
+schema: learning-curriculum/v1
+id: CUR-LC-001
+title: LangChain Certified Agent Engineer preparation
+package_id: langchain-certified-agent-engineer
+package_version: 0.1.1
+contract:
+  audience: "Python-capable engineer preparing for LCAE and practical agent work"
+  assumptions: ["Can read Python and JSON", "Understands basic API calls and prompts"]
+  target_capability_ids: [CAP-LC-001, CAP-LC-002, CAP-LC-003, CAP-LC-004]
+  time_budget_hours: 12
+  environment: ["Python", "Optional model provider", "Optional LangSmith account", "Dry-run JSONL path"]
+  non_goals: ["Every integration", "Fine-tuning", "Provider infrastructure administration"]
+  final_evidence: ["Lifecycle packet", "Evaluation plan", "Deployment/auth boundary", "Monitoring incident diagnosis", "40-question/120-minute practice assessment using only whitelisted LangChain resources"]
+diagnostic:
+  exercise_refs: [EX-LC-001]
+  exemption_rules: ["Skip stack-layer review only if the learner can explain framework, runtime, and harness tradeoffs with a concrete use case."]
+modules:
+  - id: MOD-LC-001
+    title: Build an agent model
+    primary_capability_id: CAP-LC-001
+    prerequisite_evidence: []
+    motivating_problem: "A tool-using assistant works in a demo, but the team cannot explain its state or choose the right abstraction."
+    concept_ids: [CON-LC-001, CON-LC-002, CON-LC-003]
+    exercise_refs: [EX-LC-001]
+    closure_evidence: ["Defend an abstraction choice and trace one tool/state loop"]
+    remediation_routes: ["Return to layer contrast and draw a message/tool/state trace"]
+    review_after: P2D
+    unlocks: [CAP-LC-002]
+  - id: MOD-LC-002
+    title: Test agent behavior
+    primary_capability_id: CAP-LC-002
+    prerequisite_evidence: ["Can identify agent transitions and failure boundaries"]
+    motivating_problem: "A convincing demo does not reveal whether a change improves grounded behavior."
+    concept_ids: [CON-LC-004, CON-LC-005]
+    exercise_refs: [EX-LC-002]
+    closure_evidence: ["Create representative cases and defend evaluator choices"]
+    remediation_routes: ["Separate trace, dataset, evaluator, and quality question"]
+    review_after: P4D
+    unlocks: [CAP-LC-003]
+  - id: MOD-LC-003
+    title: Deploy with boundaries
+    primary_capability_id: CAP-LC-003
+    prerequisite_evidence: ["Can state what evidence a test produces"]
+    motivating_problem: "A local agent needs shared access without leaking threads or allowing unapproved mutations."
+    concept_ids: [CON-LC-006]
+    exercise_refs: [EX-LC-003]
+    closure_evidence: ["Defend state, auth, authorization, and rollback decisions"]
+    remediation_routes: ["Trace caller identity through thread lookup and state write"]
+    review_after: P7D
+    unlocks: [CAP-LC-004]
+  - id: MOD-LC-004
+    title: Monitor and improve
+    primary_capability_id: CAP-LC-004
+    prerequisite_evidence: ["Can name a deployment boundary and test artifact"]
+    motivating_problem: "Quality and security degrade while simple infrastructure metrics look normal."
+    concept_ids: [CON-LC-007, CON-LC-008]
+    exercise_refs: [EX-LC-004]
+    closure_evidence: ["Diagnose an incident and choose an intervention with a follow-up metric"]
+    remediation_routes: ["Separate signal, context, diagnosis, intervention, and re-evaluation"]
+    review_after: P14D
+    unlocks: []
+capstone:
+  exercise_ref: EX-LC-005
+  integrated_capability_ids: [CAP-LC-001, CAP-LC-002, CAP-LC-003, CAP-LC-004]
+coverage:
+  - capability_id: CAP-LC-001
+    introduce: [MOD-LC-001]
+    practice: [EX-LC-001]
+    assess: [EX-LC-005]
+    revisit: [MOD-LC-004]
+  - capability_id: CAP-LC-002
+    introduce: [MOD-LC-002]
+    practice: [EX-LC-002]
+    assess: [EX-LC-005]
+    revisit: [MOD-LC-004]
+  - capability_id: CAP-LC-003
+    introduce: [MOD-LC-003]
+    practice: [EX-LC-003]
+    assess: [EX-LC-005]
+    revisit: [MOD-LC-004]
+  - capability_id: CAP-LC-004
+    introduce: [MOD-LC-004]
+    practice: [EX-LC-004]
+    assess: [EX-LC-005]
+    revisit: []
+known_gaps: ["No live LangSmith execution", "No learner response data", "Exam guide details require refresh before booking", "Timed practice assessment has not yet been run"]

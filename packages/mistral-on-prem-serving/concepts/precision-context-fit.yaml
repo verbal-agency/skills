@@ -1,0 +1,40 @@
+schema: learning-concept/v1
+id: CON-MIS-004
+canonical_name: Precision, context, and memory fit
+aliases: [VRAM sizing]
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-MIS-001, CAP-MIS-003]
+  learner_outcome: "Choose a feasible precision and context target, then state the performance tradeoff."
+  exclusions: ["Exact GPU procurement recommendation"]
+boundary:
+  formal_definition: "A serving profile balances model weights, runtime memory, KV cache, precision, context length, and concurrency against hardware capacity."
+  prerequisites: [CON-MIS-001]
+  contrasts: ["Parameter count alone", "Latency without workload definition"]
+  purpose: "Turn vague hardware fit into measurable constraints."
+explanations:
+  gist: "The model must fit not only its weights but also the conversation history and concurrent work."
+  plain: "Lower precision can reduce memory, while longer context and more concurrent requests increase runtime pressure."
+  precise: "Mistral guidance gives model- and precision-specific examples; it explicitly says to adjust precision and context to the hardware and workload."
+  mechanics: "Model weights + runtime overhead + KV cache for context and concurrency -> memory pressure -> latency, throughput, or failure."
+representations:
+  mental_model: "Packing a vehicle: the vehicle must fit in the garage, and passengers plus luggage consume capacity while driving."
+  analogy:
+    text: "Weights are the vehicle; context and concurrent requests are passengers and luggage."
+    mapping: ["vehicle size -> model memory", "passengers -> active requests", "luggage -> context/KV cache"]
+    limits: ["Real memory behavior depends on runtime, batching, and model architecture."
+    ]
+  examples: ["A 24B dense model has a different footprint from a 119B mixture-of-experts model even when active parameters differ."]
+  counterexamples: ["A model that loads once may still fail or become unusably slow at the target context and concurrency."]
+  trace: ["Select model", "Set precision", "Set max context", "Add concurrent requests", "Observe memory and latency"]
+  diagram: "weights + runtime + KV cache -> device memory -> throughput/latency"
+  code: {applicability: "Use benchmark configuration rather than a universal sizing formula", environment: "Target hardware", snippet: "", expected_result: "", failure_case: "Out-of-memory or unacceptable latency"}
+misconceptions:
+  - belief: "If the weights fit in VRAM, the serving target is feasible."
+    why_tempting: "Weight size is easy to quote."
+    correction: "Context, concurrency, runtime overhead, and precision affect capacity and performance."
+    diagnostic_question: "What workload variable would you change first if single-request latency is fine but concurrency fails?"
+retrieval_seeds: ["Why does context length affect memory?", "Which variables belong in a serving profile?"]
+claim_ids: [CLM-MIS-002]
+uncertainties: []

@@ -1,0 +1,40 @@
+schema: learning-concept/v1
+id: CON-MIS-001
+canonical_name: Model artifact and license
+aliases: []
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-MIS-001]
+  learner_outcome: "Create a model profile before selecting a server or GPU."
+  exclusions: ["Fine-tuning", "Legal advice"]
+boundary:
+  formal_definition: "A serving profile identifies the exact model revision, weights, license, intended use, context, and distribution source."
+  prerequisites: ["Basic model-family terminology"]
+  contrasts: ["Managed API model", "Model server"]
+  purpose: "Prevent infrastructure plans from hiding an artifact or usage decision."
+explanations:
+  gist: "The model is not just a name; it is a specific artifact with behavior, resource needs, and permission terms."
+  plain: "Record the exact repository and revision, then verify how the weights may be used before downloading them."
+  precise: "The selected model profile should state version, license, architecture, tokenizer, context target, precision, and hardware assumptions."
+  mechanics: "Use case -> model candidate -> artifact and license check -> resource profile -> serving choice."
+representations:
+  mental_model: "A vehicle purchase: model name, trim, fuel requirements, and legal registration all matter."
+  analogy:
+    text: "Treat a model like a specific vehicle configuration, not a brand name."
+    mapping: ["trim -> model revision", "fuel requirement -> hardware/precision", "registration -> license"]
+    limits: ["Model behavior is not determined only by hardware or license."
+    ]
+  examples: ["Devstral Small 2 is a dense 24B model recommended by current Mistral offline guidance for local use."]
+  counterexamples: ["Choosing the latest model name without recording its revision creates a non-reproducible deployment."]
+  trace: ["Find model card", "Record revision and license", "Check context and precision", "Choose serving profile"]
+  diagram: "use case -> model card -> artifact profile -> hardware profile"
+  code: {applicability: "Use a profile document rather than code", environment: "None", snippet: "", expected_result: "", failure_case: ""}
+misconceptions:
+  - belief: "A model name is enough to reproduce serving."
+    why_tempting: "Model names look like stable package identifiers."
+    correction: "Revision, weights, tokenizer, serving flags, and precision all affect behavior."
+    diagnostic_question: "Which fields would you need to reproduce the server six months from now?"
+retrieval_seeds: ["What belongs in a model profile?", "Why is license a deployment input rather than paperwork after the fact?"]
+claim_ids: [CLM-MIS-001, CLM-MIS-002]
+uncertainties: []

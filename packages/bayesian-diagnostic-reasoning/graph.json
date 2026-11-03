@@ -1,0 +1,36 @@
+{
+  "schema": "learning-package-graph/v1",
+  "package_id": "bayesian-diagnostic-reasoning",
+  "generated_from_scope_version": "0.1.1",
+  "nodes": [
+    {"id":"CON-BAY-001","type":"mechanism","canonical_name":"Conditional probability","aliases":["given probability"],"boundary_definition":"Probability of an event under a stated condition.","purpose":"Provides the notation and denominator discipline for diagnostic reasoning.","cluster_ids":["SUB-BAY-NOTATION"],"claim_ids":["CLM-BAY-001"],"status":"enriched"},
+    {"id":"CON-BAY-002","type":"concept","canonical_name":"Base rate and prevalence","aliases":["prior probability"],"boundary_definition":"The proportion or prior probability of the condition before the new test result.","purpose":"Supplies the population context that changes predictive value.","cluster_ids":["SUB-BAY-UPDATE"],"claim_ids":["CLM-BAY-003","CLM-BAY-004"],"status":"enriched"},
+    {"id":"CON-BAY-003","type":"measurement","canonical_name":"Sensitivity and specificity","aliases":["test characteristics"],"boundary_definition":"Conditional measures describing positive detection among cases and negative detection among non-cases.","purpose":"Describes test behavior without confusing it with patient-level prediction.","cluster_ids":["SUB-BAY-TEST"],"claim_ids":["CLM-BAY-002"],"status":"enriched"},
+    {"id":"CON-BAY-004","type":"mechanism","canonical_name":"Bayesian update","aliases":["Bayes theorem"],"boundary_definition":"Combine prior probability and evidence likelihood to calculate a posterior probability.","purpose":"Turns a test result into an updated belief.","cluster_ids":["SUB-BAY-UPDATE"],"claim_ids":["CLM-BAY-004"],"status":"enriched"},
+    {"id":"CON-BAY-005","type":"decision","canonical_name":"Positive predictive value and decision threshold","aliases":["PPV"],"boundary_definition":"The probability of a condition given a positive result and the action boundary chosen under consequences and alternatives.","purpose":"Connects probability interpretation to responsible decisions without giving clinical advice.","cluster_ids":["SUB-BAY-DECISION"],"claim_ids":["CLM-BAY-003","CLM-BAY-005"],"status":"enriched"},
+    {"id":"CAP-BAY-001","type":"capability","canonical_name":"Read diagnostic conditionals","aliases":[],"boundary_definition":"Distinguish probability of a test result given a condition from probability of a condition given a result.","purpose":"Prevents the central reversal error.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-BAY-002","type":"capability","canonical_name":"Compute test characteristics","aliases":[],"boundary_definition":"Calculate sensitivity, specificity, and prevalence from a table.","purpose":"Builds denominator discipline.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-BAY-003","type":"capability","canonical_name":"Update a probability","aliases":[],"boundary_definition":"Calculate and explain a posterior after evidence.","purpose":"Transfers formula into reasoning.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-BAY-004","type":"capability","canonical_name":"Explain base-rate and decision effects","aliases":[],"boundary_definition":"Explain how population prevalence and consequences change interpretation and action.","purpose":"Moves beyond calculation into responsible use.","cluster_ids":[],"claim_ids":[],"status":"modeled"}
+  ],
+  "edges": [
+    {"source":"CON-BAY-002","relation":"requires","target":"CON-BAY-001","claim_ids":["CLM-BAY-001"]},
+    {"source":"CON-BAY-003","relation":"requires","target":"CON-BAY-001","claim_ids":["CLM-BAY-001","CLM-BAY-002"]},
+    {"source":"CON-BAY-004","relation":"requires","target":"CON-BAY-001","claim_ids":["CLM-BAY-001","CLM-BAY-004"]},
+    {"source":"CON-BAY-004","relation":"requires","target":"CON-BAY-002","claim_ids":["CLM-BAY-003","CLM-BAY-004"]},
+    {"source":"CON-BAY-004","relation":"requires","target":"CON-BAY-003","claim_ids":["CLM-BAY-002","CLM-BAY-004"]},
+    {"source":"CON-BAY-005","relation":"requires","target":"CON-BAY-004","claim_ids":["CLM-BAY-003","CLM-BAY-005"]},
+    {"source":"CON-BAY-003","relation":"commonly-confused-with","target":"CON-BAY-005","claim_ids":["CLM-BAY-003"]},
+    {"source":"CON-BAY-001","relation":"supports-capability","target":"CAP-BAY-001","claim_ids":["CLM-BAY-001"]},
+    {"source":"CON-BAY-003","relation":"supports-capability","target":"CAP-BAY-002","claim_ids":["CLM-BAY-002"]},
+    {"source":"CON-BAY-004","relation":"supports-capability","target":"CAP-BAY-003","claim_ids":["CLM-BAY-004"]},
+    {"source":"CON-BAY-005","relation":"supports-capability","target":"CAP-BAY-004","claim_ids":["CLM-BAY-003","CLM-BAY-005"]}
+  ],
+  "clusters": [
+    {"id":"SUB-BAY-NOTATION","name":"Conditionals and denominators","purpose":"Read what is being conditioned on."},
+    {"id":"SUB-BAY-TEST","name":"Test behavior","purpose":"Compute sensitivity and specificity."},
+    {"id":"SUB-BAY-UPDATE","name":"Belief updating","purpose":"Combine prior and evidence."},
+    {"id":"SUB-BAY-DECISION","name":"Interpretation and action","purpose":"Connect posterior probability to decisions without overclaiming."}
+  ],
+  "unresolved": ["Transfer example outside diagnostic testing"]
+}

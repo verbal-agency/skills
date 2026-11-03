@@ -1,0 +1,36 @@
+schema: learning-package-manifest/v1
+package_id: langchain-certified-agent-engineer
+title: LangChain Certified Agent Engineer preparation
+version: 0.1.1
+stage: assembled
+language: en
+created_at: 2026-11-02
+updated_at: 2026-11-02
+artifacts:
+  scope: scope.yaml
+  sources: sources.jsonl
+  claims: claims.jsonl
+  graph: graph.json
+  concepts: concepts/
+  exercises: exercises/core.yaml
+  exercise_solutions: exercises/solutions/
+  curricula: curricula/core.yaml
+  audits: audits/initial.md
+stage_history:
+  - stage: scoped
+    occurred_at: 2026-11-02
+    evidence: [scope.yaml, sources.jsonl, claims.jsonl]
+  - stage: modeled
+    occurred_at: 2026-11-02
+    evidence: [graph.json]
+  - stage: enriched
+    occurred_at: 2026-11-02
+    evidence: [concepts/]
+  - stage: assembled
+    occurred_at: 2026-11-02
+    evidence: [exercises/core.yaml, exercises/solutions/, curricula/core.yaml]
+known_gaps:
+  - No learner session or LangSmith execution has been run yet.
+  - The assistant cannot observe the learner's IDE, local runtime, LangSmith organization, or deployment environment; external execution must be reported or supplied as artifacts for inspection.
+  - Certification rules and product behavior are version-sensitive; refresh before booking the exam.
+  - The local exam guide is recorded as source evidence but is not copied into this repository.

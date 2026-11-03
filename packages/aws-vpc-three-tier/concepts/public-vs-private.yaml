@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-AWS-004
+canonical_name: Public versus private subnet
+aliases: []
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-AWS-002]
+  learner_outcome: "Choose placement based on required reachability rather than labels."
+  exclusions: ["Public IP allocation details", "WAF policy design"]
+boundary:
+  formal_definition: "A public subnet has a route to an internet gateway; a private subnet lacks a direct internet route and may use controlled egress paths."
+  prerequisites: [CON-AWS-003]
+  contrasts: ["Security group", "NAT gateway"]
+  purpose: "Reduce direct exposure while preserving required connectivity."
+explanations:
+  gist: "Public/private describes the route and intended reachability, not whether a resource is important."
+  plain: "Put only components that need direct internet reachability on the public path; use private paths for internal tiers and controlled egress."
+  precise: "AWS guidance recommends private subnets for instances that should not be directly accessed from the internet."
+  mechanics: "Requirement -> route target -> address and control choices -> verify inbound and outbound paths."
+representations:
+  mental_model: "A storefront versus a staff-only back room."
+  analogy:
+    text: "A storefront has a public entrance; a back room can make outbound calls without a public entrance."
+    mapping: ["public entrance -> direct ingress path", "back room -> private placement", "outbound call -> NAT or private service path"]
+    limits: ["The analogy ignores route tables and security-control details."]
+  examples: ["Web tier public, application and database tiers private"]
+  counterexamples: ["A database is not made safe merely by naming its subnet private if a route exposes it."]
+  trace: ["State inbound requirement", "Select route path", "Apply controls", "Test a permitted and forbidden path"]
+  diagram: "internet -> public web -> private application -> private data"
+  code: {applicability: "Use a diagram and route-table exercise", environment: "None", snippet: "", expected_result: "", failure_case: ""}
+misconceptions:
+  - belief: "Private means isolated from all external services."
+    why_tempting: "Private sounds like disconnected."
+    correction: "Private tiers can have controlled outbound or private service connectivity."
+    diagnostic_question: "How can a private instance fetch updates without being directly reachable from the internet?"
+retrieval_seeds: ["What makes a subnet public?", "Why can a private subnet still need an external route?"]
+claim_ids: [CLM-AWS-003, CLM-AWS-005]
+uncertainties: []

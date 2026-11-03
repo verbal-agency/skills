@@ -1,0 +1,92 @@
+schema: learning-exercises/v1
+id: EXSET-LC-001
+title: LangChain Certified Agent Engineer pilot
+capability_ids: [CAP-LC-001, CAP-LC-002, CAP-LC-003, CAP-LC-004]
+concept_ids: [CON-LC-001, CON-LC-002, CON-LC-003, CON-LC-004, CON-LC-005, CON-LC-006, CON-LC-007, CON-LC-008]
+audience: "Python-capable engineer preparing for LCAE and practical agent work"
+items:
+  - id: EX-LC-001
+    mode: discriminate
+    level: explain
+    prompt: "A team wants a simple tool-using assistant today, explicit branching and checkpoint recovery later, and a long-running delegated research workflow eventually. Compare create_agent, LangGraph, and deepagents/Deep Agents; explain where middleware, context engineering, AGENTS.md, SKILL.md, and sandboxing would shape the long-running design. Defend the control/convenience tradeoff."
+    prerequisites: [CON-LC-001, CON-LC-002]
+    estimated_minutes: 15
+    environment: [none]
+    claim_ids: [CLM-LC-004]
+    hints: ["Start from required control, not product popularity.", "Separate framework, runtime, and harness roles."]
+    rubric:
+      required_evidence: ["Maps the three needs to distinct abstraction levels", "Explains a control/convenience tradeoff", "Places at least two of middleware, context engineering, AGENTS.md, SKILL.md, and sandboxing in the design", "Acknowledges that layers can compose"]
+      partial_evidence: ["Names products but gives no selection criterion"]
+      disqualifying_errors: ["Treats the three names as interchangeable or claims the highest layer removes the need for testing"]
+      misconception_routes: ["stack-layer-confusion", "abstraction-equals-readiness"]
+    solution_ref: solutions/EX-LC-001.yaml
+    variant_guidance: "Replace research with a customer-support workflow and change which requirement is urgent."
+  - id: EX-LC-002
+    mode: design
+    level: apply
+    prompt: "For a small support agent that can search a knowledge base and draft a reply, specify the message/tool/state trace, five evaluation cases, how you would add a newly discovered failure to the dataset, and the evaluator you would use for each quality property. Distinguish code-based from LLM-as-judge, online from offline evaluation, experiments, and evaluator alignment."
+    prerequisites: [CON-LC-002, CON-LC-004, CON-LC-005]
+    estimated_minutes: 35
+    environment: [paper, optional-python, optional-langsmith]
+    claim_ids: [CLM-LC-005, CLM-LC-006]
+    hints: ["Name observable transitions before choosing metrics.", "Use code rules where correctness is mechanical; use judgment where quality is semantic."]
+    rubric:
+      required_evidence: ["Shows message, tool, and state transitions", "Includes varied and failure-oriented cases", "Explains how a new example enters the dataset", "Matches evaluator type and online/offline mode to the quality property", "States evaluator limitations and alignment checks"]
+      partial_evidence: ["Lists test prompts without expected evidence or evaluator rationale"]
+      disqualifying_errors: ["Treats a trace as proof of quality", "Uses one LLM score as universal truth"]
+      misconception_routes: ["trace-equals-evaluation", "evaluator-objectivity"]
+    solution_ref: solutions/EX-LC-002.yaml
+    variant_guidance: "Change the tool from search to calendar mutation and require a human approval case."
+  - id: EX-LC-003
+    mode: design
+    level: defend
+    prompt: "Draw a deployment boundary for the support agent. Define graph, deployment, revision, assistant, thread, and run; show caller identity, authorization, thread state, memory, secrets, durable storage, region choice, trace storage, and rollback. Defend what prevents one tenant from reading another tenant's thread."
+    prerequisites: [CON-LC-002, CON-LC-006]
+    estimated_minutes: 30
+    environment: [diagramming]
+    claim_ids: [CLM-LC-007]
+    hints: ["A thread ID is not authorization.", "Trace the request from identity to state write."]
+    rubric:
+      required_evidence: ["Uses the deployment primitives accurately", "Separates authentication from authorization", "Defines thread, memory, secret, and durable-storage scope", "States a multi-region or region-failure consideration", "Shows trace and rollback evidence", "Names a cross-tenant failure and mitigation"]
+      partial_evidence: ["Shows a hosted endpoint but omits state ownership or authorization"]
+      disqualifying_errors: ["Treats a shared API key or guessed thread ID as tenant isolation"]
+      misconception_routes: ["thread-equals-auth", "prototype-equals-deployment"]
+    solution_ref: solutions/EX-LC-003.yaml
+    variant_guidance: "Add a human approval step for sending an external email."
+  - id: EX-LC-004
+    mode: diagnose
+    level: diagnose
+    prompt: "After a new tool release, cost and latency are stable, but grounded-answer quality falls and security alerts rise. Group the relevant traces into threads, compare Insights with Online Evals, inspect user sentiment and security slices, identify the first datasets and experiments to inspect, then propose one intervention and one follow-up metric."
+    prerequisites: [CON-LC-004, CON-LC-005, CON-LC-007]
+    estimated_minutes: 25
+    environment: [paper, optional-langsmith]
+    claim_ids: [CLM-LC-006, CLM-LC-008]
+    hints: ["Use the changed component as a hypothesis, not a conclusion.", "Separate quality and security evidence from cost and latency."]
+    rubric:
+      required_evidence: ["Groups traces into relevant threads and segments by version/tool and workload", "Distinguishes Insights from Online Evals", "Inspects traces, evaluation cases, user sentiment, and security signals", "Proposes an intervention with a measurable follow-up"]
+      partial_evidence: ["Says to roll back without identifying discriminating evidence"]
+      disqualifying_errors: ["Optimizes latency or cost while ignoring quality and security"]
+      misconception_routes: ["single-metric-optimization", "monitoring-without-diagnosis"]
+    solution_ref: solutions/EX-LC-004.yaml
+    variant_guidance: "Change the incident to a latency spike caused by context growth."
+  - id: EX-LC-005
+    mode: capstone
+    level: design
+    prompt: "Produce a lifecycle packet for one small agent: abstraction choice, tool/state trace, context and sandbox plan, evaluation dataset and evaluator plan, deployment/auth boundary, monitoring signals, and a change loop. Map each artifact to one LCAE domain, then complete a 40-question, 120-minute practice run using only the exam guide's whitelisted LangChain resources and record section-level misses."
+    prerequisites: [CON-LC-001, CON-LC-002, CON-LC-004, CON-LC-005, CON-LC-006, CON-LC-007, CON-LC-008]
+    estimated_minutes: 60
+    environment: [paper, optional-python, optional-langsmith]
+    claim_ids: [CLM-LC-001, CLM-LC-004, CLM-LC-006, CLM-LC-007, CLM-LC-008]
+    hints: ["Use one coherent agent and keep the lifecycle connected.", "Every claim of readiness needs an artifact or test."]
+    rubric:
+      required_evidence: ["Covers all four equally weighted domains", "Connects build decisions to tests", "States deployment, auth, secrets, and storage boundaries", "Defines monitoring signals, thread grouping, Insights/Online Evals distinctions, and interventions", "Completes or explicitly dry-runs the timed 40-question practice protocol", "Names unresolved environment dependencies"]
+      partial_evidence: ["Covers domains as unrelated checklists"]
+      disqualifying_errors: ["Claims production readiness from a demo or course completion alone"]
+      misconception_routes: ["lifecycle-fragmentation", "course-equals-readiness"]
+    solution_ref: solutions/EX-LC-005.yaml
+    variant_guidance: "Require a small runnable Python artifact when credentials and LangSmith access are available."
+coverage_gaps: ["No live LangSmith trace, evaluation run, or deployment has been executed", "No learner response data"]
+validation:
+  reviewed: true
+  executed: false
+  notes: ["Official certification and Academy course scope checked on 2026-11-02; environment-dependent tasks remain unexecuted."]

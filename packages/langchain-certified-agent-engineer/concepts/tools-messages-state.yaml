@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-LC-002
+canonical_name: Tools, messages, and state
+aliases: [agent loop]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-LC-001]
+  learner_outcome: "Trace an agent from message input through tool use and state update to its response."
+  exclusions: ["Training a model", "Every provider-specific message format"]
+boundary:
+  formal_definition: "An agent loop maps messages and available tools through model decisions, tool results, and state updates until a stop condition produces a response."
+  prerequisites: [CON-LC-001]
+  contrasts: ["One-shot completion", "Unbounded autonomous loop"]
+  purpose: "Make an agent's behavior inspectable and debuggable."
+explanations:
+  gist: "An agent is a loop of deciding, acting, observing, and updating state—not just a prompt with a fancy name."
+  plain: "The model receives messages and tool descriptions, may request a tool, receives the result, and continues with updated context."
+  precise: "A useful trace separates model calls, tool calls, messages, state, and termination; failures can arise at any transition."
+  mechanics: "messages + tool schemas -> model decision -> tool invocation -> tool result -> state/context update -> next decision or final response."
+representations:
+  mental_model: "A dispatcher handing work to instruments and keeping a case file."
+  analogy:
+    text: "The model is a dispatcher, tools are instruments, and state is the case file carried between steps."
+    mapping: ["dispatcher -> model decision", "instrument -> tool", "case file -> state and messages"]
+    limits: ["The model can make incorrect decisions; the dispatcher analogy does not imply reliable judgment. "]
+  examples: ["A weather tool returns structured data, which becomes a new message before the agent answers."]
+  counterexamples: ["A model response that mentions a tool but never invokes it is not evidence that the tool path succeeded."]
+  trace: ["Receive user message", "Select tool", "Validate arguments", "Run tool", "Append result", "Stop or continue"]
+  diagram: "messages -> model -> tool call -> tool result -> state -> model or final response"
+  code:
+    applicability: "Use a minimal tool-calling agent in the official Python course environment."
+    environment: "Python, LangChain package, model provider credentials"
+    snippet: "Create one tool with a narrow schema, invoke the agent once, and inspect the model and tool spans in the trace."
+    expected_result: "The trace shows the input message, tool selection, validated arguments, tool result, and final response."
+    failure_case: "Malformed arguments, tool exceptions, or missing termination produce distinct trace evidence."
+misconceptions:
+  - belief: "A successful final answer proves every tool call and state transition was correct."
+    why_tempting: "The final response is the visible output."
+    correction: "Inspect the intermediate trace and tool results."
+    diagnostic_question: "What evidence would distinguish a tool failure from a model hallucinating a tool result?"
+retrieval_seeds: ["What are the observable transitions in an agent loop?", "Where should tool arguments be validated?"]
+claim_ids: [CLM-LC-005]
+uncertainties: []

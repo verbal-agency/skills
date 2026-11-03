@@ -7,12 +7,20 @@ description: Teach interactively from a structured domain or learning package, s
 
 Run evidence-responsive teaching sessions from an assembled package. Preserve a
 strict separation between canonical package content and learner-specific state.
+When implementation happens in an environment that is not visible to the
+assistant, treat execution outcomes as learner-reported unless the learner
+supplies an artifact, log, trace, or error for inspection. Do not infer runtime
+success from a conversation, confidence statement, or planned exercise.
 
 ## Required inputs
 
 Read the selected curriculum, relevant concept units and exercises, package
-audit status, and existing learner state. If no learner state exists, copy
-[assets/learner-state-template.yaml](assets/learner-state-template.yaml). Read
+audit status, and the learner's private state when available. Learner state is
+session data, not publishable package content: keep it in an ignored
+`learner-state/` directory or another private store and never commit it by
+default. If no learner state exists, copy
+[assets/learner-state-template.yaml](assets/learner-state-template.yaml) into
+that private location. Read
 [references/teaching-protocol.md](references/teaching-protocol.md) before the
 first session or when changing teaching mode.
 
@@ -42,6 +50,8 @@ audit findings. Do not present disputed or stale material as settled.
    solution.
 8. **Update learner state.** Record attempts, evidence, misconceptions, hints,
    confidence separately from performance, review timing, and the next action.
+   Label evidence by observability: conceptual chat evidence, inspected artifact,
+   learner-reported external result, or reproduced result.
 9. **Close cleanly.** Summarize the corrected model, one limitation, what the
    evidence supports, and what remains unproven. Schedule retrieval rather than
    immediately reteaching a successful item.

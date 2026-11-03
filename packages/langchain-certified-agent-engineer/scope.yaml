@@ -1,0 +1,73 @@
+schema: learning-scope/v1
+package_id: langchain-certified-agent-engineer
+research_cutoff: 2026-11-02
+outcome_contract:
+  learner: "A Python-capable engineer preparing for the LangChain Certified Agent Engineer exam and practical agent work"
+  real_world_outcome: "Prepare to build, test, deploy, and monitor one small production-shaped agent while explaining the tradeoffs and failure modes"
+  authentic_situations:
+    - "Choose the right abstraction among LangChain, LangGraph, and Deep Agents"
+    - "Build an agent with tools, state, middleware, and human approval where needed"
+    - "Trace runs, create an evaluation dataset, and distinguish evaluator types"
+    - "Deploy an agent with thread or assistant state and an explicit authentication boundary"
+    - "Diagnose cost, latency, quality, error, and security signals in production"
+  completion_evidence:
+    - "Explain the four LCAE domains and map each to a concrete artifact"
+    - "Build or reconstruct a small tool-using agent and explain its state transitions"
+    - "Create a small evaluation dataset and defend an evaluator choice"
+    - "Produce a deployment and authentication boundary diagram"
+    - "Interpret a monitoring incident and propose a corrective action"
+    - "Complete a 40-question, 120-minute official-style practice assessment using only the exam's whitelisted LangChain resources"
+  constraints:
+    - "Use official LangChain documentation and Academy material as the primary source base"
+    - "Provide a dry-run path when a LangSmith account or deployment environment is unavailable"
+    - "Separate certification readiness from production readiness"
+    - "Use the exam guide as the source of truth for exam-day rules and the section blueprint"
+    - "Do not infer runtime success when the learner's external environment is not visible; request failures, artifacts, logs, or traces for review"
+  non_goals:
+    - "Master every LangChain integration"
+    - "Fine-tuning or model training"
+    - "Provider-specific infrastructure operations outside the agent lifecycle"
+    - "Memorizing exam logistics instead of following the official exam guide"
+  stop_conditions:
+    - "All four LCAE domains have direct practice and evidence"
+    - "The learner can explain one agent lifecycle from build through monitoring"
+capabilities:
+  - id: CAP-LC-001
+    statement: "Build and explain an agent using the appropriate LangChain stack, tools, state, context, and control flow"
+    required_levels: [explain, apply, design]
+    evidence: ["Conceptual explanation or design artifact", "Supplied code/config/trace excerpt when available", "Learner-reported implementation outcome explicitly labeled as external and unverified"]
+    source_ids: [SRC-LCAE-000, SRC-LCAE-001, SRC-LCAE-003, SRC-LCAE-004]
+  - id: CAP-LC-002
+    statement: "Test an agent with traces, datasets, experiments, and an evaluator suited to the question"
+    required_levels: [explain, apply, diagnose]
+    evidence: ["Evaluation dataset or plan", "Evaluator rationale", "Failure diagnosis from supplied evidence or a learner-reported outcome"]
+    source_ids: [SRC-LCAE-000, SRC-LCAE-001, SRC-LCAE-005]
+  - id: CAP-LC-003
+    statement: "Deploy an agent with explicit runtime, state, thread, and authentication decisions"
+    required_levels: [explain, apply, defend]
+    evidence: ["Deployment plan", "State and auth boundary diagram", "Supplied configuration/error excerpt or learner-reported deployment outcome labeled external"]
+    source_ids: [SRC-LCAE-000, SRC-LCAE-001, SRC-LCAE-007]
+  - id: CAP-LC-004
+    statement: "Monitor an agent and use cost, latency, errors, quality, and security signals to choose an intervention"
+    required_levels: [explain, apply, diagnose]
+    evidence: ["Monitoring plan or dry-run table", "Incident diagnosis from supplied evidence or learner report", "Mitigation and follow-up metric"]
+    source_ids: [SRC-LCAE-000, SRC-LCAE-001, SRC-LCAE-006]
+boundary:
+  included: [LCAE exam domains, LangChain, LangGraph, Deep Agents, create_agent, deepagents, tools, messages, short-term memory, context engineering, middleware, human-in-the-loop, MCP, AGENTS.md, SKILL.md, sandboxing, tracing, LangSmith datasets, code-based evaluation, LLM-as-judge evaluation, pairwise evaluation, online and offline evaluators, experiments, evaluator alignment, deployment terminology (graph, deployment, revision, assistant, thread, run), multi-region serving, secret handling, storage durability, memory, authentication, authorization, cost monitoring, latency, errors, quality monitoring, user sentiment, Insights, Online Evals, security alerts]
+  excluded: [fine-tuning, model training, every provider integration, Kubernetes administration, generic software testing unrelated to agents, detailed exam proctoring beyond official-guide awareness]
+  adjacent_optional: [RAG, vector stores, multi-agent systems, custom LangGraph runtimes, TypeScript, Deep Agents delegation, A/B testing]
+  assumed_prerequisites: ["Python basics", "HTTP/API basics", "Ability to read JSON", "Basic LLM prompting vocabulary"]
+open_questions:
+  - id: Q-LC-001
+    question: "Will the learner use Python or TypeScript for implementation?"
+    owner: learner
+    impact_if_wrong: "Code examples and setup path may need translation"
+    next_probe: "Start with Python because it is the official foundation-course default unless the learner chooses TypeScript"
+  - id: Q-LC-002
+    question: "Which LangSmith access and model provider are available?"
+    owner: learner
+    impact_if_wrong: "Live tracing, evaluation, and deployment may require a dry-run substitute"
+    next_probe: "Run local traces and artifact-based evaluation first; add LangSmith execution when access is available"
+refresh_policy:
+  default_horizon_days: 30
+  volatile_areas: ["LCAE exam blueprint and rules", "LangChain/LangGraph/Deep Agents APIs", "LangSmith UI and deployment behavior", "course curriculum"]

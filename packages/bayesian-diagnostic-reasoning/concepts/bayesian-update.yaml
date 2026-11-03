@@ -1,0 +1,51 @@
+schema: learning-concept/v1
+id: CON-BAY-004
+canonical_name: Bayesian update
+aliases: [Bayes theorem]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-BAY-003]
+  learner_outcome: "Calculate a posterior probability with a frequency table and connect it to Bayes' formula."
+  exclusions: ["Continuous posterior distributions"]
+boundary:
+  formal_definition: "Bayes' theorem combines a prior probability and evidence likelihood to compute a posterior probability."
+  prerequisites: [CON-BAY-001, CON-BAY-002, CON-BAY-003]
+  contrasts: ["Forward test probability", "Unupdated prior"]
+  purpose: "Turn evidence into a revised belief with visible denominators."
+explanations:
+  gist: "Start with what was plausible, ask how expected the evidence is under each possibility, then renormalize."
+  plain: "Natural frequencies often make the update easier: imagine 1,000 people, apply prevalence, then apply test behavior."
+  precise: "P(D|+) = P(+|D)P(D) / [P(+|D)P(D) + P(+|not D)P(not D)]."
+  mechanics: "Prior cases -> true positives and false positives -> all positives -> true positives/all positives."
+representations:
+  mental_model: "A belief balance that shifts when evidence is more expected under one explanation than another."
+  analogy:
+    text: "Evidence is a weight added to one side of a balance, but the starting weights still matter."
+    mapping: ["starting weights -> prior", "evidence fit -> likelihood", "new balance -> posterior"]
+    limits: ["Evidence can be dependent, and the formula does not choose action costs for you."]
+  examples: ["With 1% prevalence, 90% sensitivity, and 95% specificity among 10,000 people: 90 true positives and 495 false positives yield PPV 90/585 ≈ 15.4%."]
+  counterexamples: ["Multiplying sensitivity by prevalence and stopping omits false positives from the denominator."]
+  trace: ["Set prior", "Apply likelihoods", "Count all evidence-positive cases", "Normalize to posterior"]
+  diagram: "prior -> evidence branches -> positive pool -> posterior"
+  code:
+    applicability: "Use Python only after the natural-frequency solution."
+    environment: "Any Python 3 interpreter"
+    snippet: |
+      prevalence = 0.01
+      sensitivity = 0.90
+      specificity = 0.95
+      ppv = sensitivity * prevalence / (
+          sensitivity * prevalence + (1 - specificity) * (1 - prevalence)
+      )
+      print(ppv)
+    expected_result: "Approximately 0.154 or 15.4%, subject to rounding."
+    failure_case: "Using specificity instead of the false-positive rate (1 - specificity)."
+misconceptions:
+  - belief: "Bayes' theorem is a formula to memorize without a population story."
+    why_tempting: "The symbols look compact."
+    correction: "The natural-frequency table exposes the same numerator and denominator."
+    diagnostic_question: "Where do false positives appear in the posterior denominator?"
+retrieval_seeds: ["Compute the positive predictive value from a 1,000-person table.", "Which term represents the evidence probability?"]
+claim_ids: [CLM-BAY-004]
+uncertainties: []

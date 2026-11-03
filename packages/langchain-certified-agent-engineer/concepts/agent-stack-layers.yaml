@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-LC-001
+canonical_name: Agent stack layers
+aliases: [LangChain vs LangGraph vs Deep Agents, create_agent vs deepagents]
+type: concept
+status: approved
+target:
+  capability_ids: [CAP-LC-001]
+  learner_outcome: "Choose an agent abstraction while explaining its control and convenience tradeoff."
+  exclusions: ["Every framework integration", "Benchmarking frameworks by marketing claims"]
+boundary:
+  formal_definition: "LangChain is the agent framework, create_agent is the direct agent-building entry point, LangGraph is the runtime for stateful agent execution, and Deep Agents/deepagents is a higher-level harness for long-running complex tasks."
+  prerequisites: []
+  contrasts: ["Single prompt application", "Provider-managed agent"]
+  purpose: "Give the learner a stable selection model before API details."
+explanations:
+  gist: "Choose the lowest layer that gives you enough control, and move upward when the workflow benefits from more built-in behavior."
+  plain: "LangChain supplies building blocks, create_agent gives a direct agent path, LangGraph makes execution state and control flow explicit, and Deep Agents packages more long-horizon behavior."
+  precise: "The layers overlap in implementation but differ in abstraction and control; selecting one is a design decision, not a claim that the others are irrelevant."
+  mechanics: "Use case -> required control -> framework/runtime/harness choice -> traceable execution -> test and deployment constraints."
+representations:
+  mental_model: "A hand tool, a workshop control system, and a managed crew."
+  analogy:
+    text: "A hand tool gives direct control, a workshop system coordinates steps, and a managed crew handles more routine planning."
+    mapping: ["hand tool -> LangChain building blocks", "workshop control -> LangGraph runtime", "managed crew -> Deep Agents harness"]
+    limits: ["Real systems can combine layers; the analogy is about control, not separate products. "]
+  examples: ["Use a direct LangChain agent for a small tool loop; use LangGraph when checkpoints or branching control matter; use Deep Agents for long-running delegated work."]
+  counterexamples: ["Choosing Deep Agents does not remove the need to understand tools, state, tests, or monitoring."]
+  trace: ["State the workload", "Name the control requirement", "Select abstraction", "Build a thin slice", "Observe whether the abstraction hides a needed decision"]
+  diagram: "workload -> control requirement -> LangChain / LangGraph / Deep Agents -> lifecycle evidence"
+  code: {applicability: "Use a small design comparison; code is not required for the concept.", environment: "None", snippet: "", expected_result: "The learner can defend an abstraction choice.", failure_case: "The learner treats product names as interchangeable or assumes the highest abstraction is always best."}
+misconceptions:
+  - belief: "LangChain, LangGraph, and Deep Agents are interchangeable names for the same thing."
+    why_tempting: "They appear together in the same product ecosystem."
+    correction: "They occupy different abstraction layers and expose different control tradeoffs."
+    diagnostic_question: "Which layer would you choose if you needed explicit branching and checkpoint control?"
+retrieval_seeds: ["What problem does each stack layer solve?", "When does more abstraction become a liability?"]
+claim_ids: [CLM-LC-004, CLM-LC-011]
+uncertainties: ["Exact APIs and product packaging change faster than the layer distinction."]

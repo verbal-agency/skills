@@ -1,0 +1,75 @@
+schema: learning-curriculum/v1
+id: CUR-MIS-001
+title: Single-node private Mistral serving
+package_id: mistral-on-prem-serving
+package_version: 0.1.1
+contract:
+  audience: "Engineer with basic Linux, Python, HTTP, and GPU terminology"
+  assumptions: ["Can run a Python client", "Can inspect a process and network port"]
+  target_capability_ids: [CAP-MIS-001, CAP-MIS-002, CAP-MIS-003, CAP-MIS-004]
+  time_budget_hours: 8
+  environment: ["Model access", "Single compatible host or a dry-run simulator"]
+  non_goals: ["Fine-tuning", "Kubernetes HA", "RAG"]
+  final_evidence: ["Serving profile", "Successful authorized request and rejected unauthenticated request", "Benchmark harness output or documented hardware block", "Security boundary review"]
+diagnostic:
+  exercise_refs: [EX-MIS-001, EX-MIS-004]
+  exemption_rules: ["Skip basic HTTP review only if the learner can explain the request and response path."]
+modules:
+  - id: MOD-MIS-001
+    title: Model and input contract
+    primary_capability_id: CAP-MIS-001
+    prerequisite_evidence: []
+    motivating_problem: "A model loads but produces degraded responses after migration."
+    concept_ids: [CON-MIS-001, CON-MIS-002, CON-MIS-004]
+    exercise_refs: [EX-MIS-001]
+    closure_evidence: ["Complete model profile with explicit assumptions"]
+    remediation_routes: ["Compare artifact, tokenizer, and template fields"]
+    review_after: P2D
+    unlocks: [CAP-MIS-002]
+  - id: MOD-MIS-002
+    title: Serve and verify
+    primary_capability_id: CAP-MIS-002
+    prerequisite_evidence: ["Model profile is complete"]
+    motivating_problem: "A local application needs a private API-compatible model endpoint."
+    concept_ids: [CON-MIS-003, CON-MIS-006]
+    exercise_refs: [EX-MIS-002, EX-MIS-004]
+    closure_evidence: ["Verified chat request and documented endpoint boundary"]
+    remediation_routes: ["Trace client, proxy, server, and model input"]
+    review_after: P4D
+    unlocks: [CAP-MIS-003]
+  - id: MOD-MIS-003
+    title: Measure before scaling
+    primary_capability_id: CAP-MIS-003
+    prerequisite_evidence: ["Endpoint returns correct responses"]
+    motivating_problem: "The endpoint is fast for one request but fails at target concurrency."
+    concept_ids: [CON-MIS-004, CON-MIS-005]
+    exercise_refs: [EX-MIS-003]
+    closure_evidence: ["Benchmark contract and bottleneck interpretation"]
+    remediation_routes: ["Separate quality, memory, latency, and throughput variables"]
+    review_after: P7D
+    unlocks: [CAP-MIS-004]
+capstone:
+  exercise_ref: EX-MIS-002
+  integrated_capability_ids: [CAP-MIS-001, CAP-MIS-002, CAP-MIS-003, CAP-MIS-004]
+coverage:
+  - capability_id: CAP-MIS-001
+    introduce: [MOD-MIS-001]
+    practice: [EX-MIS-001]
+    assess: [EX-MIS-002]
+    revisit: [MOD-MIS-003]
+  - capability_id: CAP-MIS-002
+    introduce: [MOD-MIS-002]
+    practice: [EX-MIS-002, EX-MIS-004]
+    assess: [EX-MIS-002]
+    revisit: [MOD-MIS-003]
+  - capability_id: CAP-MIS-003
+    introduce: [MOD-MIS-003]
+    practice: [EX-MIS-003]
+    assess: [EX-MIS-003]
+    revisit: []
+  - capability_id: CAP-MIS-004
+    introduce: [MOD-MIS-002]
+    practice: [EX-MIS-004]
+    assess: [EX-MIS-002]
+    revisit: []
+known_gaps: ["No live GPU benchmark or endpoint security test has been run"]

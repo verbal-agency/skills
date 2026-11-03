@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-AWS-002: "Inspect return routes and stateless subnet ACL behavior separately from the stateful security group."

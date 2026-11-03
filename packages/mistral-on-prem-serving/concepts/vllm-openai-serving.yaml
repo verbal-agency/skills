@@ -1,0 +1,49 @@
+schema: learning-concept/v1
+id: CON-MIS-003
+canonical_name: vLLM OpenAI-compatible serving
+aliases: [vllm serve]
+type: procedure
+status: approved
+target:
+  capability_ids: [CAP-MIS-002]
+  learner_outcome: "Start a local inference endpoint and verify it with an HTTP client."
+  exclusions: ["Production orchestration", "Every vLLM option"]
+boundary:
+  formal_definition: "vLLM can expose model inference through an HTTP server implementing OpenAI-compatible endpoints."
+  prerequisites: [CON-MIS-001, CON-MIS-002, CON-MIS-004]
+  contrasts: ["Managed API", "CLI-only local runner"]
+  purpose: "Create a repeatable integration boundary for local applications."
+explanations:
+  gist: "The server turns model weights into a network service that familiar clients can call."
+  plain: "Launch the exact model with explicit server options, then send a chat request to the local `/v1` endpoint."
+  precise: "vLLM documents OpenAI-compatible Completions and Chat APIs; model support and endpoint behavior depend on version and model template."
+  mechanics: "weights -> vLLM process -> HTTP endpoint -> request validation -> batching and generation -> response and usage metadata."
+representations:
+  mental_model: "A restaurant kitchen behind a standard ordering counter."
+  analogy:
+    text: "The client uses a familiar menu format; vLLM adapts that request to the local model kitchen."
+    mapping: ["menu -> API schema", "kitchen -> model runtime", "order ticket -> request"]
+    limits: ["The server may support only a subset of client features, and authentication is not automatically complete."
+    ]
+  examples: ["`vllm serve <model> --port 8080` followed by a `/v1/chat/completions` request."]
+  counterexamples: ["A listening port is not proof that the correct model, template, or security boundary is active."]
+  trace: ["Start process", "Load weights", "Bind endpoint", "Send request", "Inspect response and usage"]
+  diagram: "client -> private network -> reverse proxy/auth -> vLLM -> model weights"
+  code:
+    applicability: "Yes; verify the command against the installed vLLM version."
+    environment: "Linux host with compatible runtime and model access"
+    snippet: |
+      vllm serve mistralai/Devstral-Small-2-24B-Instruct-2512 \
+        --tool-call-parser mistral \
+        --enable-auto-tool-choice \
+        --port 8080
+    expected_result: "The server loads the model and exposes a local compatible API."
+    failure_case: "Model loading fails because of insufficient memory, unsupported flags, or unavailable artifact access."
+misconceptions:
+  - belief: "OpenAI-compatible means behavior and security are identical to a managed API."
+    why_tempting: "The request shape looks familiar."
+    correction: "Compatibility is an API contract, not an assurance about model behavior or endpoint hardening."
+    diagnostic_question: "Which endpoint paths and network boundary would you inspect before exposing the server?"
+retrieval_seeds: ["What does OpenAI-compatible mean here?", "What evidence proves the correct model was loaded?"]
+claim_ids: [CLM-MIS-001, CLM-MIS-004]
+uncertainties: []

@@ -1,0 +1,76 @@
+schema: learning-exercises/v1
+id: EXSET-MIS-001
+title: Private single-node Mistral serving
+capability_ids: [CAP-MIS-001, CAP-MIS-002, CAP-MIS-003, CAP-MIS-004]
+concept_ids: [CON-MIS-001, CON-MIS-002, CON-MIS-003, CON-MIS-004, CON-MIS-005, CON-MIS-006]
+audience: "Engineer with basic Linux, Python, HTTP, and GPU terminology"
+items:
+  - id: EX-MIS-001
+    mode: design
+    level: apply
+    prompt: "Copy profiles/model-profile.template.yaml and create a serving profile for a Mistral-family model. Include exact model revision, license, tokenizer/template, target context, precision, hardware, security boundary, workload target, risks, and one rejected alternative."
+    prerequisites: [CON-MIS-001, CON-MIS-004]
+    estimated_minutes: 20
+    environment: [none]
+    claim_ids: [CLM-MIS-001, CLM-MIS-002, CLM-MIS-003]
+    hints: ["Start with the use case and workload.", "Separate stable choices from version-sensitive recommendations."]
+    rubric:
+      required_evidence: ["Names an exact artifact", "States license and template source", "Connects context and precision to hardware", "Rejects an alternative with a reason"]
+      partial_evidence: ["Lists a model and GPU without workload or license reasoning"]
+      disqualifying_errors: ["Treats model name alone as a reproducible profile"]
+      misconception_routes: ["model-name-only reasoning", "weights-fit-equals-serving-fit"]
+    solution_ref: solutions/EX-MIS-001.yaml
+    variant_guidance: "Change the available GPU and required context."
+  - id: EX-MIS-002
+    mode: lab
+    level: apply
+    prompt: "Start the selected model on a loopback/private interface, put an authenticated reverse proxy in front of it, send one authorized chat request, and verify that an unauthenticated request is rejected. Confirm that the model name, response, and usage metadata match the profile. Use labs/nginx.conf.example and labs/verify-private-endpoint.sh as a starting point."
+    prerequisites: [CON-MIS-002, CON-MIS-003]
+    estimated_minutes: 45
+    environment: ["Linux host", "Compatible GPU/runtime", "Model access"]
+    claim_ids: [CLM-MIS-001, CLM-MIS-003, CLM-MIS-004]
+    hints: ["Check model and server versions first.", "Test the template before tuning throughput.", "Do not expose the port publicly while debugging."]
+    rubric:
+      required_evidence: ["Reproducible command", "Successful authorized request", "Rejected unauthenticated request", "Correct formatting check", "Private network and proxy configuration"]
+      partial_evidence: ["Server starts but the model/template or boundary is not verified"]
+      disqualifying_errors: ["Publishes an unprotected endpoint or uses an incompatible prompt format"]
+      misconception_routes: ["API-compatibility-equals-behavior", "API-key-only-security"]
+    solution_ref: solutions/EX-MIS-002.yaml
+    variant_guidance: "Use a CPU-only or smaller model profile and explain what evidence changes."
+  - id: EX-MIS-003
+    mode: design
+    level: diagnose
+    prompt: "Design a benchmark for concurrency 1 and 4. State prompt length, output target, warm-up, repetitions, p50/p95 metrics, memory observations, and the decision each result will inform."
+    prerequisites: [CON-MIS-004, CON-MIS-005]
+    estimated_minutes: 25
+    environment: [none]
+    claim_ids: [CLM-MIS-002, CLM-MIS-005]
+    hints: ["Define the workload before selecting metrics.", "Separate quality from serving performance."]
+    rubric:
+      required_evidence: ["Controls workload variables", "Uses p50 and p95 or equivalent", "Includes memory and concurrency", "Connects result to a decision"]
+      partial_evidence: ["Times one request without a reproducible workload"]
+      disqualifying_errors: ["Calls a single prompt a production benchmark"]
+      misconception_routes: ["single-sample-performance", "latency-only-optimization"]
+    solution_ref: solutions/EX-MIS-003.yaml
+    variant_guidance: "Ask whether the target is interactive chat or batch generation."
+  - id: EX-MIS-004
+    mode: diagnose
+    level: diagnose
+    prompt: "A client receives degraded responses after migrating from a self-hosted Llama setup, and a second client can reach the server without the configured API key. Diagnose one model-input issue and one security issue, then use the selected model profile and labs/verify-private-endpoint.sh to specify discriminating tests."
+    prerequisites: [CON-MIS-002, CON-MIS-003, CON-MIS-006]
+    estimated_minutes: 20
+    environment: [none]
+    claim_ids: [CLM-MIS-003, CLM-MIS-004]
+    hints: ["Separate application formatting from network exposure.", "Inspect actual endpoint paths, not only the happy path."]
+    rubric:
+      required_evidence: ["Tests chat template/tokenizer compatibility", "Tests an unprotected endpoint", "Proposes a boundary fix"]
+      partial_evidence: ["Blames the model without a discriminating test"]
+      disqualifying_errors: ["Assumes API-key configuration protects every endpoint"]
+      misconception_routes: ["prompt-format confusion", "endpoint-auth confusion"]
+    solution_ref: solutions/EX-MIS-004.yaml
+    variant_guidance: "Change the server framework or move the proxy to a separate host."
+coverage_gaps: ["Live GPU execution", "Quality evaluation on representative tasks", "Secrets and audit-log implementation"]
+validation:
+  reviewed: true
+  executed: false
+  notes: ["Code paths are documented; execution awaits target hardware and runtime versions."]

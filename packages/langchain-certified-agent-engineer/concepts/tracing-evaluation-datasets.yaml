@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-LC-004
+canonical_name: Tracing and evaluation datasets
+aliases: [LangSmith tracing, offline evaluation, online evaluation, experiments]
+type: procedure
+status: approved
+target:
+  capability_ids: [CAP-LC-002]
+  learner_outcome: "Turn representative agent interactions into inspectable traces and repeatable evaluation cases."
+  exclusions: ["Guaranteeing model truth", "Building a statistically complete benchmark"]
+boundary:
+  formal_definition: "Tracing records the steps and outputs of an agent run; an evaluation dataset is a curated set of inputs and expected evidence used to compare runs; experiments make version comparisons explicit; online and offline evaluators operate in different feedback contexts."
+  prerequisites: [CON-LC-002]
+  contrasts: ["Anecdotal demo", "Single happy-path test"]
+  purpose: "Make behavior reproducible enough to inspect and improve."
+explanations:
+  gist: "A trace explains what happened once; a dataset lets you ask whether a change helps across cases."
+  plain: "Save representative inputs, expected properties, and observed runs, add new examples when failures reveal coverage gaps, and compare experiments instead of relying on one impressive demo."
+  precise: "A dataset may contain reference answers, labels, criteria, or pairwise comparisons; its validity depends on coverage and labeling quality."
+  mechanics: "Collect cases -> run agent -> record spans and outputs -> evaluate -> compare versions -> inspect failures."
+representations:
+  mental_model: "A flight recorder plus a driving test course."
+  analogy:
+    text: "A trace is a flight recorder; a dataset is a repeatable test course."
+    mapping: ["flight recorder -> run spans", "test course -> evaluation cases", "pilot review -> evaluator judgment"]
+    limits: ["A recorder cannot tell you whether the route was good without an evaluation criterion. "]
+  examples: ["A dataset includes questions requiring tool use, refusal, citation, and concise formatting rather than only easy greetings."]
+  counterexamples: ["A dataset of ten near-identical happy paths cannot support a broad quality claim."]
+  trace: ["Select cases", "Run version A", "Capture traces", "Run version B", "Compare evidence", "Route failures"]
+  diagram: "cases -> agent runs -> traces + outputs -> evaluators -> comparison"
+  code: {applicability: "Use LangSmith or a local JSONL fixture when access is unavailable.", environment: "Python agent project", snippet: "", expected_result: "A learner can inspect a run and explain what a test case is meant to detect.", failure_case: "The dataset omits a failure mode or the trace lacks the span needed to diagnose it."}
+misconceptions:
+  - belief: "Tracing is evaluation."
+    why_tempting: "Both appear in the same observability product."
+    correction: "Tracing records behavior; evaluation applies a criterion to judge it."
+    diagnostic_question: "What additional artifact would you need to decide whether a response was good?"
+retrieval_seeds: ["What does a trace prove and not prove?", "What makes an evaluation case representative?"]
+claim_ids: [CLM-LC-006, CLM-LC-012]
+uncertainties: []

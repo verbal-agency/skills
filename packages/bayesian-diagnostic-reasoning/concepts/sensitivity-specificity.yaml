@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-BAY-003
+canonical_name: Sensitivity and specificity
+aliases: [test characteristics]
+type: measurement
+status: approved
+target:
+  capability_ids: [CAP-BAY-002]
+  learner_outcome: "Calculate each measure with the correct denominator and explain what it conditions on."
+  exclusions: ["Clinical test selection"]
+boundary:
+  formal_definition: "Sensitivity is the proportion of true cases that test positive; specificity is the proportion of non-cases that test negative."
+  prerequisites: [CON-BAY-001]
+  contrasts: ["Positive predictive value", "Negative predictive value"]
+  purpose: "Describe test behavior without confusing it with patient-level prediction."
+explanations:
+  gist: "Sensitivity asks how well the test catches cases; specificity asks how well it clears non-cases."
+  plain: "Use the condition as the denominator for sensitivity and the absence of the condition as the denominator for specificity."
+  precise: "Sensitivity = TP/(TP+FN). Specificity = TN/(TN+FP)."
+  mechanics: "Build the two-by-two table -> choose the condition row or non-condition row -> calculate within that row."
+representations:
+  mental_model: "Two separate exams: one given only to people with the condition, one only to people without it."
+  analogy:
+    text: "Sensitivity and specificity grade different populations."
+    mapping: ["case group -> disease present", "non-case group -> disease absent"]
+    limits: ["Real-world labels may be uncertain and test performance can vary by population."]
+  examples: ["8 true positives and 2 false negatives gives sensitivity 8/10 = 80%."]
+  counterexamples: ["8 true positives divided by all positive results is positive predictive value, not sensitivity."]
+  trace: ["Identify ground truth", "Select denominator", "Count correct classification", "Name the conditional probability"]
+  diagram: "ground truth rows -> positive/negative test columns"
+  code: {applicability: "A spreadsheet or four-number calculator is sufficient", environment: "None", snippet: "", expected_result: "", failure_case: ""}
+misconceptions:
+  - belief: "Sensitivity is the chance that a positive test means disease."
+    why_tempting: "The word sounds like detecting disease."
+    correction: "That question is positive predictive value and includes prevalence."
+    diagnostic_question: "What is the denominator for sensitivity?"
+retrieval_seeds: ["Write the sensitivity denominator.", "Which measure uses true negatives and false positives?"]
+claim_ids: [CLM-BAY-002]
+uncertainties: []

@@ -1,0 +1,48 @@
+{
+  "schema": "learning-package-graph/v1",
+  "package_id": "langchain-certified-agent-engineer",
+  "generated_from_scope_version": "0.1.1",
+  "nodes": [
+    {"id":"CON-LC-001","type":"concept","canonical_name":"Agent stack layers","aliases":["LangChain vs LangGraph vs Deep Agents","create_agent vs deepagents"],"boundary_definition":"A choice model for the relative abstraction and control offered by the LangChain framework, LangGraph runtime, and Deep Agents harness, including the create_agent and deepagents entry points.","purpose":"Prevents selecting an abstraction without understanding its control and convenience tradeoff.","cluster_ids":["SUB-LC-BUILD"],"claim_ids":["CLM-LC-004","CLM-LC-011"],"status":"modeled"},
+    {"id":"CON-LC-002","type":"mechanism","canonical_name":"Tools, messages, and state","aliases":["agent loop"],"boundary_definition":"The inputs, tool calls, messages, and state transitions that let an agent observe, act, and continue a task.","purpose":"Makes agent behavior traceable instead of treating it as a single prompt.","cluster_ids":["SUB-LC-BUILD"],"claim_ids":["CLM-LC-005"],"status":"modeled"},
+    {"id":"CON-LC-003","type":"procedure","canonical_name":"Context, middleware, and human approval","aliases":["HITL","MCP","AGENTS.md","SKILL.md","sandboxing"],"boundary_definition":"Control points that shape context, intercept execution, connect external tools, load agent instructions or skills, sandbox work, or require human approval.","purpose":"Controls long conversations, risky actions, tool access, and changing runtime context.","cluster_ids":["SUB-LC-BUILD"],"claim_ids":["CLM-LC-005","CLM-LC-011"],"status":"modeled"},
+    {"id":"CON-LC-004","type":"procedure","canonical_name":"Tracing, datasets, and experiments","aliases":["LangSmith tracing","offline evaluation","online evaluation"],"boundary_definition":"Recording agent runs, organizing representative inputs and expected evidence, adding cases, and comparing experiments for repeatable evaluation.","purpose":"Turns opaque agent behavior into inspectable test evidence without confusing a trace with a quality judgment.","cluster_ids":["SUB-LC-TEST"],"claim_ids":["CLM-LC-006","CLM-LC-012"],"status":"modeled"},
+    {"id":"CON-LC-005","type":"decision","canonical_name":"Evaluator selection and alignment","aliases":["code eval","LLM-as-judge","pairwise eval","evaluator alignment"],"boundary_definition":"Choosing and calibrating an evaluation method based on available ground truth, quality dimensions, online or offline context, cost, and failure tolerance.","purpose":"Avoids treating one evaluator as a universal measure of agent quality.","cluster_ids":["SUB-LC-TEST"],"claim_ids":["CLM-LC-006","CLM-LC-012"],"status":"modeled"},
+    {"id":"CON-LC-006","type":"procedure","canonical_name":"Deployment primitives, state, and auth","aliases":["LangSmith Deployment","graph","deployment","revision","assistant","thread","run"],"boundary_definition":"The runtime boundary that hosts an agent, names deployment primitives, preserves thread or assistant state, handles secrets and durable storage, serves across regions where needed, and authenticates or authorizes callers.","purpose":"Makes deployment behavior, resilience, and tenant boundaries explicit.","cluster_ids":["SUB-LC-DEPLOY"],"claim_ids":["CLM-LC-007","CLM-LC-013"],"status":"modeled"},
+    {"id":"CON-LC-007","type":"measurement","canonical_name":"Production monitoring signals","aliases":["cost, latency, errors, quality, security","Insights","Online Evals","user sentiment"],"boundary_definition":"Operational observations that reveal whether an agent is affordable, responsive, correct enough, reliable, safe, and producing acceptable user experience; includes traces grouped into threads, Insights, Online Evals, and alerts.","purpose":"Connects signals to interventions rather than dashboards for their own sake.","cluster_ids":["SUB-LC-MONITOR"],"claim_ids":["CLM-LC-008","CLM-LC-014"],"status":"modeled"},
+    {"id":"CON-LC-008","type":"principle","canonical_name":"Agent lifecycle evidence","aliases":["build-test-deploy-monitor loop"],"boundary_definition":"An evidence loop that treats building, testing, deploying, and monitoring as connected lifecycle activities.","purpose":"Maps certification domains to a coherent real-world engineering workflow.","cluster_ids":["SUB-LC-LIFECYCLE"],"claim_ids":["CLM-LC-001"],"status":"modeled"},
+    {"id":"CAP-LC-001","type":"capability","canonical_name":"Build agents","aliases":[],"boundary_definition":"Build and explain an agent with appropriate abstractions, tools, state, context, and control flow.","purpose":"Creates a working agent model and artifact.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-LC-002","type":"capability","canonical_name":"Test agents","aliases":[],"boundary_definition":"Use traces, datasets, experiments, and evaluators to test an agent.","purpose":"Produces direct evidence about behavior and failure.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-LC-003","type":"capability","canonical_name":"Deploy agents","aliases":[],"boundary_definition":"Deploy an agent with explicit state and authentication decisions.","purpose":"Moves from local prototype to controlled runtime.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-LC-004","type":"capability","canonical_name":"Monitor agents","aliases":[],"boundary_definition":"Use operational signals to diagnose and improve an agent in production.","purpose":"Closes the lifecycle with evidence-driven operation.","cluster_ids":[],"claim_ids":[],"status":"modeled"}
+  ],
+  "edges": [
+    {"source":"CON-LC-002","relation":"requires","target":"CON-LC-001","claim_ids":["CLM-LC-004","CLM-LC-005"]},
+    {"source":"CON-LC-003","relation":"requires","target":"CON-LC-002","claim_ids":["CLM-LC-005"]},
+    {"source":"CON-LC-004","relation":"requires","target":"CON-LC-002","claim_ids":["CLM-LC-005","CLM-LC-006"]},
+    {"source":"CON-LC-005","relation":"requires","target":"CON-LC-004","claim_ids":["CLM-LC-006"]},
+    {"source":"CON-LC-006","relation":"requires","target":"CON-LC-002","claim_ids":["CLM-LC-005","CLM-LC-007"]},
+    {"source":"CON-LC-007","relation":"requires","target":"CON-LC-004","claim_ids":["CLM-LC-006","CLM-LC-008"]},
+    {"source":"CON-LC-008","relation":"requires","target":"CON-LC-001","claim_ids":["CLM-LC-001","CLM-LC-004"]},
+    {"source":"CON-LC-005","relation":"contrasts-with","target":"CON-LC-004","claim_ids":["CLM-LC-006"]},
+    {"source":"CON-LC-001","relation":"supports-capability","target":"CAP-LC-001","claim_ids":["CLM-LC-004"]},
+    {"source":"CON-LC-002","relation":"supports-capability","target":"CAP-LC-001","claim_ids":["CLM-LC-005"]},
+    {"source":"CON-LC-003","relation":"supports-capability","target":"CAP-LC-001","claim_ids":["CLM-LC-005"]},
+    {"source":"CON-LC-004","relation":"supports-capability","target":"CAP-LC-002","claim_ids":["CLM-LC-006"]},
+    {"source":"CON-LC-005","relation":"supports-capability","target":"CAP-LC-002","claim_ids":["CLM-LC-006"]},
+    {"source":"CON-LC-006","relation":"supports-capability","target":"CAP-LC-003","claim_ids":["CLM-LC-007"]},
+    {"source":"CON-LC-007","relation":"supports-capability","target":"CAP-LC-004","claim_ids":["CLM-LC-008"]},
+    {"source":"CON-LC-008","relation":"supports-capability","target":"CAP-LC-001","claim_ids":["CLM-LC-001"]},
+    {"source":"CON-LC-008","relation":"supports-capability","target":"CAP-LC-002","claim_ids":["CLM-LC-001"]},
+    {"source":"CON-LC-008","relation":"supports-capability","target":"CAP-LC-003","claim_ids":["CLM-LC-001"]},
+    {"source":"CON-LC-008","relation":"supports-capability","target":"CAP-LC-004","claim_ids":["CLM-LC-001"]}
+  ],
+  "clusters": [
+    {"id":"SUB-LC-BUILD","name":"Build agents","purpose":"Choose abstractions and make agent behavior explicit."},
+    {"id":"SUB-LC-TEST","name":"Test agents","purpose":"Trace, evaluate, and diagnose behavior."},
+    {"id":"SUB-LC-DEPLOY","name":"Deploy agents","purpose":"Operate a controlled runtime with state and auth."},
+    {"id":"SUB-LC-MONITOR","name":"Monitor agents","purpose":"Use production signals to improve the system."},
+    {"id":"SUB-LC-LIFECYCLE","name":"Agent lifecycle","purpose":"Connect the four certification domains into one loop."}
+  ],
+  "unresolved": ["Exact exam guide rules should be refreshed before booking", "Live LangSmith access and provider choice are learner-specific"]
+}

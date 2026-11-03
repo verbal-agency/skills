@@ -1,0 +1,50 @@
+schema: learning-concept/v1
+id: CON-AWS-007
+canonical_name: Two-AZ resilience
+aliases: [multi-AZ layout]
+type: principle
+status: approved
+target:
+  capability_ids: [CAP-AWS-004]
+  learner_outcome: "Explain what a two-AZ placement protects against and what it does not guarantee."
+  exclusions: ["Full disaster recovery planning", "Cross-Region architecture"]
+boundary:
+  formal_definition: "Place replaceable workload capacity across separate Availability Zones and test the assumptions behind recovery from a zone disruption."
+  prerequisites: [CON-AWS-002, CON-AWS-003]
+  contrasts: ["Single subnet spread across one AZ", "Cross-Region disaster recovery"]
+  purpose: "Connect failure-domain placement to availability and recovery reasoning."
+explanations:
+  gist: "Two AZs give the workload another place to run if one zone becomes unavailable; they do not automatically make every component redundant."
+  plain: "A design is resilient only when the application, traffic path, data, and operations can all tolerate the assumed failure."
+  precise: "The Well-Architected reliability lens asks whether a workload can perform its intended function and recover from disruptions; two-AZ placement is one architectural input, not a complete guarantee."
+  mechanics: "Duplicate replaceable capacity -> route or load-balance to healthy capacity -> preserve or recover data -> observe and operate the failover."
+representations:
+  mental_model: "Two bridges between an island and the mainland, with the important caveat that the destination must still be usable if one bridge closes."
+  analogy:
+    text: "Two separate buildings host the same service so one building outage need not stop the service."
+    mapping: ["buildings -> AZs", "service copies -> replaceable workload capacity"]
+    limits: ["Two buildings do not help if both depend on one shared database, route, or operator process."]
+  examples:
+    - "Web and application capacity in two AZs, with a database design whose failure behavior is explicitly tested."
+  counterexamples:
+    - "Putting two instances in two subnets but leaving one critical dependency in one AZ is not end-to-end multi-AZ resilience."
+  trace:
+    - "AZ-A becomes unavailable"
+    - "Health signal removes failed capacity"
+    - "Traffic reaches AZ-B capacity"
+    - "Data and operational assumptions determine whether the service remains useful"
+  diagram: "client -> ingress -> AZ-A web/app and AZ-B web/app -> data dependency"
+  code:
+    applicability: "Use a failure-injection checklist rather than code in this unit."
+    environment: "Diagram or disposable AWS account"
+    snippet: ""
+    expected_result: ""
+    failure_case: ""
+misconceptions:
+  - belief: "Two Availability Zones automatically provide high availability."
+    why_tempting: "The diagram visibly has two copies."
+    correction: "Resilience requires the entire workload and operating process to tolerate the defined failure."
+    diagnostic_question: "Which shared dependency would you test before claiming the design survives an AZ failure?"
+retrieval_seeds: ["What does a two-AZ design protect against?", "Name one shared dependency that can defeat a multi-AZ diagram."]
+claim_ids: [CLM-AWS-002, CLM-AWS-006]
+uncertainties: []

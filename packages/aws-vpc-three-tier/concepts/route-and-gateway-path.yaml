@@ -1,0 +1,51 @@
+schema: learning-concept/v1
+id: CON-AWS-003
+canonical_name: Route table and gateway path
+aliases: [routing]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-AWS-001, CAP-AWS-002]
+  learner_outcome: "Predict a packet's next hop and explain why an internet gateway and NAT gateway create different exposure patterns."
+  exclusions: ["Every AWS route target", "Dynamic routing protocols"]
+boundary:
+  formal_definition: "A route table contains destination-to-target entries for a subnet; gateway resources provide selected paths to external networks or services."
+  prerequisites: [CON-AWS-001, CON-AWS-002]
+  contrasts: ["Security group", "Network ACL"]
+  purpose: "Make traffic flow explicit and controllable."
+explanations:
+  gist: "A route table is a decision list for where traffic goes next; a gateway is one possible road out of the subnet."
+  plain: "Public and private are properties of routes, not names painted on a subnet. A public subnet has a route to an internet gateway; a private subnet commonly uses NAT for initiated outbound traffic."
+  precise: "Route selection chooses a target for a destination. An internet gateway supports direct internet connectivity for appropriately addressed resources; NAT lets private resources initiate outbound connections without accepting unsolicited inbound connections through that path."
+  mechanics: "Source subnet -> longest matching route -> target -> return route -> stateful or stateless controls. A missing return path can make a permitted request fail."
+representations:
+  mental_model: "Road signs at each neighborhood exit."
+  analogy:
+    text: "A route table is like a dispatcher who chooses a road based on the destination postcode."
+    mapping: ["postcode -> destination CIDR", "dispatcher -> route lookup", "road -> gateway or next-hop target"]
+    limits: ["The dispatcher does not decide whether a traveler is allowed; security controls remain separate."]
+  examples:
+    - "0.0.0.0/0 -> internet gateway for a public subnet"
+    - "0.0.0.0/0 -> NAT gateway for initiated egress from a private subnet"
+  counterexamples:
+    - "Calling a subnet public without an internet-gateway route does not create public reachability."
+  trace:
+    - "Application in private subnet sends an update request"
+    - "Private route table selects NAT gateway"
+    - "NAT gateway uses its public-side path"
+    - "Response returns to the established connection"
+  diagram: "private subnet -> route table -> NAT gateway -> public subnet path -> internet"
+  code:
+    applicability: "Use CLI or IaC only in a live lab; the conceptual unit uses route tables and traces."
+    environment: "AWS account or local diagram simulator"
+    snippet: ""
+    expected_result: ""
+    failure_case: ""
+misconceptions:
+  - belief: "A NAT gateway makes a private subnet public."
+    why_tempting: "Both involve internet traffic."
+    correction: "NAT provides a path for initiated outbound traffic; it is not a direct inbound route to private instances."
+    diagnostic_question: "Which route would you remove if private instances must stop reaching the public internet?"
+retrieval_seeds: ["Trace a request from a private application subnet to an external package repository.", "Why is a route table not a firewall?"]
+claim_ids: [CLM-AWS-003]
+uncertainties: []

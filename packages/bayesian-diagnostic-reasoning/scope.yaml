@@ -1,0 +1,60 @@
+schema: learning-scope/v1
+package_id: bayesian-diagnostic-reasoning
+research_cutoff: 2026-10-31
+outcome_contract:
+  learner: "A technically literate learner with basic fractions and probability notation"
+  real_world_outcome: "Interpret a diagnostic test result by combining base rate, sensitivity, and specificity"
+  authentic_situations:
+    - "Translate a test table into conditional probabilities"
+    - "Explain why a positive result is not the same as probability of disease"
+    - "Compute posterior probability with natural frequencies or Bayes' rule"
+    - "Choose or defend a decision threshold under asymmetric costs"
+  completion_evidence:
+    - "Solve a natural-frequency diagnostic case"
+    - "Identify the reversed conditional in a plausible explanation"
+    - "Compute and interpret a posterior probability"
+    - "Explain how prevalence changes positive predictive value"
+  constraints:
+    - "Use a medical-test scenario as a reasoning context, not medical advice"
+    - "Prefer tables and plain language before symbolic notation"
+  non_goals:
+    - "Clinical diagnosis or treatment"
+    - "Advanced Bayesian modeling and distributions"
+    - "Causal inference"
+  stop_conditions:
+    - "Learner can calculate, explain, and transfer the update process"
+capabilities:
+  - id: CAP-BAY-001
+    statement: "Interpret conditional probability notation and distinguish P(D|+) from P(+|D)"
+    required_levels: [explain, discriminate]
+    evidence: ["Correctly labels test-table quantities", "Explains reversed conditionals"]
+    source_ids: [SRC-BAY-001, SRC-BAY-002]
+  - id: CAP-BAY-002
+    statement: "Compute sensitivity, specificity, false-positive rate, and prevalence from a two-by-two table"
+    required_levels: [apply]
+    evidence: ["Correct table calculation with denominators"]
+    source_ids: [SRC-BAY-002, SRC-BAY-003]
+  - id: CAP-BAY-003
+    statement: "Update a prior probability with evidence using natural frequencies or Bayes' theorem"
+    required_levels: [apply, explain]
+    evidence: ["Correct posterior calculation", "Plain-language interpretation"]
+    source_ids: [SRC-BAY-001, SRC-BAY-004]
+  - id: CAP-BAY-004
+    statement: "Explain how prevalence and decision costs affect the usefulness of a positive result"
+    required_levels: [explain, defend]
+    evidence: ["Compare two populations", "State a decision limitation"]
+    source_ids: [SRC-BAY-002, SRC-BAY-003]
+boundary:
+  included: [conditional probability, prior, likelihood, posterior, prevalence, sensitivity, specificity, false positives, false negatives, positive predictive value, natural frequencies, Bayes update, decision threshold]
+  excluded: [clinical advice, treatment, causal inference, continuous distributions, hierarchical Bayesian models]
+  adjacent_optional: [likelihood ratios, calibration, ROC curves, sequential testing]
+  assumed_prerequisites: ["Basic fractions", "Reading a two-by-two table"]
+open_questions:
+  - id: Q-BAY-001
+    question: "Which non-medical transfer context should be added after the first learner session?"
+    owner: learner
+    impact_if_wrong: "Transfer evidence may remain tied to the medical-test story"
+    next_probe: "Ask for a spam-filter or quality-control example"
+refresh_policy:
+  default_horizon_days: 730
+  volatile_areas: ["Examples and decision costs"]

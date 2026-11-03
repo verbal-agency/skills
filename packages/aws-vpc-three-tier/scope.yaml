@@ -1,0 +1,58 @@
+schema: learning-scope/v1
+package_id: aws-vpc-three-tier
+research_cutoff: 2026-10-31
+outcome_contract:
+  learner: "A technically literate learner preparing for AWS Solutions Architect work"
+  real_world_outcome: "Design and defend a secure, resilient three-tier VPC for a small production workload"
+  authentic_situations:
+    - "Place web, application, and database tiers across two Availability Zones"
+    - "Explain how a request or update travels through the network"
+    - "Diagnose a connectivity failure without making every subnet public"
+  completion_evidence:
+    - "Produce a labeled architecture diagram and route table plan"
+    - "Explain the difference between security groups and network ACLs"
+    - "Diagnose two intentionally broken traffic paths"
+    - "Defend a resilience and least-exposure tradeoff"
+  constraints:
+    - "Use AWS-native terminology and current official documentation"
+    - "Keep the lab small enough for a disposable account"
+  non_goals:
+    - "Full AWS certification preparation"
+    - "IPv6, hybrid networking, Transit Gateway, and detailed cost optimization"
+  stop_conditions:
+    - "All four capabilities have direct design or diagnosis evidence"
+capabilities:
+  - id: CAP-AWS-001
+    statement: "Explain the VPC, subnet, route table, and gateway objects needed for a three-tier network"
+    required_levels: [explain, discriminate]
+    evidence: ["Annotated traffic-flow diagram", "Correct classification of public and private subnets"]
+    source_ids: [SRC-AWS-001, SRC-AWS-003]
+  - id: CAP-AWS-002
+    statement: "Design traffic paths that expose only the web tier and allow required outbound access from private tiers"
+    required_levels: [apply, design]
+    evidence: ["Route table and gateway design", "Written justification of each path"]
+    source_ids: [SRC-AWS-001, SRC-AWS-002]
+  - id: CAP-AWS-003
+    statement: "Distinguish and apply security groups and network ACLs as layered controls"
+    required_levels: [explain, apply, diagnose]
+    evidence: ["Contrast explanation", "Broken-rule diagnosis"]
+    source_ids: [SRC-AWS-002]
+  - id: CAP-AWS-004
+    statement: "Defend a two-Availability-Zone layout against a single-zone disruption"
+    required_levels: [design, defend]
+    evidence: ["Resilience review with failure scenario"]
+    source_ids: [SRC-AWS-004]
+boundary:
+  included: [VPC, CIDR, subnet, Availability Zone, route table, internet gateway, NAT gateway, security group, network ACL, gateway endpoint, traffic-flow reasoning, two-AZ resilience]
+  excluded: [IPv6, Transit Gateway, VPN, Direct Connect, WAF, service meshes, detailed billing analysis]
+  adjacent_optional: [VPC peering, PrivateLink, load balancers, RDS Multi-AZ]
+  assumed_prerequisites: ["Basic IP addressing", "Basic HTTP request flow", "Basic Linux command-line familiarity"]
+open_questions:
+  - id: Q-AWS-001
+    question: "Which lab environment will be used for live validation?"
+    owner: learner
+    impact_if_wrong: "Live connectivity claims remain unverified"
+    next_probe: "Select a disposable AWS account or use a diagram-only simulation"
+refresh_policy:
+  default_horizon_days: 180
+  volatile_areas: ["AWS console screens", "service pricing", "exam blueprint"]

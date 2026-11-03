@@ -1,0 +1,76 @@
+schema: learning-exercises/v1
+id: EXSET-BAY-001
+title: Bayesian diagnostic reasoning
+capability_ids: [CAP-BAY-001, CAP-BAY-002, CAP-BAY-003, CAP-BAY-004]
+concept_ids: [CON-BAY-001, CON-BAY-002, CON-BAY-003, CON-BAY-004, CON-BAY-005]
+audience: "Learner with basic fractions and probability notation"
+items:
+  - id: EX-BAY-001
+    mode: question
+    level: discriminate
+    prompt: "A test has sensitivity 90%. Does that mean P(disease | positive) is 90%? State what probability sensitivity actually describes and identify the missing information."
+    prerequisites: [CON-BAY-001, CON-BAY-003]
+    estimated_minutes: 8
+    environment: [none]
+    claim_ids: [CLM-BAY-001, CLM-BAY-002, CLM-BAY-003]
+    hints: ["Read the condition after the bar.", "Ask which population forms the denominator."]
+    rubric:
+      required_evidence: ["States P(positive | disease)", "Distinguishes it from P(disease | positive)", "Names prevalence or base rate as missing"]
+      partial_evidence: ["Says they differ but cannot state the denominators"]
+      disqualifying_errors: ["Equates sensitivity with positive predictive value"]
+      misconception_routes: ["conditional-reversal", "base-rate-neglect"]
+    solution_ref: solutions/EX-BAY-001.yaml
+    variant_guidance: "Use specificity and negative predictive value as a second contrast."
+  - id: EX-BAY-002
+    mode: question
+    level: apply
+    prompt: "In a population of 10,000 people, prevalence is 1%, sensitivity is 90%, and specificity is 95%. Build the four cells of the test table and compute the positive predictive value."
+    prerequisites: [CON-BAY-002, CON-BAY-003, CON-BAY-004]
+    estimated_minutes: 15
+    environment: [none]
+    claim_ids: [CLM-BAY-002, CLM-BAY-003, CLM-BAY-004]
+    hints: ["Start with 100 people who have the condition.", "Specificity gives true negatives among the 9,900 without it."]
+    rubric:
+      required_evidence: ["Correct TP, FN, TN, and FP cells", "Correct denominators", "PPV = TP/(TP+FP)", "Plain-language interpretation"]
+      partial_evidence: ["Correct formula but no table or denominator explanation"]
+      disqualifying_errors: ["Uses specificity as the false-positive rate"]
+      misconception_routes: ["denominator-confusion", "specificity-vs-false-positive"]
+    solution_ref: solutions/EX-BAY-002.yaml
+    variant_guidance: "Change prevalence while holding sensitivity and specificity constant."
+  - id: EX-BAY-003
+    mode: code-or-table
+    level: apply
+    prompt: "Compute the same posterior both with a natural-frequency table and a short program. Compare the results and explain any rounding difference."
+    prerequisites: [CON-BAY-004]
+    estimated_minutes: 20
+    environment: ["Paper or Python 3"]
+    claim_ids: [CLM-BAY-004]
+    hints: ["Write the numerator before the denominator.", "The denominator is the probability of all positive evidence."]
+    rubric:
+      required_evidence: ["Both methods agree within rounding", "Explains numerator and denominator", "Identifies a common false-positive error"]
+      partial_evidence: ["Runs code but cannot explain the terms"]
+      disqualifying_errors: ["Uses a black-box result without defining the events"]
+      misconception_routes: ["formula-without-model"]
+    solution_ref: solutions/EX-BAY-003.yaml
+    variant_guidance: "Use a spam-filter or quality-control scenario for transfer."
+  - id: EX-BAY-004
+    mode: defend
+    level: defend
+    prompt: "Two populations use the same test, but one has a much lower prevalence. In the low-prevalence population, suppose the posterior after a positive result is 15.4%, a missed condition costs 20 units, a false alarm costs 1 unit, and the action has no additional cost. Compute or defend the action threshold, decide whether to act at 15.4%, and state which changed costs or alternatives would reverse your decision."
+    prerequisites: [CON-BAY-002, CON-BAY-005]
+    estimated_minutes: 12
+    environment: [none]
+    claim_ids: [CLM-BAY-003, CLM-BAY-005]
+    hints: ["Compare false positives with true positives.", "Separate probability from action cost."]
+    rubric:
+      required_evidence: ["Uses base rate reasoning", "Explains positive predictive value", "Derives or defends the threshold under the stated asymmetric costs", "Decides at 15.4% and names consequences or alternatives that could change the decision"]
+      partial_evidence: ["Repeats that prevalence matters without a causal explanation"]
+      disqualifying_errors: ["Claims the test's sensitivity changed solely because prevalence changed"]
+      misconception_routes: ["test-behavior-vs-population-confusion", "probability-vs-action-confusion"]
+    solution_ref: solutions/EX-BAY-004.yaml
+    variant_guidance: "Ask for a non-medical transfer example."
+coverage_gaps: ["No learner response data", "No formal likelihood-ratio extension"]
+validation:
+  reviewed: true
+  executed: true
+  notes: ["Numerical example manually checked: PPV is 90/(90+495) ≈ 15.4%."]

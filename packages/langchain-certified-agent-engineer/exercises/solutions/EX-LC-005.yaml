@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-LC-005: "Provide one connected packet covering abstraction choice, context/sandbox plan, state/tool trace, representative evaluation dataset, evaluator limitations and alignment, deployment primitives and auth/secrets/storage boundary, monitoring signals including thread grouping and Insights/Online Evals, intervention loop, unresolved access or provider assumptions, and a timed 40-question/120-minute practice protocol constrained to the three whitelisted LangChain resources."

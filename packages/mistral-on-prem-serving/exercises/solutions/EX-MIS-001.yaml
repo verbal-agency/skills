@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-MIS-001: "Copy profiles/model-profile.template.yaml and complete an artifact-specific profile containing exact revision, license, tokenizer/template, context, precision, hardware, workload, security boundary, risks, and a rejected alternative."

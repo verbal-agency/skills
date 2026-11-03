@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-BAY-002
+canonical_name: Base rate and prevalence
+aliases: [prior probability]
+type: concept
+status: approved
+target:
+  capability_ids: [CAP-BAY-003, CAP-BAY-004]
+  learner_outcome: "Use the population or prior probability as an input to interpreting evidence."
+  exclusions: ["Estimating prevalence from biased samples"]
+boundary:
+  formal_definition: "The base rate is the proportion or probability of the condition before the new test result is considered."
+  prerequisites: [CON-BAY-001]
+  contrasts: ["Sensitivity", "Posterior probability"]
+  purpose: "Keep population context present during belief updating."
+explanations:
+  gist: "Before looking at the test, ask how common the condition is in this population."
+  plain: "A test can be good and still produce many false alarms when the condition is rare."
+  precise: "Prevalence acts as a prior probability in the diagnostic update and influences positive predictive value."
+  mechanics: "Start with a population -> apply condition prevalence -> apply test behavior -> count positive outcomes."
+representations:
+  mental_model: "The starting mix of red and blue marbles before drawing one."
+  analogy:
+    text: "A rare red marble can still be outnumbered by blue marbles even when the detector is accurate."
+    mapping: ["mix -> prevalence", "detector behavior -> sensitivity/specificity", "red after signal -> posterior"]
+    limits: ["A medical population is not randomly mixed in every setting; sampling assumptions matter."]
+  examples: ["1% prevalence means 10 people with the condition in a population of 1,000, before testing."]
+  counterexamples: ["Treating a test's sensitivity as the prior probability confuses test behavior with population composition."]
+  trace: ["Choose population", "Set prior prevalence", "Apply positive and negative rates", "Interpret posterior"]
+  diagram: "population -> condition/non-condition split -> test outcomes"
+  code: {applicability: "Use a natural-frequency table", environment: "None", snippet: "", expected_result: "", failure_case: ""}
+misconceptions:
+  - belief: "A high sensitivity means most positive tests are true positives."
+    why_tempting: "Both use the word positive."
+    correction: "Sensitivity conditions on disease; positive predictive value conditions on a positive test."
+    diagnostic_question: "What happens to positive predictive value if prevalence drops while sensitivity and specificity stay fixed?"
+retrieval_seeds: ["What is the prior in a diagnostic test?", "Why does prevalence affect positive predictive value?"]
+claim_ids: [CLM-BAY-003, CLM-BAY-004]
+uncertainties: []

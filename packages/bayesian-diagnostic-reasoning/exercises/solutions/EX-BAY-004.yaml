@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-BAY-004: "At posterior p, act when p*C_FN exceeds (1-p)*C_FP plus any action cost. With C_FN=20, C_FP=1, and no additional action cost, the threshold is 1/21 ≈ 4.8%, so a 15.4% posterior clears it; the decision must be revisited if costs or alternatives change."

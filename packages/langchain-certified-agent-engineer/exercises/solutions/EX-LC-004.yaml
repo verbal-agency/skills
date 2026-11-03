@@ -1,0 +1,3 @@
+schema: learning-solutions/v1
+items:
+  EX-LC-004: "Group traces into threads and segment them by tool version and workload; use Insights to inspect production patterns and Online Evals for ongoing criteria, inspect grounded-answer, user-sentiment, and security cases, compare before/after tool outputs in an experiment, then roll back or patch the tool boundary. Follow with grounded-quality, sentiment, and security-alert rates rather than only cost or latency."

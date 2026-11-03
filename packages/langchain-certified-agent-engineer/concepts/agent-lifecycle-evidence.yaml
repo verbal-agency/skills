@@ -1,0 +1,39 @@
+schema: learning-concept/v1
+id: CON-LC-008
+canonical_name: Agent lifecycle evidence
+aliases: [build-test-deploy-monitor loop]
+type: principle
+status: approved
+target:
+  capability_ids: [CAP-LC-001, CAP-LC-002, CAP-LC-003, CAP-LC-004]
+  learner_outcome: "Map one agent from build through test, deployment, and monitoring evidence."
+  exclusions: ["Exam-day memorization without practical evidence"]
+boundary:
+  formal_definition: "The agent lifecycle connects building, testing, deploying, and monitoring into a feedback loop rather than treating them as isolated course topics."
+  prerequisites: [CON-LC-001]
+  contrasts: ["Prototype-only workflow", "Monitoring without evaluation"]
+  purpose: "Turn four certification domains into one reusable engineering model."
+explanations:
+  gist: "Every agent decision should create evidence that informs the next lifecycle stage."
+  plain: "Build an agent, test its behavior, deploy it with boundaries, monitor it, and feed what you learn back into the next change."
+  precise: "The loop is not necessarily linear: traces can reveal a build defect, monitoring can create a new evaluation case, and deployment constraints can change the design."
+  mechanics: "Design -> implement -> trace/evaluate -> deploy -> monitor -> diagnose -> revise -> re-evaluate."
+representations:
+  mental_model: "A product development loop with a flight recorder at every stage."
+  analogy:
+    text: "Each stage leaves evidence that makes the next stage less speculative."
+    mapping: ["design artifact -> build decision", "test result -> evidence", "operational signal -> next hypothesis"]
+    limits: ["Evidence reduces uncertainty but never guarantees agent correctness. "]
+  examples: ["A monitoring quality drop becomes a new dataset case and a revised tool or prompt test."]
+  counterexamples: ["Deploying after a demo without traces, evaluation, or a rollback plan."]
+  trace: ["Build", "Test", "Deploy", "Monitor", "Diagnose", "Revise"]
+  diagram: "build -> test -> deploy -> monitor -> diagnose -> build"
+  code: {applicability: "Use the capstone plan rather than a standalone snippet.", environment: "Python agent project with optional LangSmith", snippet: "", expected_result: "The learner can map each lifecycle stage to direct evidence.", failure_case: "A stage is represented only by confidence or a screenshot instead of reproducible evidence."}
+misconceptions:
+  - belief: "Passing a course or building a demo proves production readiness."
+    why_tempting: "The demo produces a visible success."
+    correction: "Production readiness requires evidence across testing, deployment, and monitoring as well."
+    diagnostic_question: "What evidence is still missing after a successful local demo?"
+retrieval_seeds: ["What artifact closes each LCAE domain?", "How can monitoring create a new test?"]
+claim_ids: [CLM-LC-001]
+uncertainties: []
