@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-PT-005
+canonical_name: Train and eval module modes
+aliases: [model.train/model.eval]
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-PT-004]
+  learner_outcome: "Choose module mode deliberately and distinguish it from gradient tracking."
+  exclusions: ["Detailed batch-normalization statistics"]
+boundary:
+  formal_definition: "Module train and eval modes select training-specific or evaluation-specific behavior for modules that implement such a distinction."
+  prerequisites: [CON-PT-004]
+  contrasts: ["no_grad", "requires_grad=False"]
+  purpose: "Make forward behavior comparable across training and evaluation evidence."
+explanations:
+  gist: "eval changes how certain modules behave; it does not turn autograd off."
+  plain: "Dropout is a visible example: it should be stochastic during training and deterministic during evaluation."
+  precise: "model.train() and model.eval() set a mode flag recursively on modules. The effect depends on each module's implementation; it is separate from whether operations are recorded by autograd."
+  mechanics: "Set train mode during parameter updates -> set eval mode before evaluation -> restore train mode before resuming training."
+representations:
+  mental_model: "A machine has a calibration mode and a measurement mode; changing the mode changes the instrument behavior, not whether you can write notes about it."
+  analogy:
+    text: "A camera's test pattern can change between calibration and measurement while the notebook remains open."
+    mapping: ["machine mode -> module mode", "test pattern -> dropout/batch-stat behavior", "notebook -> autograd recording"]
+    limits: ["Not every module changes behavior between modes."]
+  examples: ["A Dropout module produces variable outputs in train mode and stable outputs in eval mode for the same input and seed conditions."]
+  counterexamples: ["model.eval() alone does not guarantee output.requires_grad is false."]
+  trace: ["model.train", "update parameters", "model.eval", "run evaluation", "model.train again"]
+  diagram: "training mode -> stochastic/train-specific forward; eval mode -> evaluation-specific forward"
+  code:
+    applicability: "Use before every validation or test pass."
+    environment: "pytorch-foundations uv environment"
+    snippet: "model.eval()\nwith torch.no_grad():\n    predictions = model(x)"
+    expected_result: "Evaluation-specific module behavior and a graph-free output."
+    failure_case: "Validation metrics vary because a dropout-like module remains in train mode."
+misconceptions:
+  - belief: "model.eval() disables gradient tracking."
+    why_tempting: "Both are commonly written around evaluation code."
+    correction: "eval changes module behavior; no_grad or inference_mode controls graph recording."
+    diagnostic_question: "What would output.requires_grad tell you after model.eval() without no_grad?"
+retrieval_seeds: ["What does eval change, and what does it not change?", "Why should train mode be restored after validation?"]
+claim_ids: [CLM-PT-005]
+uncertainties: ["Specific module behavior must be checked in its own API documentation."]

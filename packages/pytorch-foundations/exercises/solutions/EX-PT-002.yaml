@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+activity_id: EX-PT-002
+answer: "loss has a non-null grad_fn because the forward expression was recorded. d(3w)^2/dw = 18w, so at w=2 the gradient is 36. backward can reach w because it is a leaf with requires_grad=True."
+evidence: ["Correct derivative", "Connects graph recording to leaf gradient"]

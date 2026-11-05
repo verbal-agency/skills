@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+activity_id: EX-PT-005
+answer: "Hold x and torch.no_grad constant, run the Dropout module twice in train mode and twice in eval mode, and compare outputs. Train mode can vary across repeated calls; eval mode disables Dropout behavior and should be stable. Neither conclusion depends on no_grad itself."
+evidence: ["Separates module mode from grad context", "Predicts the repeated-call contrast"]

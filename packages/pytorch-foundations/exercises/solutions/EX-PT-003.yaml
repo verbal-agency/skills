@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+activity_id: EX-PT-003
+answer: "The gradient becomes 7 because backward adds the contribution 5 to the existing 2. That is useful when several microbatches intentionally form one update, but it is a bug when each batch should produce an independent update and zero_grad is missing."
+evidence: ["Predicts addition", "States the accumulation policy distinction"]

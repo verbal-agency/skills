@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-PT-001
+canonical_name: Tensor metadata and batch shape
+aliases: [shape/dtype/device reasoning]
+type: representation
+status: approved
+target:
+  capability_ids: [CAP-PT-001]
+  learner_outcome: "Predict tensor compatibility by annotating shape, dtype, device, and batch meaning."
+  exclusions: ["Performance tuning across devices"]
+boundary:
+  formal_definition: "A tensor's shape describes its dimensions, dtype describes element representation, and device describes where its storage and operations occur."
+  prerequisites: ["Python sequences and basic linear algebra"]
+  contrasts: ["Feature dimension", "Batch dimension", "Device placement"]
+  purpose: "Make the preconditions of a tensor operation visible before debugging its numerical result."
+explanations:
+  gist: "Before asking whether a tensor is correct, ask what shape, type, and device it has."
+  plain: "A batch of 8 examples with 3 features is shaped [8, 3], not [3, 8]. The first number is a convention, not a universal law; the model API and operation define the expected layout."
+  precise: "Shape is an ordered tuple of dimension sizes. dtype determines the scalar representation and supported kernels. device identifies the execution/storage target; tensors combined by an operation generally need compatible devices and dtypes."
+  mechanics: "Inspect x.shape, x.dtype, and x.device; annotate each axis; compare with the operation's contract; make the smallest explicit reshape, cast, or device move."
+representations:
+  mental_model: "A tensor is a labeled tray: dimensions describe compartments, dtype describes the material in each compartment, and device describes which workstation holds the tray."
+  analogy:
+    text: "A spreadsheet can have rows, columns, a number format, and a storage location."
+    mapping: ["rows/columns -> dimensions", "number format -> dtype", "workstation -> device"]
+    limits: ["Broadcasting and views can make tensor layout more flexible than a spreadsheet metaphor suggests."]
+  examples: ["x = torch.zeros(8, 3) has batch size 8 and feature width 3 when the consuming layer expects [batch, features]."]
+  counterexamples: ["A [3, 8] tensor is not automatically equivalent; transposing changes which axis is treated as features."]
+  trace: ["Create tensor", "Inspect metadata", "Annotate axes", "Compare operation contract", "Repair only the violated constraint"]
+  diagram: "input [batch, features] -> linear [features, hidden] -> output [batch, hidden]"
+  code:
+    applicability: "Use in every unfamiliar tensor boundary."
+    environment: "pytorch-foundations uv environment"
+    snippet: "print(x.shape, x.dtype, x.device)"
+    expected_result: "A concrete shape, dtype, and device that can be compared with the next operation."
+    failure_case: "A device mismatch or an input feature width that does not match the layer."
+misconceptions:
+  - belief: "The first dimension is always the feature dimension."
+    why_tempting: "Documentation often introduces a single feature vector before batches appear."
+    correction: "Dimension meaning is assigned by the consuming operation and data convention; annotate it explicitly."
+    diagnostic_question: "For x.shape == [8, 3] entering nn.Linear(3, 4), which axis is the feature width and why?"
+retrieval_seeds: ["What three pieces of metadata do you inspect before debugging a tensor operation?", "What does a batch dimension mean in your current example?"]
+claim_ids: [CLM-PT-001]
+uncertainties: ["Some operators support broadcasting or layout conventions that require their own contract check."]

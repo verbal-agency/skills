@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-PT-002
+canonical_name: Autograd graph and requires_grad
+aliases: [dynamic computation graph]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-PT-002]
+  learner_outcome: "Trace whether a scalar loss has a recorded path to a parameter."
+  exclusions: ["Implementing custom autograd functions"]
+boundary:
+  formal_definition: "In default grad mode, PyTorch records operations involving tensors that require gradients so backward can traverse the resulting graph."
+  prerequisites: [CON-PT-001]
+  contrasts: ["detach", "no_grad", "leaf tensor"]
+  purpose: "Explain why a gradient exists, is absent, or cannot reach a parameter."
+explanations:
+  gist: "Autograd remembers the operations that produced a value so it can walk them backward later."
+  plain: "A tensor does not magically know how to update every earlier value. A path must have been recorded from the loss back to a leaf that requires gradients."
+  precise: "Forward operations create a dynamic graph with grad_fn links for non-leaf results. During backward, reverse-mode differentiation applies the chain rule to compute derivatives for relevant leaves."
+  mechanics: "Start with a leaf parameter requiring grad -> execute forward -> inspect loss.grad_fn -> call loss.backward() -> inspect parameter.grad."
+representations:
+  mental_model: "A receipt of transformations: each operation records how its output depends on its inputs, allowing the receipt to be read backward."
+  analogy:
+    text: "A chain of reversible work orders records which input produced each output."
+    mapping: ["work order -> operation", "dependency chain -> graph", "backward accounting -> chain rule"]
+    limits: ["The graph is not a general-purpose history of every Python value; it is rebuilt for executed differentiable operations."]
+  examples: ["w = torch.tensor(2., requires_grad=True); loss = (3 * w) ** 2; loss.backward(); w.grad is 36."]
+  counterexamples: ["loss = (3 * w).detach() ** 2 has no path back to w."]
+  trace: ["Leaf requires grad", "Forward creates graph", "Loss has grad_fn", "Backward traverses graph", "Leaf receives gradient"]
+  diagram: "w -> multiply -> square -> loss; backward follows loss -> square -> multiply -> w"
+  code:
+    applicability: "Use when a learner claims a value should have a gradient."
+    environment: "pytorch-foundations uv environment"
+    snippet: "print(loss.grad_fn, w.requires_grad); loss.backward(); print(w.grad)"
+    expected_result: "A non-null grad_fn, True requires_grad, and a numeric leaf gradient."
+    failure_case: "A detached or no-grad path yields no backward route to the leaf."
+misconceptions:
+  - belief: "detach only changes display or memory, so gradients still reach the original leaf."
+    why_tempting: "The detached value often has the same numeric contents."
+    correction: "detach returns a tensor outside the recorded gradient path."
+    diagnostic_question: "Which operation in y = (x * 2).detach() ** 2 prevents loss.backward from reaching x?"
+retrieval_seeds: ["What does grad_fn tell you?", "What must be true of a leaf parameter for backward to populate its grad?"]
+claim_ids: [CLM-PT-002]
+uncertainties: ["Graph details vary for non-differentiable operations and in-place mutations; those are outside this first package."]

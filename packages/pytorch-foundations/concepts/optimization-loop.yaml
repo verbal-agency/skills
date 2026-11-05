@@ -1,0 +1,45 @@
+schema: learning-concept/v1
+id: CON-PT-004
+canonical_name: Minibatch optimization loop
+aliases: [training loop]
+type: procedure
+status: approved
+target:
+  capability_ids: [CAP-PT-003]
+  learner_outcome: "Repair a small training loop and justify the order of its operations."
+  exclusions: ["Choosing a state-of-the-art optimizer or scheduler"]
+boundary:
+  formal_definition: "A training iteration computes predictions and loss, manages the intended gradient window, backpropagates, and updates parameters with an optimizer."
+  prerequisites: [CON-PT-002, CON-PT-003]
+  contrasts: ["Evaluation loop", "Optimizer state", "Learning-rate schedule"]
+  purpose: "Make the causal path from data to loss to parameter update explicit."
+explanations:
+  gist: "Clear the old gradient, compute the new loss, backpropagate, then update."
+  plain: "The optimizer does not inspect your loss and derive a gradient by itself; step consumes the gradients currently stored on parameters."
+  precise: "For each batch: zero_grad establishes the accumulation boundary; forward computes predictions; loss computes the scalar objective; backward populates .grad; step applies the optimizer rule."
+  mechanics: "Batch -> zero_grad -> forward -> loss -> backward -> inspect -> step -> log evidence."
+representations:
+  mental_model: "A lab protocol: reset instruments, run the experiment, measure error, compute correction, apply correction."
+  analogy:
+    text: "A calibration loop cannot apply a correction before it measures the current error."
+    mapping: ["reset instruments -> zero_grad", "measure error -> loss", "compute correction -> backward", "apply correction -> step"]
+    limits: ["Optimizers with momentum maintain additional state beyond the current gradient."]
+  examples: ["The example script trains a one-parameter linear model on a fixed dataset and asserts that loss decreases."]
+  counterexamples: ["Calling step before backward uses stale, missing, or zero gradients rather than the current loss."
+  ]
+  trace: ["Read batch", "Clear intended gradients", "Forward", "Loss", "Backward", "Step", "Record metrics"]
+  diagram: "batch -> forward -> loss -> backward -> parameter grad -> optimizer.step -> new parameters"
+  code:
+    applicability: "Use as the baseline protocol before adding accumulation, clipping, or scheduling."
+    environment: "pytorch-foundations uv environment"
+    snippet: "for x, y in batches:\n    optimizer.zero_grad()\n    loss = loss_fn(model(x), y)\n    loss.backward()\n    optimizer.step()"
+    expected_result: "Parameters change using gradients from the current batch."
+    failure_case: "Loss does not improve or updates reflect earlier batches because an ordering boundary is wrong."
+misconceptions:
+  - belief: "optimizer.step computes the current loss gradient automatically."
+    why_tempting: "The optimizer is the object that changes the parameters."
+    correction: "step consumes parameter .grad values already produced by backward."
+    diagnostic_question: "Which object contains the derivative that step uses?"
+retrieval_seeds: ["Put zero_grad, forward, loss, backward, and step in order.", "What evidence would show that a step used stale gradients?"]
+claim_ids: [CLM-PT-004]
+uncertainties: ["Loss reduction, clipping, accumulation, and scheduler order need specialized exercises later."]

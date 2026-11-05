@@ -1,0 +1,42 @@
+schema: learning-package-manifest/v1
+package_id: pytorch-foundations
+title: PyTorch foundations for research practice
+version: 0.1.0
+stage: assembled
+language: en
+created_at: 2026-11-04
+updated_at: 2026-11-04
+
+artifacts:
+  scope: scope.yaml
+  sources: sources.jsonl
+  claims: claims.jsonl
+  graph: graph.json
+  concepts: concepts/
+  exercises: exercises/core.yaml
+  exercise_solutions: exercises/solutions/
+  curricula: curricula/core.yaml
+  audits: audits/initial.md
+  diagnostics: diagnostics/misconceptions.yaml
+  evidence_fixtures: evidence/events.jsonl
+  environment: pyproject.toml
+  examples: examples/
+
+stage_history:
+  - stage: scoped
+    occurred_at: 2026-11-04
+    evidence: [scope.yaml, sources.jsonl, claims.jsonl]
+  - stage: modeled
+    occurred_at: 2026-11-04
+    evidence: [graph.json]
+  - stage: enriched
+    occurred_at: 2026-11-04
+    evidence: [concepts/, diagnostics/misconceptions.yaml]
+  - stage: assembled
+    occurred_at: 2026-11-04
+    evidence: [exercises/core.yaml, curricula/core.yaml]
+
+known_gaps:
+  - No learner responses have been observed; the audit is conditional until a session is completed.
+  - Examples are CPU-oriented and do not cover device placement, mixed precision, or distributed training.
+  - Grader outputs are authored rubrics and deterministic example checks; model-assisted diagnosis is a later goal.

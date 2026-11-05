@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+activity_id: EX-PT-006
+answer: "Use model.eval() followed by with torch.no_grad(): logits = model(x). eval selects evaluation-specific module behavior; no_grad prevents backward graph recording. Parameters are not updated because there is no backward/step sequence."
+evidence: ["Includes both controls", "Explains each control independently"]

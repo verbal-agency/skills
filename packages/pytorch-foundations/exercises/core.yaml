@@ -1,0 +1,152 @@
+schema: learning-exercises/v1
+id: EXSET-PT-001
+title: PyTorch foundations evidence set
+package_id: pytorch-foundations
+package_version: 0.1.0
+capability_ids: [CAP-PT-001, CAP-PT-002, CAP-PT-003, CAP-PT-004]
+concept_ids: [CON-PT-001, CON-PT-002, CON-PT-003, CON-PT-004, CON-PT-005, CON-PT-006]
+audience: "Python-capable learner preparing to debug small PyTorch research examples"
+
+items:
+  - id: EX-PT-001
+    package_version: 0.1.0
+    mode: diagnostic-question
+    level: discriminate
+    prompt: "A tensor has shape [8, 3] and is passed to nn.Linear(8, 4). Predict the error or explain why it is valid, annotate the intended batch and feature axes, and name the smallest repair."
+    prerequisites: [CON-PT-001]
+    estimated_minutes: 8
+    environment: [none]
+    claim_ids: [CLM-PT-001]
+    hints: ["Write the shape expected by nn.Linear.", "The layer consumes the last dimension as features."]
+    rubric:
+      required_evidence: ["Identifies 3 as the input feature width", "Explains why Linear(8, 4) expects last dimension 8", "Proposes changing the layer or transposing/reshaping with a stated semantic reason"]
+      partial_evidence: ["Spots a mismatch but cannot name the feature dimension"]
+      disqualifying_errors: ["Claims shape is irrelevant to a linear layer"]
+      misconception_routes: [batch-dimension-confusion, feature-width-mismatch]
+    solution_ref: solutions/EX-PT-001.yaml
+    variant_guidance: "Change the batch size and feature width; preserve the distinction between them."
+  - id: EX-PT-002
+    package_version: 0.1.0
+    mode: trace
+    level: explain
+    prompt: "Given w = torch.tensor(2., requires_grad=True), loss = (3 * w) ** 2, predict loss.grad_fn, whether backward can reach w, and w.grad after loss.backward(). Explain the path."
+    prerequisites: [CON-PT-002]
+    estimated_minutes: 10
+    environment: ["Python 3 with pinned PyTorch"]
+    claim_ids: [CLM-PT-002]
+    hints: ["Differentiate (3w)^2 with respect to w.", "Look for a recorded path from loss to the leaf."]
+    rubric:
+      required_evidence: ["Predicts a non-null grad_fn", "States w.requires_grad is true", "Computes w.grad as 36", "Explains the reverse path"]
+      partial_evidence: ["Gets the derivative but cannot connect it to graph recording"]
+      disqualifying_errors: ["Says backward updates w directly without an optimizer"]
+      misconception_routes: [detached-gradient-path, leaf-tensor-confusion]
+    solution_ref: solutions/EX-PT-002.yaml
+    variant_guidance: "Replace the scalar expression with a two-step expression and ask which intermediate is non-leaf."
+  - id: EX-PT-003
+    package_version: 0.1.0
+    mode: prediction
+    level: diagnose
+    prompt: "A parameter starts with grad 0. After loss_a.backward() its grad is 2. After loss_b.backward() without zero_grad, what should its grad be if loss_b contributes 5? Explain when this accumulation is useful and when it is a bug."
+    prerequisites: [CON-PT-003]
+    estimated_minutes: 8
+    environment: [none]
+    claim_ids: [CLM-PT-003]
+    hints: ["Backward contributes to the existing .grad.", "State the intended accumulation window."]
+    rubric:
+      required_evidence: ["Predicts 7", "States that backward accumulates", "Distinguishes intentional microbatch accumulation from accidental stale gradients"]
+      partial_evidence: ["Predicts addition without explaining the policy boundary"]
+      disqualifying_errors: ["Predicts 5 because backward replaces the old gradient"]
+      misconception_routes: [stale-gradient-accumulation, optimizer-state-confusion]
+    solution_ref: solutions/EX-PT-003.yaml
+    variant_guidance: "Use four microbatches and ask where zero_grad belongs for one optimizer update."
+  - id: EX-PT-004
+    package_version: 0.1.0
+    mode: code-repair
+    level: apply
+    prompt: "Repair this loop so each minibatch update uses the current loss: optimizer.step(); loss = loss_fn(model(x), y); loss.backward(); optimizer.zero_grad(). Explain the causal order and one check that would expose stale gradients."
+    prerequisites: [CON-PT-003, CON-PT-004]
+    estimated_minutes: 15
+    environment: ["Python 3 with pinned PyTorch"]
+    claim_ids: [CLM-PT-003, CLM-PT-004, CLM-PT-005]
+    hints: ["step consumes parameter .grad.", "Reset before creating the next contribution."]
+    rubric:
+      required_evidence: ["Orders zero_grad, forward/loss, backward, step", "Explains what step consumes", "Names a measurable check such as loss movement or gradient inspection"]
+      partial_evidence: ["Produces a working-looking order without causal explanation"]
+      disqualifying_errors: ["Leaves step before backward"]
+      misconception_routes: [optimizer-before-backward, stale-gradient-accumulation]
+    solution_ref: solutions/EX-PT-004.yaml
+    variant_guidance: "Add an intentional four-microbatch accumulation variant."
+  - id: EX-PT-005
+    package_version: 0.1.0
+    mode: experiment
+    level: discriminate
+    prompt: "A model contains Dropout. Design a two-condition experiment that distinguishes model.train() from model.eval() while holding the input and gradient context fixed. State the expected observation."
+    prerequisites: [CON-PT-005]
+    estimated_minutes: 12
+    environment: ["Python 3 with pinned PyTorch"]
+    claim_ids: [CLM-PT-005]
+    hints: ["Repeat the same input twice in each mode.", "Do not use eval as a synonym for no_grad."]
+    rubric:
+      required_evidence: ["Uses repeated forwards in train and eval", "Holds no_grad or grad mode constant", "Predicts stochastic versus stable behavior", "States that not every module changes behavior"]
+      partial_evidence: ["Knows dropout differs but conflates mode and gradient context"]
+      disqualifying_errors: ["Claims eval always disables gradients"]
+      misconception_routes: [eval-mode-omitted, no-grad-confusion]
+    solution_ref: solutions/EX-PT-005.yaml
+    variant_guidance: "Repeat with a module that has no train/eval-specific behavior and ask what remains unchanged."
+  - id: EX-PT-006
+    package_version: 0.1.0
+    mode: code-repair
+    level: apply
+    prompt: "Write the smallest validation block for model and x that uses evaluation module behavior, avoids recording a backward graph, and computes logits. Explain which line controls each property."
+    prerequisites: [CON-PT-005, CON-PT-006]
+    estimated_minutes: 10
+    environment: ["Python 3 with pinned PyTorch"]
+    claim_ids: [CLM-PT-005, CLM-PT-006]
+    hints: ["There are two independent controls.", "Use a context manager for graph recording."]
+    rubric:
+      required_evidence: ["Calls model.eval", "Uses torch.no_grad or explicitly justified inference_mode", "Explains the separate roles", "Does not update parameters"]
+      partial_evidence: ["Uses one of the controls correctly"]
+      disqualifying_errors: ["Uses model.eval as evidence that no graph is retained"]
+      misconception_routes: [eval-mode-omitted, evaluation-graph-retained]
+    solution_ref: solutions/EX-PT-006.yaml
+    variant_guidance: "Ask when inference_mode would be inappropriate because later grad-mode use is required."
+  - id: EX-PT-007
+    package_version: 0.1.0
+    mode: executable-check
+    level: diagnose
+    prompt: "Run the pinned example and inspect its assertions. Explain how the script demonstrates tensor metadata, gradient creation, loop ordering, and gradient-free evaluation rather than merely printing a plausible loss."
+    prerequisites: [CON-PT-001, CON-PT-002, CON-PT-003, CON-PT-004, CON-PT-005, CON-PT-006]
+    estimated_minutes: 20
+    environment: ["packages/pytorch-foundations uv environment"]
+    claim_ids: [CLM-PT-001, CLM-PT-002, CLM-PT-003, CLM-PT-004, CLM-PT-005, CLM-PT-006]
+    hints: ["Read the assertions as evidence contracts.", "Identify what would fail if zero_grad or no_grad were removed."]
+    rubric:
+      required_evidence: ["Reports the example command and result", "Maps at least four assertions to concepts", "Names one mutation that should make an assertion fail"]
+      partial_evidence: ["Runs the script but treats output as proof without tracing assertions"]
+      disqualifying_errors: ["Claims a decreasing loss alone proves correct evaluation behavior"]
+      misconception_routes: [stale-gradient-accumulation, evaluation-graph-retained]
+    solution_ref: solutions/EX-PT-007.yaml
+    variant_guidance: "Remove one assertion at a time and ask which evidence becomes unavailable."
+  - id: EX-PT-008
+    package_version: 0.1.0
+    mode: transfer-debug
+    level: defend
+    prompt: "A research prototype reports a validation metric that changes between identical runs. The code calls model.eval() but not no_grad, and a later refactor moved model.eval() below the validation loop. Diagnose the two independent risks, propose a minimal repair, and state what evidence would distinguish stochastic module behavior from retained graph overhead."
+    prerequisites: [CON-PT-004, CON-PT-005, CON-PT-006]
+    estimated_minutes: 18
+    environment: [none]
+    claim_ids: [CLM-PT-005, CLM-PT-006]
+    hints: ["Separate behavior variance from memory/graph behavior.", "A control can be correct while the other is missing."]
+    rubric:
+      required_evidence: ["Identifies eval placement as a behavior risk", "Identifies no_grad omission as a graph/overhead risk", "Proposes both repairs", "Names a repeatable experiment or observed tensor property"]
+      partial_evidence: ["Finds one risk but not the independent control"]
+      disqualifying_errors: ["Claims no_grad alone fixes dropout stochasticity"]
+      misconception_routes: [eval-mode-omitted, evaluation-graph-retained]
+    solution_ref: solutions/EX-PT-008.yaml
+    variant_guidance: "Change the module to BatchNorm or remove stochastic modules and ask which diagnosis remains."
+
+coverage_gaps: ["No learner response data", "No distributed or GPU transfer variants"]
+validation:
+  reviewed: true
+  executed: true
+  notes: ["All item IDs and solution references are versioned with package_version 0.1.0.", "Executable checks are covered by examples/validate_examples.py."]

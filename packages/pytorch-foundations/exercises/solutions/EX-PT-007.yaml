@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+activity_id: EX-PT-007
+answer: "Run uv run --project packages/pytorch-foundations --locked python packages/pytorch-foundations/examples/validate_examples.py. The assertions check metadata, a 36 gradient, loss improvement from correctly ordered updates, stable evaluation behavior, and an output with requires_grad=False. Removing zero_grad should change the gradient/update assertion; removing no_grad should change the output grad assertion."
+evidence: ["Maps assertions to concepts", "Identifies mutations that invalidate evidence"]

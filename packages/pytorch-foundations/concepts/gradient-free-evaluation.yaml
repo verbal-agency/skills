@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-PT-006
+canonical_name: Gradient-free evaluation
+aliases: [no_grad, inference mode]
+type: decision
+status: approved
+target:
+  capability_ids: [CAP-PT-004]
+  learner_outcome: "Use a gradient-free context for evaluation and explain its boundary with module modes."
+  exclusions: ["Inference-mode performance benchmarking"]
+boundary:
+  formal_definition: "A no-grad context prevents operations from being recorded for backward during its scope; inference mode is a stricter, more optimized context with additional tensor restrictions."
+  prerequisites: [CON-PT-005]
+  contrasts: ["eval mode", "parameter freezing"]
+  purpose: "Prevent evaluation runs from retaining unnecessary backward graphs and make evidence intent explicit."
+explanations:
+  gist: "Use eval for module behavior and no_grad for graph recording; they solve different problems."
+  plain: "A validation pass usually needs predictions and metrics, not a path to update parameters. no_grad says that directly."
+  precise: "Within no_grad, operations are not recorded for backward even when inputs require gradients. Outputs can still be used after the context; inference mode has stronger restrictions and is not required for this package's first examples."
+  mechanics: "Set eval mode -> enter no_grad -> run predictions and metrics -> exit context -> keep parameters unchanged."
+representations:
+  mental_model: "Close the experiment recorder while keeping the instrument's measurement mode selected."
+  analogy:
+    text: "A lab measurement can run without recording every intermediate trace for a later derivation."
+    mapping: ["measurement -> evaluation", "recorder -> autograd graph", "instrument mode -> train/eval module mode"]
+    limits: ["Some post-evaluation work may require normal grad mode again."]
+  examples: ["model.eval() plus torch.no_grad() yields predictions without a backward graph for the validation batch."]
+  counterexamples: ["no_grad alone does not switch Dropout or BatchNorm into evaluation behavior."]
+  trace: ["Select eval module mode", "Enter no_grad", "Forward", "Compute metrics", "Exit context"]
+  diagram: "eval mode + no_grad -> stable module behavior + no backward recording"
+  code:
+    applicability: "Use for validation, testing, and non-training feature extraction."
+    environment: "pytorch-foundations uv environment"
+    snippet: "model.eval()\nwith torch.no_grad():\n    logits = model(x)\n    metric = metric_fn(logits, y)"
+    expected_result: "No parameter update and no unnecessary graph retained."
+    failure_case: "Evaluation graph is retained or module-specific stochastic behavior remains active."
+misconceptions:
+  - belief: "If a model is in eval mode, no_grad is unnecessary."
+    why_tempting: "Both are placed in the validation block and are described as evaluation controls."
+    correction: "eval and no_grad control different axes: module behavior versus autograd recording."
+    diagnostic_question: "Which line would make output.requires_grad false if the input requires grad?"
+retrieval_seeds: ["What two independent controls should a normal validation pass set?", "When might inference_mode be too restrictive for a tensor?"]
+claim_ids: [CLM-PT-006]
+uncertainties: ["The package does not benchmark inference_mode or cover tensors created for later grad-mode use."]

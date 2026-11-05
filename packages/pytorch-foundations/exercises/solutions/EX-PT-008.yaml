@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+activity_id: EX-PT-008
+answer: "Move model.eval() before the validation loop and wrap the forward/metric block in torch.no_grad(). The first repair controls stochastic or running-stat module behavior; the second prevents unnecessary graph retention. Repeat identical validation inputs to test output variance and inspect output.requires_grad or memory behavior to distinguish the risks."
+evidence: ["Names both independent repairs", "Proposes discriminating evidence"]

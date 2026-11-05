@@ -1,0 +1,90 @@
+schema: learning-curriculum/v1
+id: CUR-PT-001
+package_id: pytorch-foundations
+package_version: 0.1.0
+title: PyTorch foundations for research practice
+contract:
+  audience: "Python-capable learner preparing to debug small PyTorch research examples"
+  assumptions: ["Can read Python loops and functions", "Knows basic derivatives and matrix shapes"]
+  target_capability_ids: [CAP-PT-001, CAP-PT-002, CAP-PT-003, CAP-PT-004]
+  time_budget_hours: 5
+  environment: ["CPU", "uv", "Pinned PyTorch environment"]
+  non_goals: ["Distributed training", "CUDA performance", "Production sandboxing"]
+  final_evidence: ["Repair and explain a training loop", "Diagnose a train/eval/no_grad failure", "Transfer the reasoning to an unfamiliar trace"]
+diagnostic:
+  exercise_refs: [EX-PT-001, EX-PT-002, EX-PT-003]
+  exemption_rules: ["Skip a concept only when the learner supplies the required evidence and explains the boundary condition."]
+modules:
+  - id: MOD-PT-001
+    package_version: 0.1.0
+    title: Inspect tensors before operations
+    primary_capability_id: CAP-PT-001
+    prerequisite_evidence: []
+    motivating_problem: "A research prototype fails at a layer boundary and the numeric values look plausible."
+    concept_ids: [CON-PT-001]
+    exercise_refs: [EX-PT-001]
+    closure_evidence: ["Annotates batch and feature axes", "Names shape, dtype, and device constraints"]
+    remediation_routes: ["Print metadata, annotate axes, and compare the consuming operation contract."]
+    review_after: P2D
+    unlocks: [CAP-PT-002]
+  - id: MOD-PT-002
+    package_version: 0.1.0
+    title: Trace gradients
+    primary_capability_id: CAP-PT-002
+    prerequisite_evidence: ["Can annotate a tensor operation's input and output shapes"]
+    motivating_problem: "A loss is computed, but a parameter has no useful gradient."
+    concept_ids: [CON-PT-002, CON-PT-003]
+    exercise_refs: [EX-PT-002, EX-PT-003]
+    closure_evidence: ["Explains a recorded graph", "Predicts accumulation and identifies a detached path"]
+    remediation_routes: ["Inspect requires_grad, grad_fn, and .grad on a scalar example."]
+    review_after: P4D
+    unlocks: [CAP-PT-003]
+  - id: MOD-PT-003
+    package_version: 0.1.0
+    title: Repair the optimization loop
+    primary_capability_id: CAP-PT-003
+    prerequisite_evidence: ["Can explain where a parameter gradient comes from"]
+    motivating_problem: "Training loss is flat or unstable because the update uses the wrong gradient window."
+    concept_ids: [CON-PT-004, CON-PT-003]
+    exercise_refs: [EX-PT-004, EX-PT-007]
+    closure_evidence: ["Orders zero_grad, forward, backward, and step", "Runs the pinned example and interprets its assertions"]
+    remediation_routes: ["Trace one scalar parameter and compare gradients before each optimizer step."]
+    review_after: P7D
+    unlocks: [CAP-PT-004]
+  - id: MOD-PT-004
+    package_version: 0.1.0
+    title: Make evaluation evidence trustworthy
+    primary_capability_id: CAP-PT-004
+    prerequisite_evidence: ["Can repair a single training update"]
+    motivating_problem: "Validation results vary or retain unnecessary computation."
+    concept_ids: [CON-PT-005, CON-PT-006]
+    exercise_refs: [EX-PT-005, EX-PT-006, EX-PT-008]
+    closure_evidence: ["Separates eval mode from no_grad", "Chooses a repeatable transfer check"]
+    remediation_routes: ["Use a two-by-two table: train/eval mode versus grad/no-grad context."]
+    review_after: P14D
+    unlocks: []
+capstone:
+  exercise_ref: EX-PT-008
+  integrated_capability_ids: [CAP-PT-001, CAP-PT-002, CAP-PT-003, CAP-PT-004]
+coverage:
+  - capability_id: CAP-PT-001
+    introduce: [MOD-PT-001]
+    practice: [EX-PT-001]
+    assess: [EX-PT-007]
+    revisit: [MOD-PT-003]
+  - capability_id: CAP-PT-002
+    introduce: [MOD-PT-002]
+    practice: [EX-PT-002, EX-PT-003]
+    assess: [EX-PT-007]
+    revisit: [MOD-PT-003]
+  - capability_id: CAP-PT-003
+    introduce: [MOD-PT-003]
+    practice: [EX-PT-004]
+    assess: [EX-PT-007]
+    revisit: [MOD-PT-004]
+  - capability_id: CAP-PT-004
+    introduce: [MOD-PT-004]
+    practice: [EX-PT-005, EX-PT-006]
+    assess: [EX-PT-008]
+    revisit: [EX-PT-007]
+known_gaps: ["Learner-specific remediation selection", "GPU and distributed transfer evidence"]

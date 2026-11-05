@@ -1,0 +1,6 @@
+schema: learning-solutions/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+activity_id: EX-PT-001
+answer: "nn.Linear(8, 4) expects the last dimension to be 8, but [8, 3] has feature width 3 if the first dimension is batch. Use nn.Linear(3, 4) or change the data layout only if the semantic axes really are reversed."
+evidence: ["Names the last-dimension contract", "Does not recommend a blind reshape"]

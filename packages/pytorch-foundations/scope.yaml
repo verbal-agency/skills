@@ -1,0 +1,71 @@
+schema: learning-scope/v1
+package_id: pytorch-foundations
+research_cutoff: 2026-11-04
+
+outcome_contract:
+  learner: "A Python-capable learner preparing to read, debug, and extend small PyTorch research examples"
+  real_world_outcome: "Trace tensor data and gradients through a small model, repair a training loop, and separate training evidence from evaluation evidence"
+  authentic_situations:
+    - "Inspect a tensor's shape, dtype, and device before composing operations"
+    - "Predict which tensors receive gradients after a forward and backward pass"
+    - "Repair a loop with stale or missing gradient resets"
+    - "Evaluate a model without changing parameters or recording an unnecessary graph"
+  completion_evidence:
+    - "Explain a tensor shape or device mismatch using the failing operation"
+    - "Trace a scalar loss back to a parameter and identify the role of requires_grad"
+    - "Repair the order of zero_grad, forward, backward, and step"
+    - "Use train/eval mode and no_grad deliberately in a held-out evaluation"
+  constraints:
+    - "Use CPU examples that run from a pinned uv environment"
+    - "Prefer small deterministic examples over framework-wide API coverage"
+    - "Keep model diagnosis advisory and package evidence explicit"
+  non_goals:
+    - "Distributed training, CUDA kernels, mixed precision, and compiler internals"
+    - "A production-grade code execution sandbox"
+    - "Model-assisted grading or numeric confidence estimates"
+  stop_conditions:
+    - "The learner can inspect, explain, repair, and transfer the four target capabilities"
+
+capabilities:
+  - id: CAP-PT-001
+    statement: "Reason about tensor shape, dtype, device, and batch semantics before an operation"
+    required_levels: [recognize, explain, apply]
+    evidence: ["Predicts an operation's output shape", "Names the incompatible dimension or device", "Chooses a minimal repair"]
+    source_ids: [SRC-PT-001, SRC-PT-002]
+  - id: CAP-PT-002
+    statement: "Trace autograd graph construction and identify which tensors receive gradients"
+    required_levels: [explain, diagnose]
+    evidence: ["Identifies requires_grad and grad_fn roles", "Explains why a detached value has no path", "Predicts parameter gradients"]
+    source_ids: [SRC-PT-003]
+  - id: CAP-PT-003
+    statement: "Construct and debug a minibatch training loop with correct gradient and optimizer ordering"
+    required_levels: [apply, diagnose]
+    evidence: ["Places zero_grad before backward", "Explains accumulation across batches", "Repairs a loop and verifies loss movement"]
+    source_ids: [SRC-PT-004, SRC-PT-005]
+  - id: CAP-PT-004
+    statement: "Separate training behavior from evaluation evidence using module modes and gradient contexts"
+    required_levels: [apply, defend]
+    evidence: ["Uses train and eval intentionally", "Uses no_grad or inference_mode for evaluation", "Explains what evidence is and is not comparable"]
+    source_ids: [SRC-PT-003, SRC-PT-006, SRC-PT-007]
+
+boundary:
+  included: [tensor shape, dtype, device, batch dimension, autograd graph, requires_grad, backward, gradient accumulation, zero_grad, optimizer step, train mode, eval mode, no_grad, inference mode, training loop, evaluation loop]
+  excluded: [distributed training, CUDA performance tuning, mixed precision, custom autograd functions, compilation, production serving]
+  adjacent_optional: [datasets and dataloaders, checkpointing, schedulers, experiment tracking, functorch and vmap]
+  assumed_prerequisites: ["Python functions and loops", "Basic linear algebra", "Derivative and gradient intuition", "Reading small code examples"]
+
+open_questions:
+  - id: Q-PT-001
+    question: "Which code-lab constraints are sufficient for safe learner-submitted PyTorch execution?"
+    owner: runtime
+    impact_if_wrong: "The package could imply executable evidence before the sandbox is trustworthy."
+    next_probe: "Compare a simulated runner with a process-isolated CPU runner and record limits."
+  - id: Q-PT-002
+    question: "Which failure variants best predict transfer to an unfamiliar research codebase?"
+    owner: learner-testing
+    impact_if_wrong: "The authored misconception library may overfit toy examples."
+    next_probe: "Run the diagnostic set with at least three learners or independently labeled synthetic traces."
+
+refresh_policy:
+  default_horizon_days: 365
+  volatile_areas: [optimizer defaults, inference APIs, device and dtype behavior, tutorial URLs]

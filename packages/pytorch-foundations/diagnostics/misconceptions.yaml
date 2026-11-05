@@ -1,0 +1,64 @@
+schema: learning-diagnostics/v1
+package_id: pytorch-foundations
+package_version: 0.1.0
+records:
+  - id: MIS-PT-001
+    name: batch-dimension-confusion
+    capability_ids: [CAP-PT-001]
+    belief: "The first dimension is always a feature dimension, so changing it cannot affect a linear layer."
+    signals: ["Describes [batch, features] as [features, batch]", "Suggests transposing without naming the expected input shape", "Ignores dtype or device in a reported mismatch"]
+    confusable_alternatives: ["feature-width mismatch", "device mismatch"]
+    disambiguator: "Ask the learner to annotate each dimension and state the shape expected by the first layer."
+    remediation: "Return to a two-example batch, print shape/dtype/device, and trace one sample through the layer."
+    transfer_item: "Diagnose a convolution input where channel and batch axes are swapped."
+    evidence_status: candidate
+  - id: MIS-PT-002
+    name: detached-gradient-path
+    capability_ids: [CAP-PT-002]
+    belief: "Calling detach only changes display or memory and the value will still receive gradients later."
+    signals: ["Predicts a non-None gradient after detach", "Cannot name the operation that cut the graph", "Treats requires_grad as a property of the numeric value only"]
+    confusable_alternatives: ["leaf-tensor confusion", "no-grad context confusion"]
+    disambiguator: "Show a small graph with y = (x * 2).detach() and ask whether loss.backward can reach x."
+    remediation: "Compare grad_fn and requires_grad before and after detach, then rebuild the path without detach."
+    transfer_item: "Explain why converting an intermediate tensor to a NumPy array breaks a later gradient path."
+    evidence_status: candidate
+  - id: MIS-PT-003
+    name: stale-gradient-accumulation
+    capability_ids: [CAP-PT-003]
+    belief: "backward replaces the previous gradient, so zero_grad is cosmetic."
+    signals: ["Predicts identical gradients after two backward calls without reset", "Moves zero_grad after step without discussing accumulation", "Cannot distinguish intentional gradient accumulation from accidental carry-over"]
+    confusable_alternatives: ["optimizer-state momentum", "loss-scale change"]
+    disambiguator: "Run two backward passes on known scalars and inspect whether .grad doubles."
+    remediation: "Use a two-batch trace with explicit reset points and label the intended accumulation window."
+    transfer_item: "Find the missing reset in a gradient-accumulation loop that intentionally updates every four microbatches."
+    evidence_status: candidate
+  - id: MIS-PT-004
+    name: optimizer-before-backward
+    capability_ids: [CAP-PT-003]
+    belief: "optimizer.step computes the current loss gradient automatically, so backward can happen afterward."
+    signals: ["Places step before backward", "Claims the optimizer reads the loss object", "Cannot identify which .grad values step consumes"]
+    confusable_alternatives: ["zero_grad ordering error", "scheduler-step ordering"]
+    disambiguator: "Ask which parameter values and gradients exist at the moment step is called."
+    remediation: "Trace one scalar parameter through forward, loss, backward, and step with printed values."
+    transfer_item: "Repair a custom optimizer loop that calls step before loss.backward."
+    evidence_status: candidate
+  - id: MIS-PT-005
+    name: eval-mode-omitted
+    capability_ids: [CAP-PT-004]
+    belief: "model.eval() is only a cosmetic label because gradients are what determine training."
+    signals: ["Uses no_grad but leaves dropout active", "Predicts identical dropout outputs in train and eval", "Conflates eval mode with disabling autograd"]
+    confusable_alternatives: ["no-grad omission", "random seed issue"]
+    disambiguator: "Compare repeated forward passes through dropout under train and eval while keeping no_grad constant."
+    remediation: "Separate the two control knobs: module behavior via eval, graph recording via no_grad."
+    transfer_item: "Explain why a validation metric changes between runs when a model remains in train mode."
+    evidence_status: candidate
+  - id: MIS-PT-006
+    name: evaluation-graph-retained
+    capability_ids: [CAP-PT-004]
+    belief: "model.eval() disables gradient tracking and makes no_grad unnecessary."
+    signals: ["Checks only model.training", "Predicts output.requires_grad is false after eval", "Uses eval mode as evidence that no graph was retained"]
+    confusable_alternatives: ["inference-mode restriction", "parameter freezing"]
+    disambiguator: "Run eval with and without no_grad and inspect output.requires_grad and grad_fn."
+    remediation: "Use a comparison table for train/eval and grad/no-grad, then state the intended evaluation contract."
+    transfer_item: "Choose the correct context for computing validation embeddings that will not be backpropagated."
+    evidence_status: candidate

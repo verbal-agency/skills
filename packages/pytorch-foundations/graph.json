@@ -1,0 +1,48 @@
+{
+  "schema": "learning-package-graph/v1",
+  "package_id": "pytorch-foundations",
+  "generated_from_scope_version": "0.1.0",
+  "nodes": [
+    {"id":"CON-PT-001","type":"representation","canonical_name":"Tensor metadata and batch shape","aliases":["shape/dtype/device reasoning"],"boundary_definition":"The shape, dtype, and device metadata carried by a tensor and the batch semantics assigned to its dimensions.","purpose":"Predict whether operations are compatible before reading numerical output.","cluster_ids":["SUB-PT-TENSORS"],"claim_ids":["CLM-PT-001"],"status":"enriched"},
+    {"id":"CON-PT-002","type":"mechanism","canonical_name":"Autograd graph and requires_grad","aliases":["dynamic computation graph"],"boundary_definition":"The forward operations recorded for tensors that require gradients so reverse-mode differentiation can compute derivatives.","purpose":"Explain where gradient paths exist and where they are cut.","cluster_ids":["SUB-PT-AUTOGRAD"],"claim_ids":["CLM-PT-002"],"status":"enriched"},
+    {"id":"CON-PT-003","type":"mechanism","canonical_name":"Backward and gradient accumulation","aliases":[".grad accumulation"],"boundary_definition":"The backward pass propagates derivatives and accumulates them in leaf tensor gradient fields.","purpose":"Diagnose stale gradients and make accumulation intentional.","cluster_ids":["SUB-PT-AUTOGRAD","SUB-PT-TRAINING"],"claim_ids":["CLM-PT-003"],"status":"enriched"},
+    {"id":"CON-PT-004","type":"procedure","canonical_name":"Minibatch optimization loop","aliases":["training loop"],"boundary_definition":"A repeated sequence that computes loss, manages gradients, backpropagates, and updates parameters for each batch.","purpose":"Connect autograd evidence to parameter changes.","cluster_ids":["SUB-PT-TRAINING"],"claim_ids":["CLM-PT-004"],"status":"enriched"},
+    {"id":"CON-PT-005","type":"decision","canonical_name":"Train and eval module modes","aliases":["model.train/model.eval"],"boundary_definition":"Module modes that select training-specific or evaluation-specific forward behavior.","purpose":"Make evaluation behavior comparable and reproducible.","cluster_ids":["SUB-PT-EVALUATION"],"claim_ids":["CLM-PT-005"],"status":"enriched"},
+    {"id":"CON-PT-006","type":"decision","canonical_name":"Gradient-free evaluation","aliases":["no_grad", "inference mode"],"boundary_definition":"A gradient context that prevents unnecessary backward recording during evaluation or other non-training computation.","purpose":"Separate evaluation evidence from a training graph and reduce overhead.","cluster_ids":["SUB-PT-EVALUATION"],"claim_ids":["CLM-PT-006"],"status":"enriched"},
+    {"id":"CAP-PT-001","type":"capability","canonical_name":"Reason about tensor metadata","aliases":[],"boundary_definition":"Predict and repair shape, dtype, and device compatibility issues.","purpose":"Make tensor operations inspectable.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-PT-002","type":"capability","canonical_name":"Trace autograd","aliases":[],"boundary_definition":"Explain which operations and leaves participate in a gradient path.","purpose":"Make gradient evidence inspectable.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-PT-003","type":"capability","canonical_name":"Debug a training loop","aliases":[],"boundary_definition":"Repair gradient and optimizer ordering and verify the resulting update.","purpose":"Turn a code trace into a working training step.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"CAP-PT-004","type":"capability","canonical_name":"Separate evaluation evidence","aliases":[],"boundary_definition":"Use module modes and gradient contexts to make evaluation behavior intentional.","purpose":"Prevent misleading comparisons between train and evaluation runs.","cluster_ids":[],"claim_ids":[],"status":"modeled"},
+    {"id":"FM-PT-001","type":"failure-mode","canonical_name":"Batch dimension confusion","aliases":[],"boundary_definition":"Treating a feature dimension, batch dimension, dtype, or device as interchangeable.","purpose":"Route shape and metadata debugging.","cluster_ids":["SUB-PT-TENSORS"],"claim_ids":["CLM-PT-001"],"status":"modeled"},
+    {"id":"FM-PT-002","type":"failure-mode","canonical_name":"Detached gradient path","aliases":[],"boundary_definition":"Assuming a value participates in backward after detach or a no-grad boundary has removed its path.","purpose":"Route autograd graph diagnosis.","cluster_ids":["SUB-PT-AUTOGRAD"],"claim_ids":["CLM-PT-002"],"status":"modeled"},
+    {"id":"FM-PT-003","type":"failure-mode","canonical_name":"Stale gradient accumulation","aliases":[],"boundary_definition":"Allowing gradients from earlier batches to remain when the intended update is per batch.","purpose":"Route zero_grad and accumulation remediation.","cluster_ids":["SUB-PT-TRAINING"],"claim_ids":["CLM-PT-003"],"status":"modeled"},
+    {"id":"FM-PT-004","type":"failure-mode","canonical_name":"Optimizer-before-backward","aliases":[],"boundary_definition":"Updating parameters before the current loss has produced the gradients intended for that update.","purpose":"Route training-loop ordering remediation.","cluster_ids":["SUB-PT-TRAINING"],"claim_ids":["CLM-PT-004"],"status":"modeled"},
+    {"id":"FM-PT-005","type":"failure-mode","canonical_name":"Eval mode omitted","aliases":[],"boundary_definition":"Evaluating a module while it remains in training mode, so stochastic or running-stat behavior differs.","purpose":"Route train/eval distinction remediation.","cluster_ids":["SUB-PT-EVALUATION"],"claim_ids":["CLM-PT-005"],"status":"modeled"},
+    {"id":"FM-PT-006","type":"failure-mode","canonical_name":"Evaluation graph retained","aliases":[],"boundary_definition":"Running evaluation without a gradient-free context and mistaking graph recording for parameter updates.","purpose":"Route no_grad remediation.","cluster_ids":["SUB-PT-EVALUATION"],"claim_ids":["CLM-PT-006"],"status":"modeled"}
+  ],
+  "edges": [
+    {"source":"CON-PT-001","relation":"supports-capability","target":"CAP-PT-001","claim_ids":["CLM-PT-001"]},
+    {"source":"CON-PT-002","relation":"supports-capability","target":"CAP-PT-002","claim_ids":["CLM-PT-002"]},
+    {"source":"CON-PT-003","relation":"supports-capability","target":"CAP-PT-002","claim_ids":["CLM-PT-003"]},
+    {"source":"CON-PT-003","relation":"supports-capability","target":"CAP-PT-003","claim_ids":["CLM-PT-003"]},
+    {"source":"CON-PT-004","relation":"requires","target":"CON-PT-002","claim_ids":["CLM-PT-002","CLM-PT-004"]},
+    {"source":"CON-PT-004","relation":"requires","target":"CON-PT-003","claim_ids":["CLM-PT-003","CLM-PT-004"]},
+    {"source":"CON-PT-004","relation":"supports-capability","target":"CAP-PT-003","claim_ids":["CLM-PT-004"]},
+    {"source":"CON-PT-005","relation":"supports-capability","target":"CAP-PT-004","claim_ids":["CLM-PT-005"]},
+    {"source":"CON-PT-006","relation":"requires","target":"CON-PT-005","claim_ids":["CLM-PT-005","CLM-PT-006"]},
+    {"source":"CON-PT-006","relation":"supports-capability","target":"CAP-PT-004","claim_ids":["CLM-PT-006"]},
+    {"source":"CON-PT-001","relation":"commonly-confused-with","target":"FM-PT-001","claim_ids":["CLM-PT-001"]},
+    {"source":"CON-PT-002","relation":"commonly-confused-with","target":"FM-PT-002","claim_ids":["CLM-PT-002"]},
+    {"source":"CON-PT-003","relation":"commonly-confused-with","target":"FM-PT-003","claim_ids":["CLM-PT-003"]},
+    {"source":"CON-PT-004","relation":"commonly-confused-with","target":"FM-PT-004","claim_ids":["CLM-PT-004"]},
+    {"source":"CON-PT-005","relation":"commonly-confused-with","target":"FM-PT-005","claim_ids":["CLM-PT-005"]},
+    {"source":"CON-PT-006","relation":"commonly-confused-with","target":"FM-PT-006","claim_ids":["CLM-PT-006"]}
+  ],
+  "clusters": [
+    {"id":"SUB-PT-TENSORS","name":"Tensor reasoning","purpose":"Inspect metadata and batch semantics before operations."},
+    {"id":"SUB-PT-AUTOGRAD","name":"Autograd","purpose":"Trace graph construction and gradient flow."},
+    {"id":"SUB-PT-TRAINING","name":"Training loops","purpose":"Connect loss, gradients, and parameter updates."},
+    {"id":"SUB-PT-EVALUATION","name":"Evaluation evidence","purpose":"Make evaluation mode and gradient context explicit."}
+  ],
+  "unresolved": ["Which transfer variants best predict performance in a real research codebase"]
+}

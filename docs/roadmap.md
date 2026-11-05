@@ -3,11 +3,12 @@
 ## Project outcome
 
 Turn the repository's learning-package pipeline into a runnable learning studio
-that can teach a subject, diagnose a learner's gap, provide targeted practice,
-verify the result, and schedule a later transfer check. PyTorch is the first
-validation subject because it provides both didactic explanations and executable
-evidence. Bayesian diagnostic reasoning is the second validation subject because
-it exercises the same interaction model without code execution.
+that can explore concepts with a learner, shape a useful route when needed,
+diagnose a learner's gap, provide targeted practice, verify the result, and
+schedule a later transfer check. PyTorch is the first validation subject
+because it provides both didactic explanations and executable evidence.
+Bayesian diagnostic reasoning is the second validation subject because it
+exercises the same interaction model without code execution.
 
 ## Primary consumer
 
@@ -16,6 +17,9 @@ inspect why an activity, diagnosis, or remediation was selected.
 
 ## Canonical scenarios
 
+- **S0 — Explore and shape:** The learner riffs with the tutor about a goal or
+  curiosity, sees linked concepts and possible next activities, and optionally
+  saves the emerging route as a curriculum overlay.
 - **S1 — Start learning:** The learner opens the studio, selects a skill, and
   sees a clear objective and a short diagnostic.
 - **S2 — Learn through evidence:** The learner receives an explanation, attempts
@@ -31,7 +35,21 @@ inspect why an activity, diagnosis, or remediation was selected.
 
 - Keep the existing package stages: `scoped`, `modeled`, `enriched`,
   `assembled`, `audited`, and `taught`.
-- Keep canonical package content immutable during learner sessions.
+- Treat each package version as immutable during learner sessions. Conversation
+  and learner evidence may create candidate concepts, gap observations,
+  misconception hypotheses, source suggestions, and exercise proposals; an
+  accepted addition creates a new package version rather than mutating the old
+  one.
+- Use the typed concept graph as the primary navigation model. A curriculum
+  path is an optional saved projection over that graph, not a prerequisite for
+  every session.
+- Allow a session route to be a single concept, a short linked sequence, a
+  goal-driven path, a gap-driven repair, a review item, or constrained
+  interest-guided roulette. The route policy must explain why a next activity
+  was selected and must respect prerequisites.
+- Keep learner-specific overlays, route proposals, and candidate package
+  contributions separate from canonical package artifacts until explicitly
+  promoted and reviewed.
 - Make the session controller deterministic; let Claude generate explanations,
   prompts, hints, and feedback within the controller's allowed phase.
 - Store evidence events separately from derived mastery state.
@@ -130,7 +148,7 @@ G1 evidence: `apps/learning-studio/storage.py`, the three replay/transition
  tests in `test_storage.py`, the API restart probe, and the browser smoke pass
  against the persisted session projection.
 
-### G2 — PyTorch subject package
+### G2 — PyTorch subject package (complete)
 
 Create `packages/pytorch-foundations/` using the repository's existing package
 schemas. Start with tensor reasoning, autograd, and training/evaluation loops.
@@ -146,6 +164,44 @@ Acceptance criteria:
 - The package version is recorded on every activity and evidence event.
 
 Unlocks: package-driven activity rendering.
+
+G2 evidence: `packages/pytorch-foundations/` contains the versioned package
+artifacts, six misconception records, eight activities with separate
+solutions/rubrics, curriculum coverage, synthetic evidence fixtures, and a
+pinned CPU environment. `uv run --project packages/pytorch-foundations
+--locked python packages/pytorch-foundations/examples/validate_examples.py`
+passes the executable evidence checks. The audit remains conditional until a
+learner or independently labeled fixture set exercises the routes.
+
+### G2.5 — Conversational concept navigator and curriculum overlays
+
+Build the conversation layer that turns package knowledge and learner intent
+into exploratory concept neighborhoods, short route proposals, and optional
+saved curriculum overlays. Do not require a complete path before the learner
+can investigate one concept.
+
+Acceptance criteria:
+
+- A learner can state a goal or curiosity and receive linked concepts and at
+  least two plausible next-activity options grounded in the active package
+  version.
+- The learner can branch, return, request a prerequisite, ask for a transfer
+  item, or choose constrained interest-guided roulette without losing the
+  canonical package boundary.
+- The system stores a draft overlay with learner intent, selected concepts,
+  route rationale, assumptions, open questions, and package version separately
+  from the package itself.
+- A deterministic validator checks prerequisite readiness, capability coverage,
+  activity availability, and package-version compatibility for every proposed
+  route.
+- Explicit promotion creates a versioned curriculum overlay or a candidate
+  package contribution; conversation never silently rewrites canonical content.
+- Draft, branch, promotion, and contribution events replay from the G1 SQLite
+  event substrate and render through the existing UI contract.
+
+Unlocks: learner-shaped study without forcing every interaction into a
+full-fledged path, and a safe intake point for gaps and curiosities that may
+later improve the subject package.
 
 ### G3 — Structured evidence and deterministic graders
 
@@ -210,6 +266,8 @@ Acceptance criteria:
 - A follow-up item changes surface details while preserving the target skill.
 - A simulated clock selects due reviews from the learner's open gaps.
 - Review results update the mastery state and close or extend the gap.
+- Evidence can propose a learner-overlay revision or a candidate package
+  contribution; it cannot silently mutate the canonical package version.
 
 Unlocks: measurable learning outcomes rather than conversational satisfaction.
 
@@ -238,7 +296,7 @@ Acceptance criteria:
   runtime branches.
 - Source updates identify affected concepts and exercises.
 - Historical learner evidence remains interpretable against its package version.
-- Synthetic end-to-end evals cover S1 through S5.
+- Synthetic end-to-end evals cover S0 through S5.
 
 Unlocks: safe expansion to additional technical and didactic subjects.
 
@@ -254,23 +312,54 @@ Unlocks: safe expansion to additional technical and didactic subjects.
   adapter contract instead of duplicating the runtime.
 - If a model judge cannot produce calibrated scores or reliable abstentions,
   keep it advisory and do not let it update mastery.
-
-## Next cycle stub — G2
-
-- **Objective:** create a versioned PyTorch knowledge package with concepts,
-  capabilities, misconceptions, rubrics, activities, and transfer items.
-- **Consumer:** the session runtime and package author who needs subject
-  content without subject-specific controller branches.
-- **Outcome hypothesis:** a typed package will make activities and failure
-  routes declarative while preserving the same UI and event contract.
-- **Disconfirming evidence:** required activities cannot be represented without
-  runtime-specific branches, or misconception routes lack distinguishing
-  diagnostics.
-- **Stop condition:** do not add model-assisted diagnosis until the package
-  has a reviewed rubric and held-out fixture cases for each route.
+- If route generation requires a complete path before the first useful
+  interaction, reduce it to a concept-level or short-sequence proposal.
+- If conversational additions lack provenance or a review state, keep them as
+  provisional contributions and do not use them as trusted evidence.
 
 ## Current implementation boundary
 
-G0 and G1 are complete. The next cycle is G2: the versioned PyTorch knowledge
-package. Model-assisted diagnosis and real code execution remain later goals
-and should not be smuggled into package authoring.
+G0, G1, and G2 are complete. The next cycle is G2.5: the conversational
+concept navigator and curriculum overlays. G3 remains the following goal;
+model-assisted diagnosis and real code execution remain later goals and should
+not be smuggled into route authoring.
+
+## Next cycle stub — G2.5
+
+- **Objective:** let conversation navigate the active concept graph and create
+  learner-specific curriculum overlays without requiring a complete path.
+- **Completed dependencies:** G0 runnable shell, G1 SQLite event substrate,
+  G2 PyTorch package and authored misconception routes.
+- **Project outcomes and scenarios:** advances S0 Explore and shape, S1 Start
+  learning, and S5 Add a subject while preserving the package/runtime boundary.
+- **Consumer:** the learner choosing what to investigate and the package author
+  reviewing why a route or contribution was proposed.
+- **Outcome hypothesis:** concept-level navigation plus optional saved overlays
+  will preserve conversational exploration while making selected routes,
+  assumptions, and package contributions inspectable.
+- **Disconfirming evidence:** the system cannot explain route selection, loses
+  replayability across branches, or requires subject-specific controller
+  branches to render a selected activity.
+- **Downstream unlock:** G3 deterministic graders can attach evidence to either
+  a short exploratory route or a promoted overlay; G6 can revise overlays from
+  observed gaps.
+- **Stop condition:** after two repair attempts or three consecutive slices, if
+  the design still forces full paths or produces untraceable roulette, reopen
+  the product contract and pivot to a smaller concept-level navigator.
+- **Carried-forward findings:** candidate package additions need provenance and
+  review state; the package version must be attached to every route proposal,
+  activity, and evidence event.
+
+## Following goal stub — G3
+
+- **Objective:** replace the G0 keyword diagnosis and simulated success path
+  with versioned rubrics, evidence observations, and deterministic checks that
+  can be replayed without a model call.
+- **Dependency:** G2.5 route and overlay events must reference activity IDs and
+  package versions, but G3 may grade a single concept activity without a saved
+  path.
+- **Outcome hypothesis:** structured observations with evidence spans,
+  alternatives, evaluator provenance, and abstention will make diagnosis
+  auditable without allowing an uncalibrated score to update mastery.
+- **Downstream unlock:** advisory model diagnosis with a held-out evaluation
+  set.

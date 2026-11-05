@@ -1,0 +1,44 @@
+schema: learning-concept/v1
+id: CON-PT-003
+canonical_name: Backward and gradient accumulation
+aliases: [.grad accumulation]
+type: mechanism
+status: approved
+target:
+  capability_ids: [CAP-PT-002, CAP-PT-003]
+  learner_outcome: "Predict and control which backward contributions are present in a parameter's gradient."
+  exclusions: ["Distributed gradient synchronization"]
+boundary:
+  formal_definition: "Backward computes derivatives for the current graph and accumulates them into leaf tensor .grad fields until the program clears or replaces them."
+  prerequisites: [CON-PT-002]
+  contrasts: ["Optimizer state", "Gradient accumulation as an intentional technique"]
+  purpose: "Separate the current loss contribution from stale or deliberately accumulated contributions."
+explanations:
+  gist: "backward adds a contribution to .grad; it does not silently erase the previous one."
+  plain: "If two losses are backpropagated into the same parameter without clearing, the parameter sees the sum. That can be correct for microbatch accumulation, or a bug in a per-batch loop."
+  precise: "For a leaf parameter p, successive backward calls add to p.grad. zero_grad or an equivalent reset defines the accumulation window consumed by optimizer.step."
+  mechanics: "Choose accumulation window -> zero at its start -> backward each loss -> optionally divide or scale -> step -> reset for next window."
+representations:
+  mental_model: "A clipboard where each backward pass adds another line item until you erase the page."
+  analogy:
+    text: "Adding receipts to one total is useful when the receipts belong to one invoice, but wrong if each receipt should be paid separately."
+    mapping: ["receipt -> loss contribution", "total -> .grad", "new invoice -> zero_grad"]
+    limits: ["Real optimizers may also maintain momentum or other state that is not the same as .grad."]
+  examples: ["Two identical backward calls without reset produce approximately twice the leaf gradient."]
+  counterexamples: ["A loop that intentionally accumulates four microbatches should not reset every microbatch, but it must document the window."]
+  trace: ["Set accumulation policy", "Clear at policy boundary", "Backward each contribution", "Inspect grad", "Step at policy boundary"]
+  diagram: "loss_1.backward -> grad += g1; loss_2.backward -> grad += g2; zero_grad -> grad = 0"
+  code:
+    applicability: "Use for every training loop and explicit microbatch policy."
+    environment: "pytorch-foundations uv environment"
+    snippet: "optimizer.zero_grad(); loss.backward(); print(model.weight.grad); optimizer.step()"
+    expected_result: "The printed gradient reflects only the intended accumulation window."
+    failure_case: "Gradient magnitude grows across unrelated batches because no reset occurs."
+misconceptions:
+  - belief: "backward replaces the previous gradient, so zero_grad is cosmetic."
+    why_tempting: "Each backward call is described as computing 'the gradient' in isolation."
+    correction: "The computed contribution is accumulated in .grad until cleared."
+    diagnostic_question: "What should a parameter's .grad be after two identical backward calls with no reset?"
+retrieval_seeds: ["When should a microbatch loop clear gradients?", "How would you prove that gradients accumulated?"]
+claim_ids: [CLM-PT-003]
+uncertainties: ["Gradient scaling and distributed accumulation need additional package scope."]
