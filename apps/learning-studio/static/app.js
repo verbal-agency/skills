@@ -562,7 +562,7 @@ function renderTutorLabel() {
   const label = $("tutor-label");
   if (label) {
     label.classList.toggle("ai", available);
-    label.innerHTML = `<span class="status-dot"></span> ${available ? "AI tutor" : "Guided tutor"}`;
+    label.innerHTML = `<span class="status-dot"></span> ${available ? "AI_TUTOR" : "GUIDED_TUTOR"}`;
   }
 }
 
@@ -611,10 +611,9 @@ async function sendTutorMessage() {
 function bindCockpit() {
   $("theme-btn").addEventListener("click", () => {
     const root = document.documentElement;
-    const current = root.getAttribute("data-theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const next = current ? (current === "dark" ? "light" : "dark") : (prefersDark ? "light" : "dark");
-    root.setAttribute("data-theme", next);
+    const amber = root.getAttribute("data-phosphor") === "amber";
+    root.setAttribute("data-phosphor", amber ? "green" : "amber");
+    $("theme-btn").textContent = amber ? "◐ AMBER" : "◐ GREEN";
   });
   $("send-btn").addEventListener("click", sendTutorMessage);
   $("chat-text").addEventListener("keydown", (event) => {
