@@ -2,7 +2,8 @@
 
 This document is for the person starting, demonstrating, and resetting the
 local Learning Studio runtime. The current implementation is a single-process,
-dependency-free demo for the first roadmap cycle (G0).
+dependency-light demo through G2.5: a replayable PyTorch session plus a
+package-backed Knowledge surface and learner-owned exploration overlay.
 
 ## 1. Prerequisites
 
@@ -64,9 +65,9 @@ Run the deterministic replay and transition checks with:
 uv run --locked python apps/learning-studio/test_storage.py
 ```
 
-The expected result is three passing tests. The suite proves that illegal phase
+The expected result is four passing tests. The suite proves that illegal phase
 transitions are rejected and that a new store reconstructs the same state from
-the recorded events.
+the recorded events, including study traces and overlays.
 
 Session events are written to `.local/learning-studio.sqlite3`, which is
 ignored by Git. To use a different local database for an isolated run:
@@ -86,6 +87,12 @@ In the browser, complete the five visible phases:
 
 The evidence panel should show baseline evidence, code-repair evidence, and
 transfer-review evidence. The sidebar should show review scheduled for two days.
+
+Use the **Knowledge** surface to search the six PyTorch concepts, open a card,
+follow a related concept, try recall, or add a concept to the exploration
+overlay. The study-trace counter should increase, but the Session evidence
+panel should not: browsing and retrieval practice are preparation, not mastery.
+The **Review** surface summarizes both counts separately.
 
 ## 4. Reset or replay a learner session
 
@@ -117,10 +124,16 @@ run rather than deleting learner data casually.
   execution.
 - Events are local and durable, but this is still a single-user SQLite demo,
   not a backup or multi-user learner record.
+- Knowledge cards are package-backed study aids. They do not establish
+  mastery, and route proposals currently record available references rather
+  than passing a full prerequisite/capability validator.
 - The app binds to `127.0.0.1`; it is not a hosted or multi-user service.
+- The in-app browser smoke pass covers the Knowledge card/detail flow and a
+  390px narrow layout without horizontal overflow. Inspect the final desktop
+  presentation manually before a polished demo if you change the CSS.
 - Do not enter private learner data into a shared screen or commit browser
   storage exports to the repository.
 
-The next cycle is G1: durable session state and a replayable event stream. Real
-PyTorch execution belongs to G3, after sandbox limits and evidence semantics
+The next cycle is G3: structured evidence and deterministic graders. Real
+PyTorch execution belongs in G5, after sandbox limits and evidence semantics
 are implemented.

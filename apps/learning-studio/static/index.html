@@ -19,7 +19,13 @@
       </div>
     </header>
 
-    <main class="shell">
+    <nav class="surface-nav" aria-label="Learning surfaces">
+      <button class="nav-button" data-surface="knowledge">Knowledge</button>
+      <button class="nav-button active" data-surface="session">Session</button>
+      <button class="nav-button" data-surface="review">Review</button>
+    </nav>
+
+    <main id="session-surface" class="shell surface">
       <aside class="sidebar">
         <div class="side-section">
           <div class="eyebrow">CURRENT PATH</div>
@@ -66,6 +72,88 @@
           <div id="next-action">Answer the diagnostic to establish a baseline.</div>
         </div>
       </aside>
+    </main>
+
+    <main id="knowledge-surface" class="knowledge-surface surface" hidden>
+      <section class="knowledge-intro">
+        <div>
+          <div class="eyebrow">KNOWLEDGE</div>
+          <h1>Browse the ideas behind the work</h1>
+          <p class="objective">Read a definition, follow a connection, or practice a concept before you ask the tutor to assess it.</p>
+        </div>
+        <div class="study-trace-card">
+          <div class="eyebrow">STUDY TRACE</div>
+          <strong id="study-trace-count">0 study actions</strong>
+          <span>Preparation helps you build the model; it is not mastery evidence.</span>
+        </div>
+      </section>
+
+      <section class="knowledge-toolbar" aria-label="Find concepts">
+        <label class="search-field" for="knowledge-search">
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input id="knowledge-search" type="search" placeholder="Search concepts, mechanisms, or misconceptions" autocomplete="off" />
+        </label>
+        <label class="filter-field" for="cluster-filter">
+          <span class="sr-only">Filter by cluster</span>
+          <select id="cluster-filter"><option value="all">All clusters</option></select>
+        </label>
+        <button class="secondary-button" id="clear-knowledge">Clear</button>
+      </section>
+
+      <div class="knowledge-layout">
+        <section class="knowledge-browser" aria-label="Concept cards">
+          <div class="section-heading"><div><div class="eyebrow">CONCEPTS</div><h2 id="knowledge-result-label">6 concepts</h2></div><span class="muted">Select a tile to open the card.</span></div>
+          <div id="concept-grid" class="concept-grid"></div>
+          <div id="concept-empty" class="empty-panel" hidden>No concepts match that search yet.</div>
+        </section>
+
+        <aside class="concept-detail" aria-live="polite">
+          <div id="concept-detail-empty" class="detail-empty">
+            <div class="detail-icon">✦</div>
+            <h2>Choose a concept</h2>
+            <p class="muted">The card will show its plain definition, precise account, examples, related ideas, and a way to practice.</p>
+          </div>
+          <div id="concept-detail-content" hidden>
+            <div class="detail-topline"><span id="detail-cluster" class="tag"></span><span id="detail-type" class="muted"></span></div>
+            <h2 id="detail-title" class="detail-title"></h2>
+            <p id="detail-summary" class="detail-summary"></p>
+            <div class="definition-block"><div class="eyebrow">PLAIN DEFINITION</div><p id="detail-plain"></p></div>
+            <div class="definition-block precise-block"><div class="eyebrow">PRECISE ACCOUNT</div><p id="detail-precise"></p></div>
+            <div class="detail-grid">
+              <div><div class="eyebrow">EXAMPLE</div><p id="detail-example"></p></div>
+              <div><div class="eyebrow">NEAR MISS</div><p id="detail-counterexample"></p></div>
+            </div>
+            <div class="misconception"><div class="eyebrow">WATCH FOR</div><p id="detail-misconception"></p></div>
+            <div class="related-block"><div class="eyebrow">RELATED CONCEPTS</div><div id="detail-related" class="related-list"></div></div>
+            <div id="flashcard-box" class="flashcard-box" hidden>
+              <div class="eyebrow">RECALL PRACTICE</div>
+              <p>Before revealing the explanation, say in your own words what this concept does and what it is not.</p>
+              <button class="secondary-button" id="reveal-card">Reveal the package explanation</button>
+              <div id="flashcard-reveal" class="flashcard-reveal" hidden></div>
+            </div>
+            <div class="detail-actions">
+              <button class="primary-button" id="practice-concept">Practice this</button>
+              <button class="secondary-button" id="add-overlay">Add to exploration</button>
+              <button class="ghost-button" id="start-recall">Try recall</button>
+            </div>
+            <div id="route-options" class="route-options"></div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <main id="review-surface" class="review-surface surface" hidden>
+      <section class="review-card">
+        <div class="eyebrow">REVIEW</div>
+        <h1>Return to what you are building</h1>
+        <p class="objective">Your evidence and study traces stay separate. Use this surface to see what is due and what you have been exploring.</p>
+        <div class="review-summary-grid">
+          <div class="result-box"><div class="eyebrow">EVIDENCE</div><strong id="review-evidence-count">0 events</strong><span>Graded session evidence</span></div>
+          <div class="result-box"><div class="eyebrow">STUDY ACTIONS</div><strong id="review-study-count">0 actions</strong><span>Exposure and retrieval practice</span></div>
+          <div class="result-box"><div class="eyebrow">NEXT REVIEW</div><strong id="review-next-status">Not scheduled</strong><span>Transfer check timing</span></div>
+        </div>
+        <button class="primary-button" data-surface="session">Return to session</button>
+      </section>
     </main>
 
     <script src="/app.js"></script>

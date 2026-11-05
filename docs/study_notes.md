@@ -32,3 +32,15 @@
    intentional microbatch accumulation policy?
 3. Which independent labels and transfer variants would be sufficient to
    test whether the six misconception routes abstain when evidence is sparse?
+
+## G2.5 review questions
+
+1. Why are `concept.viewed` and `flashcard.attempted` stored separately from
+   `activity.graded` and `assessment.passed`? What product mistake would happen
+   if card exposure counted as mastery?
+2. Which parts of a learner-owned overlay should be replayable facts (selected
+   concepts, rationale, package version), and which should remain a derived
+   view?
+3. Before G3, what deterministic checks should reject a route proposal: missing
+   prerequisites, unavailable practice references, stale package version, or
+   something else?

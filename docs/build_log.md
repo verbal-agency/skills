@@ -60,3 +60,50 @@ the package currently supplies authored rubrics and deterministic checks, while
 the independent labeled set needed to validate a model judge does not exist
 yet. The work supports package-driven content and executable examples; it does
 not support claims about learner improvement or diagnosis accuracy.
+
+## G2.5 — Conversational concept navigator and curriculum overlays
+
+- **Prior limitation:** G2 made the PyTorch package authoritative for authored
+  content, but the runtime still exposed one hard-coded lesson. Learner
+  curiosity, card study, and route choices had nowhere to live without either
+  mutating the package or being lost in the browser.
+- **Hypothesis:** A small package-backed concept catalog plus append-only study
+  traces and learner-owned overlay events can preserve conversational
+  exploration while keeping canonical content versioned and inspectable.
+- **Capability built:** Added `catalog.json` with six linked concepts and
+  definitions; added Knowledge, Session, and Review surfaces; added concept
+  search/filter/detail/related links, recall practice, overlay save, and route
+  proposal actions; added `concept.viewed`, `flashcard.attempted`,
+  `overlay.updated`, and `route.proposed` replay semantics; and added the
+  `/api/knowledge` and `/api/overlay` endpoints.
+- **Observed:** Four storage tests pass, including a restart replay test that
+  preserves the selected concept and study trace while leaving graded evidence
+  empty. The catalog parses, the browser bundle passes a Node syntax check,
+  `git diff --check` is clean, and a local HTTP probe confirms the Knowledge and
+  overlay endpoints and package-version provenance. The in-app browser smoke
+  pass verified card/detail rendering, recall reveal, overlay save, zero
+  mastery evidence, and a 390px layout with no horizontal overflow.
+- **Interpretation / attribution confidence:** High confidence that the
+  event/storage and package-boundary behavior is implemented; moderate
+  confidence that the visual hierarchy is usable because the browser smoke
+  inspected the rendered Knowledge flow, search rerender, focus styling, and
+  390px layout. This slice does not prove that conversational route proposals
+  are useful, that definitions teach mastery, or that a model can diagnose
+  failures.
+- **Decision:** Mark G2.5 complete for the package-backed navigator and
+  learner-owned overlays. Keep route generation deterministic and advisory;
+  defer conversation-generated package contributions, prerequisite validation,
+  and model diagnosis to later goals.
+
+Interview explanation: “I added a package-backed Knowledge surface without
+turning browsing into mastery. Card views and retrieval attempts are separate
+study traces; overlay and route events carry the active package version and
+replay through SQLite. That lets a learner riff through concepts while keeping
+canonical content immutable and makes the next step—structured grading—safe to
+add without rewriting the interaction model.”
+
+Likely follow-up: “How do you know the route is good?” The answer is that this
+slice does not claim to know yet: it records the rationale and available
+activity references, while G3 will add deterministic prerequisite/capability
+checks and structured evidence. A model may later propose explanations, but it
+cannot silently promote an overlay or update mastery.

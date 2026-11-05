@@ -12,6 +12,7 @@ artifacts:
   sources: sources.jsonl
   claims: claims.jsonl
   graph: graph.json
+  catalog: catalog.json
   concepts: concepts/
   exercises: exercises/core.yaml
   exercise_solutions: exercises/solutions/

@@ -22,9 +22,13 @@ STATIC = ROOT / "static"
 PORT = int(os.environ.get("LEARNING_STUDIO_PORT", "8765"))
 REPO_ROOT = ROOT.parent.parent
 DB_PATH = Path(os.environ.get("LEARNING_STUDIO_DB", REPO_ROOT / ".local" / "learning-studio.sqlite3"))
+CATALOG_PATH = REPO_ROOT / "packages" / "pytorch-foundations" / "catalog.json"
+CATALOG = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
 
 LESSON = {
     "id": "pytorch-training-loop-001",
+    "package_id": CATALOG["package_id"],
+    "package_version": CATALOG["package_version"],
     "title": "Repair a PyTorch training loop",
     "subject": "PyTorch foundations",
     "objective": "Explain why gradients are cleared before backpropagation, then repair a small training loop.",
@@ -79,6 +83,21 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/lesson":
             send_json(self, LESSON)
             return
+        if parsed.path == "/api/knowledge":
+            send_json(self, CATALOG)
+            return
+        if parsed.path == "/api/overlay":
+            session_id = parse_qs(parsed.query).get("session_id", ["learning-studio-g2-session"])[0]
+            snapshot = STORE.snapshot(session_id, LESSON["id"])
+            send_json(self, {
+                "session_id": session_id,
+                "package_id": CATALOG["package_id"],
+                "package_version": snapshot["package_version"] if snapshot["exists"] else LESSON["package_version"],
+                "overlay": snapshot["state"]["overlay"],
+                "study_traces": snapshot["state"]["study_traces"],
+                "route_proposals": snapshot["state"]["route_proposals"],
+            })
+            return
         if parsed.path in ("/api/session", "/api/events"):
             session_id = parse_qs(parsed.query).get("session_id", ["demo-session"])[0]
             snapshot = STORE.snapshot(session_id, LESSON["id"])
@@ -104,6 +123,8 @@ class Handler(BaseHTTPRequestHandler):
             send_json(self, {"error": "invalid_json"}, 400)
             return
         session_id = str(payload.get("session_id", "demo-session"))
+        provenance = payload.get("provenance") if isinstance(payload.get("provenance"), dict) else {}
+        provenance.setdefault("package_version", LESSON["package_version"])
         try:
             result = STORE.append_event(
                 session_id=session_id,
@@ -111,7 +132,7 @@ class Handler(BaseHTTPRequestHandler):
                 event_type=str(payload.get("type", "unknown")),
                 phase=str(payload.get("phase", "")),
                 data=payload.get("data", {}),
-                provenance=payload.get("provenance"),
+                provenance=provenance,
             )
         except TransitionError as error:
             send_json(self, {"error": "invalid_transition", "detail": str(error)}, 409)

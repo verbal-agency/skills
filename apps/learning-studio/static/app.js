@@ -1,8 +1,14 @@
 const STORAGE_KEY = "learning-studio-draft-v2";
-const SESSION_ID = "local-demo-session";
+const SESSION_ID = "learning-studio-g2-session";
 
 const state = {
   lesson: null,
+  catalog: null,
+  surface: "session",
+  selectedConcept: null,
+  overlay: { title: "Exploration draft", concept_ids: [], package_version: null },
+  studyTraces: [],
+  routeProposals: [],
   phaseIndex: 0,
   answer: "",
   selectedOption: null,
@@ -47,6 +53,9 @@ function applySession(snapshot) {
   state.hintsUsed = sessionState.hints_used || 0;
   state.reviewScheduled = Boolean(sessionState.review_scheduled);
   state.events = snapshot.events || [];
+  state.overlay = sessionState.overlay || state.overlay;
+  state.studyTraces = sessionState.study_traces || [];
+  state.routeProposals = sessionState.route_proposals || [];
 }
 
 async function recordEvent(type, phase, data = {}) {
@@ -54,7 +63,13 @@ async function recordEvent(type, phase, data = {}) {
     const response = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: SESSION_ID, type, phase, data, provenance: { actor: "learner-ui" } }),
+      body: JSON.stringify({
+        session_id: SESSION_ID,
+        type,
+        phase,
+        data,
+        provenance: { actor: "learner-ui", package_version: state.lesson?.package_version },
+      }),
     });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.detail || payload.error || "Event rejected");
@@ -69,6 +84,10 @@ async function recordEvent(type, phase, data = {}) {
     setFeedback("warning", "The session server could not record this action. Check that the local server is running, then try again.");
     return false;
   }
+}
+
+async function recordStudyTrace(type, data = {}) {
+  return recordEvent(type, state.lesson.phases[state.phaseIndex], data);
 }
 
 function renderSkills() {
@@ -94,6 +113,185 @@ function renderEvidence() {
       </div>
     `).join("");
   }
+}
+
+function clusterName(clusterId) {
+  return state.catalog?.clusters.find((cluster) => cluster.id === clusterId)?.name || "PyTorch foundations";
+}
+
+function visibleConcepts() {
+  const search = ($("knowledge-search")?.value || "").trim().toLowerCase();
+  const cluster = $("cluster-filter")?.value || "all";
+  return state.catalog.concepts.filter((concept) => {
+    const matchesSearch = !search || [concept.name, concept.summary, concept.plain, concept.misconception]
+      .join(" ").toLowerCase().includes(search);
+    return matchesSearch && (cluster === "all" || concept.cluster_id === cluster);
+  });
+}
+
+function renderConceptGrid() {
+  const concepts = visibleConcepts();
+  $("knowledge-result-label").textContent = `${concepts.length} concept${concepts.length === 1 ? "" : "s"}`;
+  $("concept-empty").hidden = concepts.length > 0;
+  $("concept-grid").innerHTML = concepts.map((concept) => `
+    <button class="concept-tile ${state.selectedConcept === concept.id ? "selected" : ""}" data-concept-id="${concept.id}">
+      <span class="tile-cluster">${clusterName(concept.cluster_id)}</span>
+      <strong>${concept.name}</strong>
+      <span>${concept.summary}</span>
+      <small>${concept.practice_refs.length} practice item${concept.practice_refs.length === 1 ? "" : "s"} · ${concept.related_ids.length} links</small>
+    </button>
+  `).join("");
+}
+
+function renderConceptDetail() {
+  const concept = state.catalog.concepts.find((item) => item.id === state.selectedConcept);
+  $("concept-detail-empty").hidden = Boolean(concept);
+  $("concept-detail-content").hidden = !concept;
+  if (!concept) return;
+  $("detail-cluster").textContent = clusterName(concept.cluster_id);
+  $("detail-type").textContent = concept.type;
+  $("detail-title").textContent = concept.name;
+  $("detail-summary").textContent = concept.summary;
+  $("detail-plain").textContent = concept.plain;
+  $("detail-precise").textContent = concept.precise;
+  $("detail-example").textContent = concept.examples[0] || "No example recorded yet.";
+  $("detail-counterexample").textContent = concept.counterexamples[0] || "No near miss recorded yet.";
+  $("detail-misconception").textContent = concept.misconception;
+  $("detail-related").innerHTML = concept.related_ids.map((id) => {
+    const related = state.catalog.concepts.find((item) => item.id === id);
+    return related ? `<button class="related-link" data-related-id="${related.id}">${related.name}</button>` : "";
+  }).join("");
+  $("flashcard-box").hidden = true;
+  $("flashcard-reveal").hidden = true;
+  $("flashcard-reveal").textContent = "";
+  const saved = state.overlay.concept_ids.includes(concept.id);
+  $("add-overlay").textContent = saved ? "Saved to exploration" : "Add to exploration";
+  $("add-overlay").disabled = saved;
+  const options = [
+    {label: `Practice ${concept.name}`, action: "practice"},
+    ...(concept.related_ids.slice(0, 1).map((id) => ({
+      label: `Open ${state.catalog.concepts.find((item) => item.id === id)?.name || "related concept"}`,
+      action: `related:${id}`,
+    }))),
+  ];
+  $("route-options").innerHTML = `<div class="eyebrow">NEXT OPTIONS</div><div class="route-option-list">${options.map((option) => `<button class="route-option" data-route-action="${option.action}">${option.label}<span>→</span></button>`).join("")}</div>`;
+}
+
+function renderKnowledge() {
+  if (!state.catalog) return;
+  const filter = $("cluster-filter");
+  if (filter && filter.options.length === 1) {
+    filter.insertAdjacentHTML("beforeend", state.catalog.clusters.map((cluster) => `<option value="${cluster.id}">${cluster.name}</option>`).join(""));
+  }
+  renderConceptGrid();
+  renderConceptDetail();
+  $("study-trace-count").textContent = `${state.studyTraces.length} study action${state.studyTraces.length === 1 ? "" : "s"}`;
+  bindKnowledge();
+}
+
+function renderReviewSurface() {
+  $("review-evidence-count").textContent = `${state.evidence.length} event${state.evidence.length === 1 ? "" : "s"}`;
+  $("review-study-count").textContent = `${state.studyTraces.length} action${state.studyTraces.length === 1 ? "" : "s"}`;
+  $("review-next-status").textContent = state.reviewScheduled ? "Due in 2 days" : "Not scheduled";
+}
+
+async function selectConcept(conceptId, record = true) {
+  state.selectedConcept = conceptId;
+  renderKnowledge();
+  if (record && await recordStudyTrace("concept.viewed", {concept_id: conceptId, trace_kind: "exposure"})) renderKnowledge();
+}
+
+async function saveConceptToOverlay() {
+  const concept = state.catalog.concepts.find((item) => item.id === state.selectedConcept);
+  if (!concept || state.overlay.concept_ids.includes(concept.id)) return;
+  const overlay = {
+    title: state.overlay.title || "Exploration draft",
+    concept_ids: [...state.overlay.concept_ids, concept.id],
+    package_version: state.lesson.package_version,
+  };
+  if (await recordStudyTrace("overlay.updated", { overlay })) {
+    state.overlay = overlay;
+    renderKnowledge();
+  }
+}
+
+async function proposeRoute(action) {
+  const concept = state.catalog.concepts.find((item) => item.id === state.selectedConcept);
+  if (!concept) return;
+  const proposal = {
+    concept_id: concept.id,
+    route_kind: action === "practice" ? "practice" : "related-concept",
+    rationale: action === "practice" ? "The package has a practice item for this concept." : "The selected concept has a typed graph link to this neighboring concept.",
+    options: [
+      {type: "practice", refs: concept.practice_refs},
+      {type: "related", refs: concept.related_ids.slice(0, 2)},
+    ],
+    package_version: state.lesson.package_version,
+  };
+  await recordStudyTrace("route.proposed", proposal);
+  if (action === "practice") {
+    setFeedback("success", `Added a practice route for ${concept.name}. The interactive session remains the place where this attempt becomes evidence.`);
+    showSurface("session");
+  } else {
+    await selectConcept(action.slice("related:".length));
+  }
+}
+
+function bindKnowledge() {
+  if (!state.catalog) return;
+  $("knowledge-search").oninput = () => renderKnowledge();
+  $("cluster-filter").onchange = () => renderKnowledge();
+  $("clear-knowledge").onclick = () => {
+    $("knowledge-search").value = "";
+    $("cluster-filter").value = "all";
+    renderKnowledge();
+  };
+  document.querySelectorAll("[data-concept-id]").forEach((button) => {
+    button.onclick = () => selectConcept(button.dataset.conceptId);
+  });
+  document.querySelectorAll("[data-related-id]").forEach((button) => {
+    button.onclick = () => selectConcept(button.dataset.relatedId);
+  });
+  $("start-recall").onclick = () => { $("flashcard-box").hidden = false; $("reveal-card").focus(); };
+  $("reveal-card").onclick = async () => {
+    const concept = state.catalog.concepts.find((item) => item.id === state.selectedConcept);
+    if (!concept) return;
+    $("flashcard-reveal").textContent = `${concept.plain} ${concept.precise}`;
+    $("flashcard-reveal").hidden = false;
+    await recordStudyTrace("flashcard.attempted", {concept_id: concept.id, trace_kind: "retrieval_practice", revealed: true});
+    renderKnowledge();
+    $("flashcard-box").hidden = false;
+    $("flashcard-reveal").hidden = false;
+    $("flashcard-reveal").textContent = `${concept.plain} ${concept.precise}`;
+  };
+  $("practice-concept").onclick = () => proposeRoute("practice");
+  $("add-overlay").onclick = saveConceptToOverlay;
+  document.querySelectorAll("[data-route-action]").forEach((button) => {
+    button.onclick = () => proposeRoute(button.dataset.routeAction);
+  });
+}
+
+function showSurface(surface) {
+  state.surface = surface;
+  document.querySelectorAll(".surface").forEach((element) => {
+    element.hidden = element.id !== `${surface}-surface`;
+  });
+  document.querySelectorAll("[data-surface]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.surface === surface);
+  });
+  if (surface === "knowledge") {
+    renderKnowledge();
+  } else if (surface === "review") {
+    renderReviewSurface();
+  } else {
+    renderSession();
+  }
+}
+
+function bindSurfaceNavigation() {
+  document.querySelectorAll("[data-surface]").forEach((button) => {
+    button.addEventListener("click", () => showSurface(button.dataset.surface));
+  });
 }
 
 function setFeedback(kind, text) {
@@ -221,7 +419,7 @@ function bindActivity() {
   }
 }
 
-function render() {
+function renderSession() {
   const phase = state.lesson.phases[state.phaseIndex];
   $("phase-label").textContent = phaseLabels[phase];
   $("progress-text").textContent = `${Math.min(state.phaseIndex + 1, state.lesson.phases.length)} / ${state.lesson.phases.length}`;
@@ -232,9 +430,21 @@ function render() {
   bindActivity();
 }
 
+function render() {
+  if (state.surface === "knowledge") {
+    renderKnowledge();
+  } else if (state.surface === "review") {
+    renderReviewSurface();
+  } else {
+    renderSession();
+  }
+}
+
 async function boot() {
   const response = await fetch("/api/lesson");
   state.lesson = await response.json();
+  const knowledgeResponse = await fetch("/api/knowledge");
+  state.catalog = await knowledgeResponse.json();
   restore();
   $("lesson-title").textContent = state.lesson.title;
   $("lesson-objective").textContent = state.lesson.objective;
@@ -245,6 +455,7 @@ async function boot() {
   if (!session.exists) {
     await recordEvent("session.started", state.lesson.phases[0], { lesson_id: state.lesson.id });
   }
+  bindSurfaceNavigation();
   render();
   $("reset-session").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); window.location.reload(); });
 }

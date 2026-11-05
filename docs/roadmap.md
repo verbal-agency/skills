@@ -66,6 +66,47 @@ inspect why an activity, diagnosis, or remediation was selected.
 - Start with a dependency-light local app; add hosted infrastructure only after
   the interaction loop has evidence of value.
 
+## UI and interaction contract
+
+The interface must make the learning state easy to scan without turning the
+screen into a dense dashboard. The current three-column session page is a
+functional probe, not the visual target.
+
+- Use three clear surfaces: **Knowledge** for concept cards and definitions,
+  **Session** for interactive activities, and **Review** for due practice and
+  learner evidence.
+- Keep the default view calm: one primary task, generous spacing, readable
+  line length, restrained color, and a clear visual hierarchy. Avoid relying on
+  all-caps labels, tiny text, saturated panels, or color alone to communicate
+  state.
+- Make the concept browser useful at a glance: searchable tiles show concept
+  name, one-line definition, cluster, and related concepts; the detail view
+  reveals plain and precise explanations, examples, counterexamples,
+  misconceptions, sources, and practice actions.
+- Let a learner move from a card to practice, add the concept to an overlay,
+  follow a graph link, or return to the conversation without losing context.
+- Preserve keyboard navigation, visible focus, sufficient contrast, readable
+  mobile layout, and a no-animation/reduced-motion preference.
+- Treat visual polish as acceptance evidence: run a browser smoke pass at
+  desktop and narrow widths, inspect empty/loading/error states, and verify
+  that the primary action is obvious without reading every panel.
+
+## Study-trace contract
+
+The system distinguishes preparation from mastery evidence:
+
+```text
+concept.viewed       -> exposure
+flashcard.attempted  -> retrieval practice
+concept.explained    -> self-explanation practice
+activity.graded      -> evidence
+assessment.passed    -> mastery candidate
+```
+
+Viewing, bookmarking, or browsing a definition may guide recommendations, but
+cannot update mastery. Study traces remain separate from graded evidence and
+carry the active package version.
+
 ## Evidence and confidence contract
 
 The runtime records an observation, not an unquestioned diagnosis. A diagnosis
@@ -173,7 +214,7 @@ pinned CPU environment. `uv run --project packages/pytorch-foundations
 passes the executable evidence checks. The audit remains conditional until a
 learner or independently labeled fixture set exercises the routes.
 
-### G2.5 — Conversational concept navigator and curriculum overlays
+### G2.5 — Conversational concept navigator and curriculum overlays (complete)
 
 Build the conversation layer that turns package knowledge and learner intent
 into exploratory concept neighborhoods, short route proposals, and optional
@@ -182,26 +223,47 @@ can investigate one concept.
 
 Acceptance criteria:
 
-- A learner can state a goal or curiosity and receive linked concepts and at
-  least two plausible next-activity options grounded in the active package
-  version.
-- The learner can branch, return, request a prerequisite, ask for a transfer
-  item, or choose constrained interest-guided roulette without losing the
-  canonical package boundary.
+- A learner can open the Knowledge surface with searchable concept tiles, read
+  a definition and related explanations, and see at least two package-backed
+  next-activity options from the selected concept, then launch a flashcard,
+  practice item, or overlay action from the detail view.
+- Card views and retrieval attempts create study-trace events without being
+  treated as mastery evidence.
 - The system stores a draft overlay with learner intent, selected concepts,
   route rationale, assumptions, open questions, and package version separately
   from the package itself.
-- A deterministic validator checks prerequisite readiness, capability coverage,
-  activity availability, and package-version compatibility for every proposed
-  route.
-- Explicit promotion creates a versioned curriculum overlay or a candidate
-  package contribution; conversation never silently rewrites canonical content.
-- Draft, branch, promotion, and contribution events replay from the G1 SQLite
-  event substrate and render through the existing UI contract.
+- Overlay, route-proposal, and study-trace events replay from the G1 SQLite
+  event substrate with active package-version provenance.
+- The UI renders Knowledge, Session, and Review surfaces with searchable empty
+  states, visible focus styling, readable narrow-width layout, and no
+  horizontal overflow in the browser smoke pass.
+
+Deferred follow-ons (not required for this slice): conversational candidate
+concepts, prerequisite/capability route validation, branch and transfer
+selection, explicit promotion to a versioned overlay or package contribution,
+and replay of those promotion/contribution events. These belong to G3, G6,
+and G8 after structured evidence exists.
 
 Unlocks: learner-shaped study without forcing every interaction into a
 full-fledged path, and a safe intake point for gaps and curiosities that may
 later improve the subject package.
+
+G2.5 evidence: `packages/pytorch-foundations/catalog.json` provides the
+runtime-readable concept catalog; `/api/knowledge` and the Knowledge surface
+render searchable cards, definitions, related concepts, recall practice, and
+route actions; `/api/overlay` exposes the replayed overlay and study traces;
+`apps/learning-studio/test_storage.py` verifies traces and overlays survive a
+store restart without adding mastery evidence; and the API probe confirms the
+HTTP event contract preserves the package version and overlay state. The
+in-app browser smoke pass verified the Knowledge card/detail flow, recall
+reveal, overlay action, zero-mastery separation, and a 390px narrow layout
+without horizontal overflow.
+
+Criteria result: the package-backed Knowledge surface, study-trace separation,
+overlay replay, route proposal metadata, and package-version compatibility are
+implemented. Conversation-generated concept candidates, deterministic route
+validation, explicit promotion, and model-assisted diagnosis remain later
+work; this slice records only learner-selected overlays and proposals.
 
 ### G3 — Structured evidence and deterministic graders
 
@@ -319,27 +381,29 @@ Unlocks: safe expansion to additional technical and didactic subjects.
 
 ## Current implementation boundary
 
-G0, G1, and G2 are complete. The next cycle is G2.5: the conversational
-concept navigator and curriculum overlays. G3 remains the following goal;
-model-assisted diagnosis and real code execution remain later goals and should
-not be smuggled into route authoring.
+G0, G1, G2, and G2.5 are complete. The next cycle is G3: structured evidence
+and deterministic graders. Model-assisted diagnosis and real code execution
+remain later goals and should not be smuggled into route authoring.
 
-## Next cycle stub — G2.5
+## Completed cycle record — G2.5
 
-- **Objective:** let conversation navigate the active concept graph and create
-  learner-specific curriculum overlays without requiring a complete path.
+- **Objective:** let conversation navigate the active concept graph, provide a
+  calm Knowledge surface for concept study, and create learner-specific
+  curriculum overlays without requiring a complete path.
 - **Completed dependencies:** G0 runnable shell, G1 SQLite event substrate,
   G2 PyTorch package and authored misconception routes.
 - **Project outcomes and scenarios:** advances S0 Explore and shape, S1 Start
   learning, and S5 Add a subject while preserving the package/runtime boundary.
 - **Consumer:** the learner choosing what to investigate and the package author
   reviewing why a route or contribution was proposed.
-- **Outcome hypothesis:** concept-level navigation plus optional saved overlays
-  will preserve conversational exploration while making selected routes,
-  assumptions, and package contributions inspectable.
+- **Outcome hypothesis:** concept-level navigation, useful pre-mastery cards,
+  and optional saved overlays will preserve conversational exploration while
+  making selected routes, study traces, assumptions, and package contributions
+  inspectable.
 - **Disconfirming evidence:** the system cannot explain route selection, loses
-  replayability across branches, or requires subject-specific controller
-  branches to render a selected activity.
+  replayability across branches, requires subject-specific controller branches
+  to render a selected activity, or leaves the learner unable to scan and read
+  the Knowledge surface comfortably.
 - **Downstream unlock:** G3 deterministic graders can attach evidence to either
   a short exploratory route or a promoted overlay; G6 can revise overlays from
   observed gaps.
@@ -348,9 +412,10 @@ not be smuggled into route authoring.
   the product contract and pivot to a smaller concept-level navigator.
 - **Carried-forward findings:** candidate package additions need provenance and
   review state; the package version must be attached to every route proposal,
-  activity, and evidence event.
+  study trace, activity, and evidence event; card exposure must not be counted
+  as mastery.
 
-## Following goal stub — G3
+## Next cycle stub — G3
 
 - **Objective:** replace the G0 keyword diagnosis and simulated success path
   with versioned rubrics, evidence observations, and deterministic checks that
@@ -358,8 +423,24 @@ not be smuggled into route authoring.
 - **Dependency:** G2.5 route and overlay events must reference activity IDs and
   package versions, but G3 may grade a single concept activity without a saved
   path.
+- **Project outcomes and scenarios:** advances S2 Learn through evidence and
+  S3 Repair a gap while preserving S0's exploratory route choices.
+- **Consumer:** the learner needs actionable feedback; the package author
+  needs to inspect why a response was classified and whether the evaluator is
+  trustworthy.
 - **Outcome hypothesis:** structured observations with evidence spans,
   alternatives, evaluator provenance, and abstention will make diagnosis
   auditable without allowing an uncalibrated score to update mastery.
+- **Disconfirming evidence:** the same labeled response changes category across
+  replay, deterministic checks cannot distinguish an isolated slip from a
+  misconception, or the seeded evaluation set cannot measure abstention and
+  calibration independently of the implementation fixtures.
 - **Downstream unlock:** advisory model diagnosis with a held-out evaluation
   set.
+- **Stop condition:** after two repair attempts or three consecutive slices,
+  if the evaluator still cannot produce stable, inspectable observations,
+  stop and reopen the evidence contract rather than adding a model judge.
+- **Carried-forward findings:** keep study traces separate from graded
+  evidence; preserve package-version provenance; treat route proposals as
+  advisory until prerequisite and capability checks exist; use the six authored
+  misconception records as the initial labeled failure library.

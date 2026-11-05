@@ -25,6 +25,9 @@ def default_state(phases: list[str]) -> dict[str, Any]:
         "phase": phases[0],
         "phase_index": 0,
         "evidence": [],
+        "study_traces": [],
+        "overlay": {"title": "Exploration draft", "concept_ids": [], "package_version": None},
+        "route_proposals": [],
         "hints_used": 0,
         "review_scheduled": False,
     }
@@ -250,6 +253,11 @@ def validate_transition(
         "practice.failed": {"practice"},
         "code.verified": {"practice"},
         "review.completed": {"review"},
+        "concept.viewed": set(phases),
+        "flashcard.attempted": set(phases),
+        "concept.explained": set(phases),
+        "overlay.updated": set(phases),
+        "route.proposed": set(phases),
     }
     if event_type not in allowed or current not in allowed[event_type]:
         raise TransitionError(f"event {event_type!r} is not legal in phase {current!r}")
@@ -290,6 +298,14 @@ def replay_events(events: list[dict[str, Any]], phases: list[str]) -> dict[str, 
             })
             state["review_scheduled"] = True
             state["phase_index"] = phases.index("review")
+        elif event_type in {"concept.viewed", "flashcard.attempted", "concept.explained"}:
+            state["study_traces"].append({"type": event_type, **data})
+        elif event_type == "overlay.updated":
+            overlay = data.get("overlay")
+            if isinstance(overlay, dict):
+                state["overlay"] = overlay
+        elif event_type == "route.proposed":
+            state["route_proposals"].append(data)
     state["phase"] = phases[state["phase_index"]]
     return state
 

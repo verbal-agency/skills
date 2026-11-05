@@ -67,6 +67,45 @@ class SessionStoreTests(unittest.TestCase):
         with self.assertRaises(TransitionError):
             self.store.append_event(session_id, "lesson-v1", "review.completed", "review", {"result": "passed"})
 
+    def test_study_traces_and_overlay_replay_without_mastery_evidence(self) -> None:
+        session_id = "knowledge-test"
+        package_version = "0.1.0"
+        provenance = {"package_version": package_version, "actor": "knowledge-ui"}
+        self.store.append_event(session_id, "lesson-v1", "session.started", "diagnose", {}, provenance)
+        self.store.append_event(
+            session_id,
+            "lesson-v1",
+            "concept.viewed",
+            "diagnose",
+            {"concept_id": "CON-PT-001", "trace_kind": "exposure"},
+            provenance,
+        )
+        self.store.append_event(
+            session_id,
+            "lesson-v1",
+            "flashcard.attempted",
+            "diagnose",
+            {"concept_id": "CON-PT-001", "trace_kind": "retrieval_practice", "revealed": True},
+            provenance,
+        )
+        self.store.append_event(
+            session_id,
+            "lesson-v1",
+            "overlay.updated",
+            "diagnose",
+            {"overlay": {"title": "Tensor exploration", "concept_ids": ["CON-PT-001"], "package_version": package_version}},
+            provenance,
+        )
+        snapshot = self.store.snapshot(session_id, "lesson-v1")
+        restarted = SessionStore(Path(self.tempdir.name) / "session.sqlite3", PHASES)
+        replayed = restarted.snapshot(session_id, "lesson-v1")
+        self.assertEqual(snapshot["state"], replayed["state"])
+        self.assertEqual(replayed["state"]["phase"], "diagnose")
+        self.assertEqual(len(replayed["state"]["study_traces"]), 2)
+        self.assertEqual(replayed["state"]["evidence"], [])
+        self.assertEqual(replayed["state"]["overlay"]["concept_ids"], ["CON-PT-001"])
+        self.assertTrue(all(event["package_version"] == package_version for event in replayed["events"]))
+
 
 if __name__ == "__main__":
     unittest.main()
