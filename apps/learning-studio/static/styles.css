@@ -188,37 +188,20 @@ textarea:focus { outline: none; border-color: var(--phos); }
 .next-box .eyebrow { display: block; margin-bottom: 6px; }
 .next-box div:last-child { color: var(--fg-bright); font-size: 17px; line-height: 1.35; }
 
-/* ---------- Knowledge surface ---------- */
-.knowledge-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; margin-bottom: 18px; }
-.knowledge-intro h1, .review-card h1 { font-size: clamp(22px, 3vw, 32px); color: var(--fg-bright); text-shadow: var(--glow); text-transform: uppercase; letter-spacing: 1px; line-height: 1.02; margin: 7px 0 8px; }
-.study-trace-card { flex-shrink: 0; border: 1px solid var(--line-bright); background: var(--bg-2); padding: 13px 15px; min-width: 200px; }
-.study-trace-card strong { display: block; color: var(--yellow); font-size: 18px; font-weight: 400; margin: 5px 0 4px; }
-.study-trace-card span { color: var(--fg-faint); font-size: 14px; line-height: 1.3; }
-.knowledge-toolbar { display: flex; gap: 10px; margin-bottom: 18px; }
-.search-field { flex: 1; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line-bright); background: var(--bg-code); padding: 0 12px; }
-.search-field:focus-within { border-color: var(--phos); }
-.search-icon { color: var(--phos); font-size: 18px; }
-.search-field input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--fg-bright); min-height: 42px; font-size: 18px; caret-color: var(--phos); }
-.filter-field select { background: var(--bg-code); border: 1px solid var(--line-bright); color: var(--fg-bright); min-height: 42px; padding: 0 12px; font-size: 17px; text-transform: uppercase; letter-spacing: 1px; }
-.knowledge-layout { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,.9fr); gap: 16px; align-items: start; }
-.knowledge-browser { border: 1px solid var(--line-bright); background: var(--bg-2); padding: 18px; }
-.section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
-.section-heading h2 { color: var(--fg-bright); font-size: 20px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-.concept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 11px; }
-.concept-tile { border: 1px solid var(--line-bright); background: var(--bg-3); color: var(--fg); display: flex; flex-direction: column; gap: 7px; min-height: 140px; padding: 14px; text-align: left; }
-.concept-tile:hover { border-color: var(--cyan); }
-.concept-tile.selected { border-color: var(--phos); background: rgba(55,245,67,.06); }
-.concept-tile strong { color: var(--fg-bright); font-size: 18px; font-weight: 400; letter-spacing: .5px; text-transform: uppercase; }
-.concept-tile span { color: var(--fg-faint); font-size: 15px; line-height: 1.3; }
-.concept-tile small { color: var(--fg-faint); font-size: 13px; margin-top: auto; }
-.tile-cluster { color: var(--cyan) !important; font-size: 12px !important; text-transform: uppercase; letter-spacing: 1.5px; }
-.concept-detail { border: 1px solid var(--line-bright); background: var(--bg-2); padding: 18px; position: sticky; top: 0; }
-.detail-empty { text-align: center; padding: 34px 14px; }
+/* ---------- Concept surface (P2, dedicated to the selected concept) ---------- */
+.review-card h1 { font-size: clamp(22px, 3vw, 32px); color: var(--fg-bright); text-shadow: var(--glow); text-transform: uppercase; letter-spacing: 1px; line-height: 1.02; margin: 7px 0 8px; }
+.concept-pane { border: 1px solid var(--line-bright); background: var(--bg-2); padding: 20px 22px; max-width: 760px; }
+.concept-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.concept-head .detail-topline { flex: 1; margin-bottom: 0; }
+.study-trace-chip { flex-shrink: 0; border: 1px solid var(--line-bright); background: var(--bg-3); padding: 8px 12px; text-align: right; }
+.study-trace-chip strong { display: block; color: var(--yellow); font-size: 16px; font-weight: 400; margin-top: 4px; }
+.detail-empty { text-align: center; padding: 44px 18px; }
+.detail-empty p { max-width: 460px; margin: 10px auto 0; line-height: 1.4; }
 .detail-icon { display: inline-grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--phos); color: var(--phos); font-size: 20px; margin-bottom: 12px; }
 .detail-empty h2 { color: var(--fg-bright); font-size: 20px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; }
 .detail-topline { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .tag { border: 1px solid var(--cyan); color: var(--cyan); font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; padding: 4px 8px; }
-.detail-title { color: var(--fg-bright); font-size: clamp(22px, 2.4vw, 28px); text-shadow: var(--glow); text-transform: uppercase; letter-spacing: 1px; line-height: 1.04; margin-bottom: 9px; }
+.detail-title { color: var(--fg-bright); font-size: clamp(22px, 2.4vw, 28px); text-shadow: var(--glow); text-transform: uppercase; letter-spacing: 1px; line-height: 1.04; margin: 14px 0 9px; }
 .detail-summary { color: var(--fg-faint); font-size: 16px; line-height: 1.35; }
 .definition-block { border-top: 1px dashed var(--line); margin-top: 16px; padding-top: 14px; }
 .definition-block p, .detail-grid p, .misconception p { color: var(--fg); font-size: 16px; line-height: 1.35; margin-top: 6px; }
@@ -270,6 +253,7 @@ textarea:focus { outline: none; border-color: var(--phos); }
 .msg.learner .bubble::before { content: "you> "; color: var(--cyan); }
 .msg.pending .bubble { color: var(--fg-faint); }
 .proposal { border: 1px solid var(--magenta); padding: 9px 11px; }
+.proposal.disambiguation { border-color: var(--cyan); }
 .proposal .eyebrow { color: var(--magenta); }
 .proposal .eyebrow::before { content: "! "; }
 .proposal .p-label { color: var(--fg-bright); font-size: 16px; margin-top: 3px; text-transform: uppercase; letter-spacing: .5px; }
@@ -300,8 +284,9 @@ textarea:focus { outline: none; border-color: var(--phos); }
   .main { display: block; height: auto; padding: 12px; overflow-y: auto; }
   .main > .win { margin-bottom: 14px; }
   .win-body, .surface { overflow: visible; }
-  .knowledge-layout, .detail-grid, .result-grid, .review-summary-grid, .concept-grid { grid-template-columns: 1fr; }
-  .concept-detail { position: static; }
+  .detail-grid, .result-grid, .review-summary-grid { grid-template-columns: 1fr; }
+  .concept-head { flex-direction: column; }
+  .study-trace-chip { text-align: left; }
   .rail-left .win-body { max-height: 60vh; }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -148,3 +148,75 @@ answer is no: it means the implementation matches its ten synthetic labels.
 The work supports a replayable evidence contract and explicit abstention; it
 does not support generalization, calibrated probabilities, learner improvement,
 or model diagnosis accuracy.
+
+## G4 — Advisory model diagnosis and conflict routing
+
+- **Prior limitation:** G3 made deterministic evidence replayable, but the
+  learner had no conversational tutor that could propose an interpretation or
+  expose ambiguity without becoming an unreviewed grader.
+- **Hypothesis:** An optional structured-output tutor can widen explanation
+  coverage if its proposals remain advisory and disagreements become narrower
+  questions rather than hidden mastery updates.
+- **Capability built:** Added the phase-aware tutor and three-pane cockpit,
+  stored tutor proposals with model/prompt provenance, and added
+  `tutor.disambiguation.requested` events for model abstention, deterministic
+  abstention, or label conflict. Disambiguation requests replay separately from
+  evidence and render as clarifying-item cards.
+- **Observed:** 8 storage, 4 grader, and 9 tutor tests pass; JavaScript syntax
+  and diff checks pass. A disambiguation request survives a fresh SQLite replay
+  and leaves phase and evidence unchanged. The tutor emits categorical proposal
+  statuses, not numeric confidence.
+- **Interpretation / attribution confidence:** High confidence in the local
+  event and authority boundary for this authored lesson; low confidence in
+  model proposal quality because no held-out live-model agreement study has
+  been run. The implementation proves safe routing, not diagnosis accuracy.
+- **Decision:** Mark the categorical advisory slice complete. Keep numeric
+  confidence unavailable, route the next cycle to Agents SDK orchestration,
+  and preserve proposal-quality evaluation as a later evidence task.
+
+Interview explanation: “I added a model tutor without letting the model become
+the source of truth. Every proposal is advisory, and if the model abstains or
+disagrees with the deterministic grader, the controller records a narrower
+disambiguating item instead of changing mastery. The next question is whether
+an agent runtime can coordinate bounded teaching tools while preserving that
+authority boundary.”
+
+Likely follow-up: “Does this prove the model diagnoses misconceptions well?”
+The answer is no: it proves replayable conflict handling and explicit
+abstention for one authored PyTorch lesson, not model accuracy or learner
+improvement across subjects.
+
+## G4.5 — Agent runtime primitives lab
+
+- **Prior limitation:** the tutor could make one advisory model request, but
+  there was no explicit agent boundary for multi-step tool use, trace capture,
+  or a framework choice.
+- **Hypothesis:** A provider-neutral agent port plus three safe tools can expose
+  useful agent-loop primitives without forcing a process-based SDK into the
+  local event-sourced runtime.
+- **Capability built:** Added `AgentPort`, a direct Messages loop, an optional
+  Anthropic Python tool-runner adapter, typed tools for concept retrieval,
+  disambiguation, and next-activity proposals, JSON-safe trace recording,
+  `agent.trace.recorded` replay, and an offline runnable fixture.
+- **Observed:** The direct loop and tool-runner fixture both execute an
+  allow-listed tool and return the structured tutor contract. The trace
+  replays the final response without a model call. The full suite passes: 9
+  storage, 4 grader, 9 tutor, and 3 agent-runtime tests.
+- **Interpretation / attribution confidence:** High confidence in tool
+  allow-listing, trace shape, and replay behavior for the fixture; low
+  confidence in live latency, cost, and teaching lift because no provider call
+  was made.
+- **Decision:** Keep `AgentPort` and the direct loop in the core runtime; keep
+  the Python tool-runner adapter as an optional learning implementation; defer
+  the process-based Claude Agent SDK until process isolation or lifecycle
+  becomes a measured requirement.
+
+Interview explanation: “I compared an explicit Messages loop with Anthropic's
+tool runner behind the same port. Both can retrieve authored context and make
+advisory proposals, but the controller records the trace and still owns state.
+The experiment taught me the primitives without turning a framework into an
+architecture decision.”
+
+Likely follow-up: “Why not use the full Agent SDK?” The answer is that this
+local app already owns persistence and replay; the process-based runtime is
+deferred until isolation or lifecycle evidence justifies its operational cost.

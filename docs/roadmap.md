@@ -284,7 +284,7 @@ Acceptance criteria:
 
 Unlocks: a defensible model-assisted diagnostician.
 
-### G4 — Model-assisted diagnosis
+### G4 — Model-assisted diagnosis (complete for categorical advisory slice)
 
 Add an optional model judge for explanations and ambiguous failures. The model
 may propose a diagnosis observation, but the controller owns phase transitions,
@@ -303,13 +303,69 @@ Acceptance criteria:
 
 Unlocks: adaptive explanations without making the model the source of truth.
 
-**Status (partial):** the advisory tutor is implemented — `tutor.py` produces
-schema-valid proposals (label, evidence spans, alternatives, model, prompt
-version) via structured outputs, recorded as `tutor.observation.proposed` events
-that replay without a live model call and never enter `evidence`. Criteria still
-open: calibration on held-out labeled cases, and conflict/low-confidence
-proposals triggering a disambiguating item. Until those land, proposals stay
-advisory and cannot change learner state.
+**Criteria result:** the advisory tutor produces schema-valid proposals (label,
+evidence spans, alternatives, model, prompt version) via structured outputs;
+categorical proposals deliberately carry no numeric confidence; and recorded
+proposals replay without a live model call and never enter `evidence`.
+Conflicts, deterministic abstentions, and model abstentions now emit a
+replayable `tutor.disambiguation.requested` event with an authored clarifying
+item. The request remains advisory and cannot change learner state. A broader
+held-out agreement study for model proposal quality remains a future evaluation
+slice rather than a reason to invent a confidence score.
+
+### G4.5 — Agent runtime primitives lab
+
+Study Anthropic's agent-runtime primitives without assuming the Claude Agent SDK
+belongs in the core application. Put a provider-neutral `AgentPort` in front of
+the tutor contract and compare a direct Messages API loop with the Anthropic
+Python tool runner first; consider the process-based Agent SDK only if isolation
+or lifecycle primitives become part of the evidence. The agent may select a
+small set of bounded, subject-provided tools for concept retrieval, diagnostic
+clarification, and next-activity proposals, while the session controller
+remains the only authority for evidence, phase transitions, mastery, and
+persistence.
+
+Dependencies: G4's categorical advisory tutor contract and its no-numeric-
+confidence boundary. This goal does not make the agent a grader, add arbitrary
+code execution, or move session persistence into an SDK-managed transcript.
+
+Acceptance criteria:
+
+- A provider-neutral `AgentPort` has a direct-loop implementation and an
+  optional Anthropic tool-runner implementation, both preserving the existing
+  structured tutor response and event schemas; a Claude Agent SDK adapter is
+  added only if the process-boundary probe is justified.
+- The experiment exposes only three typed, allow-listed tools:
+  `get_concept`, `ask_disambiguating_question`, and `propose_next_activity`.
+  Each request passes controller validation; the agent cannot write learner
+  state or the SQLite store directly.
+- Agent turns, tool calls, tool results, model identifier, SDK version, and
+  prompt version are recorded with enough provenance to replay derived state
+  without a live model call.
+- The no-credential scripted fallback still works, and tests use recorded
+  fixtures rather than a live provider.
+- A recorded multi-step tutoring fixture demonstrates agent-selected
+  clarification without changing mastery until deterministic evidence accepts
+  it.
+- A decision note compares the direct loop and SDK on replay fidelity, tool
+  authorization, latency, cost, and implementation complexity, and explicitly
+  chooses keep, defer, or remove for the core runtime.
+
+Unlocks, if retained: bounded code-lab tools in G5 and agent-selected
+remediation/review in G6 without moving authority into the model runtime.
+
+Hypothesis: working directly with agent-loop, tool, trace, and session
+primitives will improve multi-step teaching and our understanding of the
+runtime without forcing a framework dependency into Theo.
+
+Disconfirming evidence: tool calls require unrestricted permissions, agent
+trajectories cannot be replayed deterministically, latency/cost exceeds the
+local learning workflow, or the SDK adds complexity without improving a
+multi-step interaction over the direct loop.
+
+Stop condition: after two bounded integration attempts, choose the direct loop
+and remove the SDK from the core dependency surface if the comparison does not
+show a material benefit. Preserve the experiment notes as learning artifacts.
 
 ### G5 — PyTorch code lab
 
@@ -390,16 +446,15 @@ Unlocks: safe expansion to additional technical and didactic subjects.
 
 ## Current implementation boundary
 
-G0, G1, G2, G2.5, and G3 are complete. G4's advisory model tutor is partially
-delivered: an optional model tutor proposes schema-valid diagnosis observations
-(label, evidence spans, alternatives, model, prompt version), and its turns
-replay with no live model call — but proposals are advisory only and cannot
-change mastery or phase. The remaining G4 work is calibration on a held-out
-labeled set and conflict-driven disambiguation, after which a proposal may
-influence learner state. The three-pane cockpit UI (subject rail + topic
-roulette, center workspace, right-rail tutor chat) landed alongside this tutor.
-Real code execution (G5) remains a later goal and should not be smuggled into
-route authoring or grading.
+G0, G1, G2, G2.5, G3, and the categorical advisory slice of G4 are complete.
+G4 now records model proposals and conflict/abstention disambiguation requests
+without allowing them to change mastery or phase. The three-pane cockpit UI
+(subject rail + topic roulette, center workspace, right-rail tutor chat) landed
+alongside this tutor. G4.5's agent-runtime primitives lab is complete: the
+direct loop is core, the Python tool-runner adapter is optional, and the
+process-based Claude Agent SDK is deferred. G5 is next; real code execution
+should not be smuggled into route authoring or grading before sandbox limits and
+evidence semantics are independently verified.
 
 ## Completed cycle record — G2.5
 
@@ -504,31 +559,75 @@ route authoring or grading.
   `not_applicable` calibration result until numeric scores have a held-out
   calibration set.
 
-## Active goal contract — G4 (advisory path delivered; calibration remaining)
+## Completed cycle record — G4
 
-- **Objective:** the advisory model-assisted diagnosis path that cannot directly
-  change phase, mastery, or remediation state is implemented; the remaining work
-  is to calibrate proposals on a held-out labeled set and to raise a
-  disambiguating item on conflict or low confidence before any proposal is
-  allowed to influence learner state.
-- **Dependency:** G3 structured observations, evaluator provenance, abstention,
-  and seeded fixture report must remain replayable without a live model call.
+- **Objective:** add an advisory model tutor whose proposals cannot directly
+  change phase, mastery, or remediation state, and route model/deterministic
+  disagreement or abstention to a clarifying item.
+- **Completed dependencies:** G3 structured observations, evaluator provenance,
+  abstention, and seeded fixture report remain replayable without a live model
+  call.
 - **Project outcomes and scenarios:** advances S2 Learn through evidence and S3
   Repair a gap while preserving S0's route exploration.
-- **Consumer:** the package author needs to compare model proposals with the
-  deterministic rubric and decide whether ambiguity warrants a disambiguating
-  item.
-- **Outcome hypothesis:** a model can improve explanation coverage when its
-  proposal is schema-validated, provenance-tagged, compared with deterministic
-  evidence, and forced to abstain when the held-out set cannot support a score.
-- **Disconfirming evidence:** the model changes learner state without a
-  controller decision, produces untraceable labels, or cannot separate
-  disagreement from confidence on held-out cases.
-- **Downstream unlock:** G6 remediation can use model proposals as advisory
-  context after disagreement handling is explicit.
-- **Stop condition:** after two repair attempts or three consecutive slices, if
-  model proposals cannot be replayed or calibrated, keep the model advisory and
-  pivot to better deterministic coverage.
-- **Carried-forward findings:** no numeric confidence without held-out
-  calibration; preserve package-version and prompt-version provenance; never
-  treat model-generated labels as ground truth.
+- **Consumer:** the package author can inspect a model proposal, the
+  deterministic comparison, and the reason a narrower item was requested.
+- **Observed:** `tutor.observation.proposed` and
+  `tutor.disambiguation.requested` replay through SQLite; disambiguation
+  requests remain outside `evidence`; the model path emits no numeric score;
+  and 8 storage, 4 grader, and 9 tutor tests pass.
+- **Interpretation:** high confidence in the event/replay and authority
+  boundary for this authored lesson; low confidence in general model proposal
+  quality because no held-out live-model agreement study has been run.
+- **Decision:** mark the categorical advisory slice complete. Keep proposals
+  advisory, keep numeric confidence unavailable, and route agent orchestration
+  to G4.5. A broader proposal-quality evaluation remains a future goal input.
+- **Disconfirming evidence:** a replay changes a request, a disambiguator enters
+  mastery evidence, or a model proposal changes phase without a deterministic
+  controller event.
+- **Downstream unlock:** G4.5 can wrap the tutor contract in an agent runtime;
+  G6 can later consume accepted evidence rather than raw model proposals.
+- **Carried-forward findings:** validate labels and evidence spans against the
+  active package before trusting proposals; preserve package/model/prompt
+  provenance; keep chat turns atomic and private.
+
+## Completed cycle record — G4.5
+
+- **Objective:** compare one bounded tutor interaction implemented with a direct
+  Messages API loop and an optional Anthropic tool-runner adapter while
+  preserving the existing structured response, event, replay, and
+  controller-authority contracts.
+- **Completed dependencies:** G4 categorical advisory tutor and its
+  no-numeric-confidence boundary; discovery confirmed the locked Anthropic
+  client exposes tool-runner primitives.
+- **Project outcomes and scenarios:** advances S0 Explore and shape, S2 Learn
+  through evidence, and S3 Repair a gap.
+- **Consumer:** the learner can receive a multi-step fixture response; the
+  package author can inspect tool selection; the project author has an
+  evidence-based framework decision.
+- **Observed:** `AgentPort` has direct-loop and tool-runner implementations;
+  three tools are typed and allow-listed; traces record tool calls, results,
+  model/SDK/prompt provenance; `agent.trace.recorded` replays without evidence;
+  and the offline fixture passes 3 agent-runtime tests alongside 9 storage, 4
+  grader, and 9 tutor tests.
+- **Interpretation:** high confidence in tool authorization, trace shape, and
+  replay for the fixture; low confidence in live latency, cost, and teaching
+  lift because no provider call was made.
+- **Decision:** keep `AgentPort` and the direct loop in core; keep the Python
+  tool-runner adapter as an optional learning implementation; defer the
+  process-based Claude Agent SDK and do not add it as a dependency.
+- **Disconfirming evidence:** a fixture replay changes the final response, an
+  allow-listed tool can write learner state, or a future live probe shows the
+  direct loop is materially worse without a safe SDK benefit.
+- **Downstream unlock:** G5 can add bounded code-lab tools behind the same
+  controller boundary; G6 can later use agent-selected remediation.
+- **Carried-forward findings:** live latency/cost and teaching lift remain
+  unmeasured; agent traces must remain private and controller-recorded; the
+  process-based SDK remains a separate future probe, not a core dependency.
+
+## Next ready goal — G5 (PyTorch code lab)
+
+G5 is the next implementation goal. It should expose a bounded simulated code
+tool first, then add real PyTorch execution only after time, memory, filesystem,
+and network limits are testable. The AgentPort tool contract is available for
+later integration, but code execution must not be granted to the agent until
+the sandbox and evidence boundaries pass independently.

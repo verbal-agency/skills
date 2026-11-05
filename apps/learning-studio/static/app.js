@@ -19,6 +19,7 @@ const state = {
   reviewScheduled: false,
   thread: [],
   tutorProposals: [],
+  disambiguationRequests: [],
   tutorInfo: { available: false, model: null },
   chatBusy: false,
 };
@@ -62,6 +63,7 @@ function applySession(snapshot) {
   state.routeProposals = sessionState.route_proposals || [];
   state.thread = sessionState.thread || [];
   state.tutorProposals = sessionState.tutor_proposals || [];
+  state.disambiguationRequests = sessionState.disambiguation_requests || [];
 }
 
 async function recordEvent(type, phase, data = {}) {
@@ -148,30 +150,6 @@ function clusterName(clusterId) {
   return state.catalog?.clusters.find((cluster) => cluster.id === clusterId)?.name || "PyTorch foundations";
 }
 
-function visibleConcepts() {
-  const search = ($("knowledge-search")?.value || "").trim().toLowerCase();
-  const cluster = $("cluster-filter")?.value || "all";
-  return state.catalog.concepts.filter((concept) => {
-    const matchesSearch = !search || [concept.name, concept.summary, concept.plain, concept.misconception]
-      .join(" ").toLowerCase().includes(search);
-    return matchesSearch && (cluster === "all" || concept.cluster_id === cluster);
-  });
-}
-
-function renderConceptGrid() {
-  const concepts = visibleConcepts();
-  $("knowledge-result-label").textContent = `${concepts.length} concept${concepts.length === 1 ? "" : "s"}`;
-  $("concept-empty").hidden = concepts.length > 0;
-  $("concept-grid").innerHTML = concepts.map((concept) => `
-    <button class="concept-tile ${state.selectedConcept === concept.id ? "selected" : ""}" data-concept-id="${concept.id}">
-      <span class="tile-cluster">${clusterName(concept.cluster_id)}</span>
-      <strong>${concept.name}</strong>
-      <span>${concept.summary}</span>
-      <small>${concept.practice_refs.length} practice item${concept.practice_refs.length === 1 ? "" : "s"} · ${concept.related_ids.length} links</small>
-    </button>
-  `).join("");
-}
-
 function renderConceptDetail() {
   const concept = state.catalog.concepts.find((item) => item.id === state.selectedConcept);
   $("concept-detail-empty").hidden = Boolean(concept);
@@ -208,11 +186,6 @@ function renderConceptDetail() {
 
 function renderKnowledge() {
   if (!state.catalog) return;
-  const filter = $("cluster-filter");
-  if (filter && filter.options.length === 1) {
-    filter.insertAdjacentHTML("beforeend", state.catalog.clusters.map((cluster) => `<option value="${cluster.id}">${cluster.name}</option>`).join(""));
-  }
-  renderConceptGrid();
   renderConceptDetail();
   $("study-trace-count").textContent = `${state.studyTraces.length} study action${state.studyTraces.length === 1 ? "" : "s"}`;
   bindKnowledge();
@@ -268,16 +241,6 @@ async function proposeRoute(action) {
 
 function bindKnowledge() {
   if (!state.catalog) return;
-  $("knowledge-search").oninput = () => renderKnowledge();
-  $("cluster-filter").onchange = () => renderKnowledge();
-  $("clear-knowledge").onclick = () => {
-    $("knowledge-search").value = "";
-    $("cluster-filter").value = "all";
-    renderKnowledge();
-  };
-  document.querySelectorAll("[data-concept-id]").forEach((button) => {
-    button.onclick = () => selectConcept(button.dataset.conceptId);
-  });
   document.querySelectorAll("[data-related-id]").forEach((button) => {
     button.onclick = () => selectConcept(button.dataset.relatedId);
   });
@@ -553,6 +516,17 @@ function renderThread() {
       <div class="p-note">${escapeHtml(p.detail || "Advisory model signal; the deterministic grader still owns mastery.")}</div>
     </div>
   `).join("");
+  html += (state.disambiguationRequests || []).map((request) => {
+    const item = request.item || {};
+    const reason = (request.reason || "uncertain signal").replace(/_/g, " ");
+    return `
+      <div class="proposal disambiguation">
+        <div class="eyebrow">Clarify before grading · ${escapeHtml(reason)}</div>
+        <div class="p-label">${escapeHtml(item.id || "disambiguating item")}</div>
+        <div class="p-note">${escapeHtml(item.prompt || "The tutor found competing explanations. Answer a narrower question before we interpret it.")}</div>
+      </div>
+    `;
+  }).join("");
   el.innerHTML = html;
   el.scrollTop = el.scrollHeight;
 }

@@ -24,6 +24,7 @@ DEFAULT_TUTOR_MODEL = "claude-opus-5-5"
 TUTOR_MODEL = os.environ.get("LEARNING_STUDIO_TUTOR_MODEL", DEFAULT_TUTOR_MODEL)
 PROMPT_VERSION = "tutor-pt-g4-v1"
 EVALUATOR_ID = "model-tutor-pt-g4"
+DISAMBIGUATION_EVALUATOR_ID = "tutor-conflict-g4-v1"
 
 # Structured-output contract. `proposed_observation.status == "none"` means the
 # tutor saw no gradeable signal in the learner's message — the common case.
@@ -179,6 +180,48 @@ def _build_proposal(raw: Any, model: str) -> dict[str, Any] | None:
         "kind": "neutral",
         "title": f"Proposed: {label.replace('_', ' ')} ({status})",
         "detail": rationale or "Advisory model proposal — not mastery evidence.",
+    }
+
+
+def build_disambiguation_request(
+    proposal: dict[str, Any] | None,
+    deterministic_observation: dict[str, Any] | None,
+    *,
+    phase: str,
+    item: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Derive a clarifying-item request from an advisory disagreement.
+
+    This function deliberately produces a request, not learner evidence. A
+    controller can record it and render the item, but only a later, validated
+    answer may enter the evidence stream.
+    """
+
+    if not proposal or phase not in {"diagnose", "review"}:
+        return None
+    proposal_status = proposal.get("status")
+    if proposal_status == "abstained":
+        reason = "model_abstained"
+    elif not deterministic_observation:
+        return None
+    elif deterministic_observation.get("status") == "abstained":
+        reason = "deterministic_abstained"
+    elif proposal.get("label") != deterministic_observation.get("label"):
+        reason = "evaluator_conflict"
+    else:
+        return None
+
+    return {
+        "schema": "learning-disambiguation/v1",
+        "reason": reason,
+        "source": {
+            "type": "derived",
+            "evaluator_id": DISAMBIGUATION_EVALUATOR_ID,
+            "evaluator_version": 1,
+        },
+        "model_observation": proposal,
+        "deterministic_observation": deterministic_observation,
+        "item": item,
     }
 
 

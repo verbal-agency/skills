@@ -54,3 +54,21 @@
 3. Why is `calibration: not_applicable` the correct result for a categorical
    grader, and what held-out evidence would be required before numeric scores
    could affect learner state?
+
+## G4 review questions
+
+1. Why is a model proposal stored separately from deterministic evidence, even
+   when the model and grader agree on the label?
+2. What three cases should request a disambiguating item, and why is a request
+   not itself evidence of a misconception?
+3. Which parts of an agent trajectory must be recorded so a replay can explain
+   tool selection without calling the live model again?
+
+## G4.5 review questions
+
+1. What does an agent loop add beyond a single structured model response, and
+   which of those behaviors does Theo actually need?
+2. Where should tool authorization happen if the agent can propose a next
+   activity but cannot write evidence or mastery state?
+3. What observation would justify a process-based Agent SDK boundary instead of
+   the in-process Anthropic tool runner or a direct loop?
