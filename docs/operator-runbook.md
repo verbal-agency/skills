@@ -19,7 +19,14 @@ uv --version
 uv run --locked python --version
 ```
 
-No API key, database, or model download is needed for this slice.
+No API key, database, or model download is needed for this slice. The right-rail
+tutor then runs in guided (scripted) mode.
+
+To enable the live AI tutor, make an Anthropic credential available before
+starting the server — either export `ANTHROPIC_API_KEY`, or run `ant auth login`.
+Optionally set `LEARNING_STUDIO_TUTOR_MODEL` (default `claude-opus-5-5`). With a
+credential the status pill reads "AI tutor"; without one it reads "Guided tutor".
+The tutor is advisory and cannot change mastery either way.
 
 ## 2. Start the runtime
 
@@ -65,10 +72,12 @@ Run the deterministic replay and transition checks with:
 ```bash
 uv run --locked python apps/learning-studio/test_storage.py
 uv run --locked python apps/learning-studio/test_grading.py
+uv run --locked python apps/learning-studio/test_tutor.py
 uv run --locked python apps/learning-studio/evaluate_g3.py
 ```
 
-The expected result is five storage tests and four grader tests. The seeded G3
+The expected result is seven storage tests, four grader tests, and six tutor
+tests. The seeded G3
 report should show 1.0 macro precision and recall, an explicit abstention rate,
 and `calibration.status: not_applicable`: this grader emits categorical results,
 not probabilities.
@@ -89,8 +98,10 @@ In the browser, complete the five visible phases:
 4. **Verify:** confirm the simulated result reports `4 / 4 passed`.
 5. **Review:** explain gradient accumulation in your own words and finish.
 
-The evidence panel should show baseline evidence, code-repair evidence, and
-transfer-review evidence. The sidebar should show review scheduled for two days.
+The right-rail **Evidence Trail** should show baseline evidence, code-repair
+evidence, and transfer-review evidence, and its Review line should show a review
+scheduled for two days. The tutor chat below it can be used in any phase; its
+messages and any advisory proposals never appear as graded evidence.
 
 The interactive session sends open responses and choice selections to
 `POST /api/grade`. The response includes a versioned observation with evidence
@@ -144,5 +155,7 @@ run rather than deleting learner data casually.
 - Do not enter private learner data into a shared screen or commit browser
   storage exports to the repository.
 
-The next cycle is G4: optional model-assisted diagnosis. Real PyTorch execution
-belongs in G5, after sandbox limits and evidence semantics are implemented.
+G4's advisory model tutor is now present but intentionally cannot affect mastery;
+calibrating its proposals against a held-out labeled set is the remaining G4
+work. Real PyTorch execution belongs in G5, after sandbox limits and evidence
+semantics are implemented.

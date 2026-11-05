@@ -3,7 +3,9 @@ name = "learning-studio"
 version = "0.1.0"
 description = "A local, replayable learning-studio runtime"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "anthropic>=2.5.0",
+]
 
 [tool.uv]
 package = false

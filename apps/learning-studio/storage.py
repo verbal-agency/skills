@@ -30,6 +30,10 @@ def default_state(phases: list[str]) -> dict[str, Any]:
         "route_proposals": [],
         "hints_used": 0,
         "review_scheduled": False,
+        # Tutor conversation and advisory model proposals. Both are derived purely
+        # by replaying events; neither can change mastery, evidence, or phase.
+        "thread": [],
+        "tutor_proposals": [],
     }
 
 
@@ -258,6 +262,11 @@ def validate_transition(
         "concept.explained": set(phases),
         "overlay.updated": set(phases),
         "route.proposed": set(phases),
+        # Tutor chat and advisory model proposals are phase-agnostic and never
+        # gate progression, so they are legal in every phase.
+        "chat.learner": set(phases),
+        "chat.tutor": set(phases),
+        "tutor.observation.proposed": set(phases),
     }
     if event_type not in allowed or current not in allowed[event_type]:
         raise TransitionError(f"event {event_type!r} is not legal in phase {current!r}")
@@ -310,6 +319,16 @@ def replay_events(events: list[dict[str, Any]], phases: list[str]) -> dict[str, 
                 state["overlay"] = overlay
         elif event_type == "route.proposed":
             state["route_proposals"].append(data)
+        elif event_type in {"chat.learner", "chat.tutor"}:
+            # Reconstruct the tutor conversation from events alone — no model
+            # call happens during replay.
+            state["thread"].append({"type": event_type, **data})
+        elif event_type == "tutor.observation.proposed":
+            # Advisory only: a model proposal is recorded for inspection but is
+            # deliberately kept out of `evidence` so it cannot move mastery.
+            observation = data.get("observation")
+            if isinstance(observation, dict):
+                state["tutor_proposals"].append(observation)
     state["phase"] = phases[state["phase_index"]]
     return state
 
