@@ -65,7 +65,7 @@
             <span class="chip p2">P2</span>
             <nav class="modes" aria-label="Learning surfaces">
               <button class="mode-btn active" data-surface="session">SESSION</button>
-              <button class="mode-btn" data-surface="knowledge">KNOWLEDGE</button>
+              <button class="mode-btn" data-surface="knowledge">CONCEPT</button>
               <button class="mode-btn" data-surface="review">REVIEW</button>
             </nav>
           </div>
@@ -91,71 +91,41 @@
             </main>
 
             <main id="knowledge-surface" class="surface" hidden>
-              <section class="knowledge-intro">
-                <div>
-                  <div class="eyebrow">knowledge</div>
-                  <h1>Browse the ideas behind the work</h1>
-                  <p class="objective">Read a definition, follow a connection, or practice a concept before you ask the tutor to assess it.</p>
+              <section class="concept-pane" aria-live="polite">
+                <div id="concept-detail-empty" class="detail-empty">
+                  <div class="detail-icon">✦</div>
+                  <h2>No concept loaded</h2>
+                  <p class="muted">Pick a concept from <strong>topic.roulette</strong> in P1 — or hit ◆ SPIN — and it loads here. This pane stays dedicated to that one idea: its definition, examples, related ideas, and a way to practice it.</p>
                 </div>
-                <div class="study-trace-card">
-                  <div class="eyebrow">study_trace</div>
-                  <strong id="study-trace-count">0 study actions</strong>
-                  <span>Preparation helps you build the model; it is not mastery evidence.</span>
-                </div>
-              </section>
-
-              <section class="knowledge-toolbar" aria-label="Find concepts">
-                <label class="search-field" for="knowledge-search">
-                  <span class="search-icon" aria-hidden="true">⌕</span>
-                  <input id="knowledge-search" type="search" placeholder="search concepts, mechanisms, or misconceptions" autocomplete="off" />
-                </label>
-                <label class="filter-field" for="cluster-filter">
-                  <span class="sr-only">Filter by cluster</span>
-                  <select id="cluster-filter"><option value="all">all clusters</option></select>
-                </label>
-                <button class="secondary-button" id="clear-knowledge">CLEAR</button>
-              </section>
-
-              <div class="knowledge-layout">
-                <section class="knowledge-browser" aria-label="Concept cards">
-                  <div class="section-heading"><div><div class="eyebrow">concepts</div><h2 id="knowledge-result-label">6 concepts</h2></div><span class="muted">select a tile to open the card.</span></div>
-                  <div id="concept-grid" class="concept-grid"></div>
-                  <div id="concept-empty" class="empty-panel" hidden>No concepts match that search yet.</div>
-                </section>
-
-                <aside class="concept-detail" aria-live="polite">
-                  <div id="concept-detail-empty" class="detail-empty">
-                    <div class="detail-icon">✦</div>
-                    <h2>Choose a concept</h2>
-                    <p class="muted">The card will show its plain definition, precise account, examples, related ideas, and a way to practice.</p>
-                  </div>
-                  <div id="concept-detail-content" hidden>
+                <div id="concept-detail-content" hidden>
+                  <div class="concept-head">
                     <div class="detail-topline"><span id="detail-cluster" class="tag"></span><span id="detail-type" class="muted"></span></div>
-                    <h2 id="detail-title" class="detail-title"></h2>
-                    <p id="detail-summary" class="detail-summary"></p>
-                    <div class="definition-block"><div class="eyebrow">plain_definition</div><p id="detail-plain"></p></div>
-                    <div class="definition-block precise-block"><div class="eyebrow">precise_account</div><p id="detail-precise"></p></div>
-                    <div class="detail-grid">
-                      <div><div class="eyebrow">example</div><p id="detail-example"></p></div>
-                      <div><div class="eyebrow">near_miss</div><p id="detail-counterexample"></p></div>
-                    </div>
-                    <div class="misconception"><div class="eyebrow">watch_for</div><p id="detail-misconception"></p></div>
-                    <div class="related-block"><div class="eyebrow">related_concepts</div><div id="detail-related" class="related-list"></div></div>
-                    <div id="flashcard-box" class="flashcard-box" hidden>
-                      <div class="eyebrow">recall_practice</div>
-                      <p>Before revealing the explanation, say in your own words what this concept does and what it is not.</p>
-                      <button class="secondary-button" id="reveal-card">REVEAL EXPLANATION</button>
-                      <div id="flashcard-reveal" class="flashcard-reveal" hidden></div>
-                    </div>
-                    <div class="detail-actions">
-                      <button class="primary-button" id="practice-concept">► PRACTICE THIS</button>
-                      <button class="secondary-button" id="add-overlay">+ EXPLORATION</button>
-                      <button class="ghost-button" id="start-recall">RECALL</button>
-                    </div>
-                    <div id="route-options" class="route-options"></div>
+                    <div class="study-trace-chip"><span class="eyebrow">study_trace</span><strong id="study-trace-count">0 study actions</strong></div>
                   </div>
-                </aside>
-              </div>
+                  <h1 id="detail-title" class="detail-title"></h1>
+                  <p id="detail-summary" class="detail-summary"></p>
+                  <div class="definition-block"><div class="eyebrow">plain_definition</div><p id="detail-plain"></p></div>
+                  <div class="definition-block precise-block"><div class="eyebrow">precise_account</div><p id="detail-precise"></p></div>
+                  <div class="detail-grid">
+                    <div><div class="eyebrow">example</div><p id="detail-example"></p></div>
+                    <div><div class="eyebrow">near_miss</div><p id="detail-counterexample"></p></div>
+                  </div>
+                  <div class="misconception"><div class="eyebrow">watch_for</div><p id="detail-misconception"></p></div>
+                  <div class="related-block"><div class="eyebrow">related_concepts</div><div id="detail-related" class="related-list"></div></div>
+                  <div id="flashcard-box" class="flashcard-box" hidden>
+                    <div class="eyebrow">recall_practice</div>
+                    <p>Before revealing the explanation, say in your own words what this concept does and what it is not.</p>
+                    <button class="secondary-button" id="reveal-card">REVEAL EXPLANATION</button>
+                    <div id="flashcard-reveal" class="flashcard-reveal" hidden></div>
+                  </div>
+                  <div class="detail-actions">
+                    <button class="primary-button" id="practice-concept">► PRACTICE THIS</button>
+                    <button class="secondary-button" id="add-overlay">+ EXPLORATION</button>
+                    <button class="ghost-button" id="start-recall">RECALL</button>
+                  </div>
+                  <div id="route-options" class="route-options"></div>
+                </div>
+              </section>
             </main>
 
             <main id="review-surface" class="surface" hidden>
