@@ -17,6 +17,10 @@ const state = {
   evidence: [],
   events: [],
   reviewScheduled: false,
+  thread: [],
+  tutorProposals: [],
+  tutorInfo: { available: false, model: null },
+  chatBusy: false,
 };
 
 const phaseLabels = {
@@ -56,6 +60,8 @@ function applySession(snapshot) {
   state.overlay = sessionState.overlay || state.overlay;
   state.studyTraces = sessionState.study_traces || [];
   state.routeProposals = sessionState.route_proposals || [];
+  state.thread = sessionState.thread || [];
+  state.tutorProposals = sessionState.tutor_proposals || [];
 }
 
 async function recordEvent(type, phase, data = {}) {
@@ -309,6 +315,7 @@ function showSurface(surface) {
   } else {
     renderSession();
   }
+  renderRails();
 }
 
 function bindSurfaceNavigation() {
@@ -453,6 +460,7 @@ function bindActivity() {
 function renderSession() {
   const phase = state.lesson.phases[state.phaseIndex];
   $("phase-label").textContent = phaseLabels[phase];
+  renderPhaseSteps(phase);
   $("progress-text").textContent = `${Math.min(state.phaseIndex + 1, state.lesson.phases.length)} / ${state.lesson.phases.length}`;
   $("session-progress").style.width = `${((state.phaseIndex + 1) / state.lesson.phases.length) * 100}%`;
   $("activity-card").innerHTML = phase === "diagnose" ? renderDiagnose() : phase === "teach" ? renderTeach() : phase === "practice" ? renderPractice() : phase === "verify" ? renderVerify() : renderReview();
@@ -461,7 +469,178 @@ function renderSession() {
   bindActivity();
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function renderPhaseSteps(currentPhase) {
+  const el = $("phase-steps");
+  if (!el || !state.lesson) return;
+  const idx = state.lesson.phases.indexOf(currentPhase);
+  el.innerHTML = state.lesson.phases.map((p, i) => {
+    const cls = i < idx ? "done" : i === idx ? "on" : "";
+    return `<span class="phase-step ${cls}">${p}</span>`;
+  }).join("");
+}
+
+function viewedConceptIds() {
+  return new Set(state.studyTraces.filter((t) => t.type === "concept.viewed").map((t) => t.concept_id));
+}
+
+function renderRoulette() {
+  if (!state.catalog) return;
+  const el = $("topic-list");
+  if (!el) return;
+  const viewed = viewedConceptIds();
+  el.innerHTML = state.catalog.concepts.map((c) => `
+    <button class="topic ${state.selectedConcept === c.id ? "flash" : ""}" data-topic-id="${c.id}">
+      <div class="topic-name">${escapeHtml(c.name)}</div>
+      <div class="topic-cluster">${escapeHtml(clusterName(c.cluster_id))}</div>
+      <div class="topic-meta">${viewed.has(c.id) ? "Explored" : "Not yet explored"} · ${c.practice_refs.length} practice</div>
+    </button>
+  `).join("");
+}
+
+function spinRoulette() {
+  if (!state.catalog) return;
+  const roulette = $("roulette");
+  roulette.classList.add("spinning");
+  const concepts = state.catalog.concepts;
+  const viewed = viewedConceptIds();
+  const unexplored = concepts.filter((c) => !viewed.has(c.id));
+  const pool = unexplored.length ? unexplored : concepts;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  const tiles = [...document.querySelectorAll(".topic")];
+  const order = [...tiles.keys()].sort(() => Math.random() - 0.5);
+  let step = 0;
+  const interval = setInterval(() => {
+    tiles.forEach((t) => t.classList.remove("flash"));
+    if (tiles.length) tiles[order[step % order.length]].classList.add("flash");
+    step += 1;
+  }, 80);
+  setTimeout(() => {
+    clearInterval(interval);
+    roulette.classList.remove("spinning");
+    $("roulette-hint").textContent = unexplored.length
+      ? `Spun to "${pick.name}" — a concept you haven't explored yet.`
+      : `Spun to "${pick.name}" — everything's been explored, so this is a revisit.`;
+    showSurface("knowledge");
+    selectConcept(pick.id);
+  }, 560);
+}
+
+function renderThread() {
+  const el = $("thread");
+  if (!el) return;
+  const msgs = state.thread || [];
+  const proposals = state.tutorProposals || [];
+  let html = "";
+  if (!msgs.length && !state.chatBusy) {
+    const who = state.tutorInfo.available ? "The AI tutor" : "The guided tutor";
+    html += `<div class="thread-empty">Ask a question or explain your thinking. ${who} replies here; anything it logs as evidence shows above, and advisory proposals appear as cards.</div>`;
+  }
+  html += msgs.map((m) => {
+    const isTutor = m.type === "chat.tutor";
+    return `<div class="msg ${isTutor ? "tutor" : "learner"}"><span class="who">${isTutor ? "Tutor" : "You"}</span><div class="bubble">${escapeHtml(m.text || "")}</div></div>`;
+  }).join("");
+  if (state.chatBusy) {
+    html += `<div class="msg tutor pending"><span class="who">Tutor</span><div class="bubble">thinking…</div></div>`;
+  }
+  html += proposals.map((p) => `
+    <div class="proposal">
+      <div class="eyebrow">Proposed — not mastery</div>
+      <div class="p-label">${escapeHtml((p.label || "").replace(/_/g, " "))} · ${escapeHtml(p.status || "")}</div>
+      <div class="p-note">${escapeHtml(p.detail || "Advisory model signal; the deterministic grader still owns mastery.")}</div>
+    </div>
+  `).join("");
+  el.innerHTML = html;
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderTutorLabel() {
+  const available = Boolean(state.tutorInfo && state.tutorInfo.available);
+  const label = $("tutor-label");
+  if (label) {
+    label.classList.toggle("ai", available);
+    label.innerHTML = `<span class="status-dot"></span> ${available ? "AI tutor" : "Guided tutor"}`;
+  }
+}
+
+function renderRails() {
+  if (state.lesson) renderSkills();
+  renderRoulette();
+  renderEvidence();
+  renderThread();
+  renderTutorLabel();
+}
+
+function setChatBusy(busy) {
+  state.chatBusy = busy;
+  const button = $("send-btn");
+  if (button) button.disabled = busy;
+  renderThread();
+}
+
+async function sendTutorMessage() {
+  const textarea = $("chat-text");
+  const message = textarea.value.trim();
+  if (!message || state.chatBusy) return;
+  textarea.value = "";
+  state.thread = [...state.thread, { type: "chat.learner", text: message }];
+  setChatBusy(true);
+  try {
+    const response = await fetch("/api/tutor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: SESSION_ID, message }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.detail || payload.error || "The tutor could not respond.");
+    applySession(payload);
+    if (payload.tutor) {
+      $("chat-status").textContent = payload.tutor.source === "model" ? "AI tutor · live" : "Guided practice";
+    }
+  } catch (error) {
+    state.thread = [...state.thread, { type: "chat.tutor", text: "I couldn't respond just now. Check that the local server is running, then try again." }];
+  } finally {
+    setChatBusy(false);
+    render();
+  }
+}
+
+function bindCockpit() {
+  $("theme-btn").addEventListener("click", () => {
+    const root = document.documentElement;
+    const current = root.getAttribute("data-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = current ? (current === "dark" ? "light" : "dark") : (prefersDark ? "light" : "dark");
+    root.setAttribute("data-theme", next);
+  });
+  $("send-btn").addEventListener("click", sendTutorMessage);
+  $("chat-text").addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendTutorMessage(); }
+  });
+  $("spin-btn").addEventListener("click", spinRoulette);
+  $("topic-list").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-topic-id]");
+    if (!button) return;
+    showSurface("knowledge");
+    selectConcept(button.dataset.topicId);
+  });
+  $("subject-btn").addEventListener("click", (event) => {
+    event.stopPropagation();
+    $("subject-switch").classList.toggle("open");
+  });
+  document.addEventListener("click", () => $("subject-switch").classList.remove("open"));
+  const openChat = () => { $("rail-right").classList.add("open"); $("scrim").classList.add("show"); };
+  const closeChat = () => { $("rail-right").classList.remove("open"); $("scrim").classList.remove("show"); };
+  $("chat-toggle").addEventListener("click", openChat);
+  $("chat-close").addEventListener("click", closeChat);
+  $("scrim").addEventListener("click", closeChat);
+}
+
 function render() {
+  renderRails();
   if (state.surface === "knowledge") {
     renderKnowledge();
   } else if (state.surface === "review") {
@@ -474,6 +653,7 @@ function render() {
 async function boot() {
   const response = await fetch("/api/lesson");
   state.lesson = await response.json();
+  state.tutorInfo = state.lesson.tutor || { available: false, model: null };
   const knowledgeResponse = await fetch("/api/knowledge");
   state.catalog = await knowledgeResponse.json();
   restore();
@@ -487,6 +667,8 @@ async function boot() {
     await recordEvent("session.started", state.lesson.phases[0], { lesson_id: state.lesson.id });
   }
   bindSurfaceNavigation();
+  bindCockpit();
+  $("chat-status").textContent = state.tutorInfo.available ? "AI tutor · ready" : "Guided practice";
   render();
   $("reset-session").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); window.location.reload(); });
 }

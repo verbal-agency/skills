@@ -144,5 +144,62 @@ class SessionStoreTests(unittest.TestCase):
         self.assertEqual(replayed["events"][-1]["evaluator"], provenance["evaluator"])
 
 
+    def test_tutor_chat_and_proposals_replay_without_affecting_mastery(self) -> None:
+        session_id = "tutor-test"
+        proposal = {
+            "schema": "learning-evidence/v1",
+            "label": "stale_gradient_accumulation",
+            "status": "candidate",
+            "result": "advisory",
+            "advisory": True,
+            "confidence_source": {
+                "type": "model",
+                "evaluator_id": "model-tutor-pt-g4",
+                "model": "claude-opus-5-5",
+                "prompt_version": "tutor-pt-g4-v1",
+            },
+            "evidence_spans": ["backward replaces the gradients"],
+            "alternatives": ["gradient_accumulation"],
+        }
+        self.store.append_event(session_id, "lesson-v1", "session.started", "diagnose", {})
+        self.store.append_event(
+            session_id, "lesson-v1", "chat.learner", "diagnose",
+            {"role": "learner", "text": "The loss flattens after a few steps."},
+            {"actor": "learner-ui"},
+        )
+        self.store.append_event(
+            session_id, "lesson-v1", "chat.tutor", "diagnose",
+            {"role": "tutor", "text": "What happens to .grad before backward?", "source": "model"},
+            {"actor": "model-tutor"},
+        )
+        self.store.append_event(
+            session_id, "lesson-v1", "tutor.observation.proposed", "diagnose",
+            {"observation": proposal},
+            {"actor": "model-tutor", "evaluator": proposal["confidence_source"]},
+        )
+
+        # Pure replay from a fresh store reconstructs the thread with no model call.
+        restarted = SessionStore(Path(self.tempdir.name) / "session.sqlite3", PHASES)
+        state = restarted.snapshot(session_id, "lesson-v1")["state"]
+        self.assertEqual([m["type"] for m in state["thread"]], ["chat.learner", "chat.tutor"])
+        self.assertEqual(state["thread"][1]["text"], "What happens to .grad before backward?")
+        self.assertEqual(state["tutor_proposals"], [proposal])
+        # The advisory proposal must not become mastery evidence or move the phase.
+        self.assertEqual(state["evidence"], [])
+        self.assertEqual(state["phase"], "diagnose")
+
+    def test_chat_is_legal_in_every_phase(self) -> None:
+        session_id = "chat-phase-test"
+        self.store.append_event(session_id, "lesson-v1", "session.started", "diagnose", {})
+        self.store.append_event(session_id, "lesson-v1", "diagnostic.submitted", "diagnose", {})
+        # Now in the teach phase; a chat event here must be accepted.
+        result = self.store.append_event(
+            session_id, "lesson-v1", "chat.tutor", "teach",
+            {"role": "tutor", "text": "Restate it back to me."}, {"actor": "scripted-tutor"},
+        )
+        self.assertEqual(result["state"]["phase"], "teach")
+        self.assertEqual(len(result["state"]["thread"]), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

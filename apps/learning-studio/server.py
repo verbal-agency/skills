@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import tutor
 from grading import grade_choice, grade_open_response
 from storage import SessionStore, TransitionError
 
@@ -126,7 +127,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
         parsed = urlparse(self.path)
         if parsed.path == "/api/lesson":
-            send_json(self, LESSON)
+            send_json(self, {
+                **LESSON,
+                "tutor": {"available": tutor.tutor_available(), "model": tutor.TUTOR_MODEL},
+            })
             return
         if parsed.path == "/api/knowledge":
             send_json(self, CATALOG)
@@ -155,7 +159,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802 - stdlib handler API
         parsed = urlparse(self.path)
-        if parsed.path not in ("/api/events", "/api/grade"):
+        if parsed.path not in ("/api/events", "/api/grade", "/api/tutor"):
             send_json(self, {"error": "not_found"}, 404)
             return
         try:
@@ -196,6 +200,9 @@ class Handler(BaseHTTPRequestHandler):
                 "observation": observation,
             })
             return
+        if parsed.path == "/api/tutor":
+            self.handle_tutor(payload)
+            return
         session_id = str(payload.get("session_id", "demo-session"))
         provenance = payload.get("provenance") if isinstance(payload.get("provenance"), dict) else {}
         provenance.setdefault("package_version", LESSON["package_version"])
@@ -222,6 +229,83 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError as error:
             send_json(self, {"error": "invalid_event", "detail": str(error)}, 400)
             return
+        send_json(self, result, 201)
+
+    def handle_tutor(self, payload: dict[str, object]) -> None:
+        """Hold one advisory tutor turn and record it as replayable events.
+
+        The tutor's reply and any proposed observation are stored as chat/proposal
+        events only. Proposals never enter `evidence`, so they cannot change
+        mastery or advance a phase — the deterministic grader remains sole owner of
+        learner state.
+        """
+
+        session_id = str(payload.get("session_id", "demo-session"))
+        message = payload.get("message", "")
+        if not isinstance(message, str) or not message.strip():
+            send_json(self, {"error": "invalid_tutor_request", "detail": "message must be non-empty text"}, 400)
+            return
+        message = message.strip()
+        snapshot = STORE.snapshot(session_id, LESSON["id"])
+        if not snapshot["exists"]:
+            send_json(self, {"error": "no_session", "detail": "start a session before chatting with the tutor"}, 409)
+            return
+        state = snapshot["state"]
+        phase = state["phase"]
+        package_version = LESSON["package_version"]
+        turn = tutor.generate_tutor_turn(
+            lesson=LESSON,
+            session_state=state,
+            history=state.get("thread", []),
+            learner_message=message,
+        )
+        actor = "model-tutor" if turn["source"] == "model" else "scripted-tutor"
+        try:
+            STORE.append_event(
+                session_id=session_id,
+                lesson_id=LESSON["id"],
+                event_type="chat.learner",
+                phase=phase,
+                data={"role": "learner", "text": message},
+                provenance={"actor": "learner-ui", "package_version": package_version},
+            )
+            STORE.append_event(
+                session_id=session_id,
+                lesson_id=LESSON["id"],
+                event_type="chat.tutor",
+                phase=phase,
+                data={
+                    "role": "tutor",
+                    "text": turn["reply"],
+                    "source": turn["source"],
+                    "model": turn.get("model"),
+                    "prompt_version": turn.get("prompt_version"),
+                },
+                provenance={"actor": actor, "package_version": package_version},
+            )
+            proposal = turn.get("proposed_observation")
+            if proposal:
+                STORE.append_event(
+                    session_id=session_id,
+                    lesson_id=LESSON["id"],
+                    event_type="tutor.observation.proposed",
+                    phase=phase,
+                    data={"observation": proposal},
+                    provenance={
+                        "actor": "model-tutor",
+                        "package_version": package_version,
+                        "evaluator": proposal.get("confidence_source"),
+                    },
+                )
+        except TransitionError as error:
+            send_json(self, {"error": "invalid_transition", "detail": str(error)}, 409)
+            return
+        result = STORE.snapshot(session_id, LESSON["id"])
+        result["tutor"] = {
+            "source": turn["source"],
+            "model": turn.get("model"),
+            "fallback_reason": turn.get("fallback_reason"),
+        }
         send_json(self, result, 201)
 
     def serve_static(self, request_path: str) -> None:

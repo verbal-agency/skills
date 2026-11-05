@@ -303,6 +303,14 @@ Acceptance criteria:
 
 Unlocks: adaptive explanations without making the model the source of truth.
 
+**Status (partial):** the advisory tutor is implemented — `tutor.py` produces
+schema-valid proposals (label, evidence spans, alternatives, model, prompt
+version) via structured outputs, recorded as `tutor.observation.proposed` events
+that replay without a live model call and never enter `evidence`. Criteria still
+open: calibration on held-out labeled cases, and conflict/low-confidence
+proposals triggering a disambiguating item. Until those land, proposals stay
+advisory and cannot change learner state.
+
 ### G5 — PyTorch code lab
 
 Add a bounded workspace, code runner, hidden tests, and structured run results.
@@ -382,9 +390,16 @@ Unlocks: safe expansion to additional technical and didactic subjects.
 
 ## Current implementation boundary
 
-G0, G1, G2, G2.5, and G3 are complete. The next cycle is G4: optional
-model-assisted diagnosis. Real code execution remains a later goal and should
-not be smuggled into route authoring or grading.
+G0, G1, G2, G2.5, and G3 are complete. G4's advisory model tutor is partially
+delivered: an optional model tutor proposes schema-valid diagnosis observations
+(label, evidence spans, alternatives, model, prompt version), and its turns
+replay with no live model call — but proposals are advisory only and cannot
+change mastery or phase. The remaining G4 work is calibration on a held-out
+labeled set and conflict-driven disambiguation, after which a proposal may
+influence learner state. The three-pane cockpit UI (subject rail + topic
+roulette, center workspace, right-rail tutor chat) landed alongside this tutor.
+Real code execution (G5) remains a later goal and should not be smuggled into
+route authoring or grading.
 
 ## Completed cycle record — G2.5
 
@@ -489,10 +504,13 @@ not be smuggled into route authoring or grading.
   `not_applicable` calibration result until numeric scores have a held-out
   calibration set.
 
-## Next cycle stub — G4
+## Active goal contract — G4 (advisory path delivered; calibration remaining)
 
-- **Objective:** add an optional model-assisted diagnosis proposal path that
-  cannot directly change phase, mastery, or remediation state.
+- **Objective:** the advisory model-assisted diagnosis path that cannot directly
+  change phase, mastery, or remediation state is implemented; the remaining work
+  is to calibrate proposals on a held-out labeled set and to raise a
+  disambiguating item on conflict or low confidence before any proposal is
+  allowed to influence learner state.
 - **Dependency:** G3 structured observations, evaluator provenance, abstention,
   and seeded fixture report must remain replayable without a live model call.
 - **Project outcomes and scenarios:** advances S2 Learn through evidence and S3
