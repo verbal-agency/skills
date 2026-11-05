@@ -2,8 +2,9 @@
 
 This document is for the person starting, demonstrating, and resetting the
 local Learning Studio runtime. The current implementation is a single-process,
-dependency-light demo through G2.5: a replayable PyTorch session plus a
-package-backed Knowledge surface and learner-owned exploration overlay.
+dependency-light demo through G3: a replayable PyTorch session, package-backed
+Knowledge surface, learner-owned exploration overlay, and deterministic
+structured evidence grader.
 
 ## 1. Prerequisites
 
@@ -63,11 +64,14 @@ Run the deterministic replay and transition checks with:
 
 ```bash
 uv run --locked python apps/learning-studio/test_storage.py
+uv run --locked python apps/learning-studio/test_grading.py
+uv run --locked python apps/learning-studio/evaluate_g3.py
 ```
 
-The expected result is four passing tests. The suite proves that illegal phase
-transitions are rejected and that a new store reconstructs the same state from
-the recorded events, including study traces and overlays.
+The expected result is five storage tests and four grader tests. The seeded G3
+report should show 1.0 macro precision and recall, an explicit abstention rate,
+and `calibration.status: not_applicable`: this grader emits categorical results,
+not probabilities.
 
 Session events are written to `.local/learning-studio.sqlite3`, which is
 ignored by Git. To use a different local database for an isolated run:
@@ -87,6 +91,12 @@ In the browser, complete the five visible phases:
 
 The evidence panel should show baseline evidence, code-repair evidence, and
 transfer-review evidence. The sidebar should show review scheduled for two days.
+
+The interactive session sends open responses and choice selections to
+`POST /api/grade`. The response includes a versioned observation with evidence
+spans, alternatives, status, and deterministic evaluator provenance. The UI
+then records that observation in the append-only event stream; it does not grade
+the answer locally.
 
 Use the **Knowledge** surface to search the six PyTorch concepts, open a card,
 follow a related concept, try recall, or add a concept to the exploration
@@ -134,6 +144,5 @@ run rather than deleting learner data casually.
 - Do not enter private learner data into a shared screen or commit browser
   storage exports to the repository.
 
-The next cycle is G3: structured evidence and deterministic graders. Real
-PyTorch execution belongs in G5, after sandbox limits and evidence semantics
-are implemented.
+The next cycle is G4: optional model-assisted diagnosis. Real PyTorch execution
+belongs in G5, after sandbox limits and evidence semantics are implemented.

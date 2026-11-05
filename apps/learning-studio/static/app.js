@@ -60,6 +60,8 @@ function applySession(snapshot) {
 
 async function recordEvent(type, phase, data = {}) {
   try {
+    const provenance = { actor: "learner-ui", package_version: state.lesson?.package_version };
+    if (data.observation?.evaluator) provenance.evaluator = data.observation.evaluator;
     const response = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -68,7 +70,7 @@ async function recordEvent(type, phase, data = {}) {
         type,
         phase,
         data,
-        provenance: { actor: "learner-ui", package_version: state.lesson?.package_version },
+        provenance,
       }),
     });
     const payload = await response.json();
@@ -83,6 +85,27 @@ async function recordEvent(type, phase, data = {}) {
   } catch {
     setFeedback("warning", "The session server could not record this action. Check that the local server is running, then try again.");
     return false;
+  }
+}
+
+async function gradeActivity(mode, activityId, input = {}) {
+  try {
+    const response = await fetch("/api/grade", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode,
+        activity_id: activityId,
+        package_version: state.lesson?.package_version,
+        ...input,
+      }),
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.detail || payload.error || "Grader rejected the activity");
+    return payload.observation;
+  } catch {
+    setFeedback("warning", "The deterministic grader could not evaluate this response. Check that the local server is running, then try again.");
+    return null;
   }
 }
 
@@ -377,10 +400,9 @@ function bindActivity() {
     $("submit-diagnose").addEventListener("click", async () => {
       const answer = state.answer.trim();
       if (!answer) { setFeedback("warning", "Write a partial model or state what feels uncertain so the tutor has something to diagnose."); render(); return; }
-      const lower = answer.toLowerCase();
-      const understands = lower.includes("accumul") || lower.includes("clear") || lower.includes("previous") || lower.includes("carry");
-      const evidence = { kind: understands ? "good" : "warn", title: understands ? "Baseline: promising model" : "Baseline: suspected gap", detail: understands ? "Mentions gradient carry-over or clearing." : "Needs a targeted explanation of gradient accumulation." };
-      if (await recordEvent("diagnostic.submitted", phase, { answer, diagnosis: understands ? "promising_model" : "suspected_gradient_accumulation", evidence })) render();
+      const observation = await gradeActivity("open_response", "diagnostic.gradient-accumulation.baseline", { response: answer });
+      if (!observation) { render(); return; }
+      if (await recordEvent("diagnostic.submitted", phase, { activity_id: "diagnostic.gradient-accumulation.baseline", answer, diagnosis: observation.label, observation })) render();
     });
   }
   if (phase === "teach") {
@@ -390,10 +412,15 @@ function bindActivity() {
     document.querySelectorAll("[data-option]").forEach((button) => button.addEventListener("click", () => { state.selectedOption = Number(button.dataset.option); save(); render(); }));
     $("submit-practice").addEventListener("click", async () => {
       if (state.selectedOption === null) { setFeedback("warning", "Choose the missing line before running verification."); render(); return; }
-      const correct = state.selectedOption === state.lesson.practice.correct;
-      if (!correct) { setFeedback("warning", "The verification caught a mismatch. Ask which operation resets accumulated gradients, then try again."); await recordEvent("practice.failed", phase, { selected: state.selectedOption }); render(); return; }
-      const evidence = { kind: "good", title: "Code repair verified", detail: "4 / 4 simulated tests passed; procedural evidence recorded." };
-      if (await recordEvent("code.verified", phase, { tests_passed: 4, tests_total: 4, evidence })) render();
+      const observation = await gradeActivity("choice", "practice.gradient-accumulation.repair", { selected_index: state.selectedOption });
+      if (!observation) { render(); return; }
+      if (observation.result !== "pass") {
+        setFeedback("warning", observation.failure_type === "execution_slip" ? "Choose one of the listed operations before running verification." : "The deterministic check found a procedural mismatch. Ask which operation resets accumulated gradients, then try again.");
+        await recordEvent("practice.failed", phase, { activity_id: "practice.gradient-accumulation.repair", selected: state.selectedOption, observation });
+        render();
+        return;
+      }
+      if (await recordEvent("code.verified", phase, { activity_id: "practice.gradient-accumulation.repair", selected: state.selectedOption, tests_passed: 4, tests_total: 4, observation })) render();
     });
   }
   if (phase === "verify") {
@@ -406,12 +433,16 @@ function bindActivity() {
     $("review-hint").addEventListener("click", async () => { if (await recordEvent("hint.used", phase, { hint: "gradient_accumulation" })) render(); });
     $("submit-review").addEventListener("click", async () => {
       const answer = state.answer.trim();
-      const lower = answer.toLowerCase();
-      const understands = lower.includes("accumul") || lower.includes("carry") || lower.includes("previous") || lower.includes("larger");
       if (!answer) { setFeedback("warning", "Write your prediction before finishing the review."); render(); return; }
-      if (!understands) { setFeedback("warning", "Your answer needs one more mechanism: describe what carries over between batches."); render(); return; }
-      const evidence = { kind: "good", title: "Transfer review passed", detail: "Explains the failure mode on a new prompt." };
-      if (await recordEvent("review.completed", phase, { result: "passed", next_review: "P2D", evidence })) {
+      const observation = await gradeActivity("open_response", "review.gradient-accumulation.transfer", { response: answer });
+      if (!observation) { render(); return; }
+      if (observation.result !== "pass") {
+        setFeedback("warning", observation.failure_type === "transfer_failure" ? "Your answer names a related control but needs the mechanism that carries between batches." : "The grader abstained: describe what happens to .grad between batches.");
+        await recordEvent("review.completed", phase, { activity_id: "review.gradient-accumulation.transfer", answer, result: "failed", observation });
+        render();
+        return;
+      }
+      if (await recordEvent("review.completed", phase, { activity_id: "review.gradient-accumulation.transfer", answer, result: "passed", next_review: "P2D", observation })) {
         setFeedback("success", "Session complete. The skill is now scheduled for a two-day review with a fresh variant.");
         render();
       }

@@ -20,6 +20,7 @@ artifacts:
   audits: audits/initial.md
   diagnostics: diagnostics/misconceptions.yaml
   evidence_fixtures: evidence/events.jsonl
+  evaluation_fixtures: evidence/g3_labeled_cases.jsonl
   environment: pyproject.toml
   examples: examples/
 

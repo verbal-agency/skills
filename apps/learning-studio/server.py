@@ -2,8 +2,9 @@
 """Local learning-studio runtime with a replayable SQLite session store.
 
 This deliberately uses only the Python standard library. It provides a static
-UI, a lesson fixture endpoint, and a server-owned event endpoint. Session state
-is derived by replaying typed events from a local SQLite database.
+UI, package-backed lesson and knowledge endpoints, a server-owned deterministic
+grader, and an event endpoint. Session state is derived by replaying typed
+events from a local SQLite database.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from grading import grade_choice, grade_open_response
 from storage import SessionStore, TransitionError
 
 
@@ -72,6 +74,49 @@ def send_json(handler: BaseHTTPRequestHandler, payload: object, status: int = 20
     handler.wfile.write(body)
 
 
+def validate_structured_observation(
+    event_type: str,
+    data: dict[str, object],
+    provenance: dict[str, object],
+) -> None:
+    """Reject client-mutated structured evidence before it reaches SQLite."""
+
+    observation = data.get("observation")
+    if observation is None:
+        return  # Preserve replay compatibility for pre-G3 legacy events.
+    if not isinstance(observation, dict):
+        raise ValueError("structured observation must be an object")
+    package_version = str(provenance.get("package_version", LESSON["package_version"]))
+    if event_type == "diagnostic.submitted":
+        expected = grade_open_response(
+            str(data.get("activity_id", "diagnostic.gradient-accumulation.baseline")),
+            data.get("answer", ""),
+            package_version,
+        )
+    elif event_type in {"practice.failed", "code.verified"}:
+        expected = grade_choice(
+            str(data.get("activity_id", "practice.gradient-accumulation.repair")),
+            data.get("selected"),
+            LESSON["practice"]["correct"],
+            package_version,
+        )
+    elif event_type == "review.completed":
+        expected = grade_open_response(
+            str(data.get("activity_id", "review.gradient-accumulation.transfer")),
+            data.get("answer", ""),
+            package_version,
+        )
+        expected_result = "passed" if expected["result"] == "pass" else "failed"
+        if data.get("result") != expected_result:
+            raise ValueError("review result does not match the deterministic observation")
+    else:
+        raise ValueError(f"structured observations are not supported for event {event_type!r}")
+    if observation != expected:
+        raise ValueError("structured observation does not match the server grader")
+    if provenance.get("evaluator") != expected["evaluator"]:
+        raise ValueError("event evaluator provenance does not match the server grader")
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -110,7 +155,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802 - stdlib handler API
         parsed = urlparse(self.path)
-        if parsed.path != "/api/events":
+        if parsed.path not in ("/api/events", "/api/grade"):
             send_json(self, {"error": "not_found"}, 404)
             return
         try:
@@ -122,16 +167,53 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError):
             send_json(self, {"error": "invalid_json"}, 400)
             return
+        if parsed.path == "/api/grade":
+            try:
+                package_version = str(payload.get("package_version", LESSON["package_version"]))
+                mode = str(payload.get("mode", "open_response"))
+                activity_id = str(payload.get("activity_id", ""))
+                if mode == "open_response":
+                    observation = grade_open_response(
+                        activity_id,
+                        payload.get("response", ""),
+                        package_version,
+                    )
+                elif mode == "choice":
+                    observation = grade_choice(
+                        activity_id,
+                        payload.get("selected_index"),
+                        LESSON["practice"]["correct"],
+                        package_version,
+                    )
+                else:
+                    raise ValueError(f"unsupported grading mode: {mode}")
+            except (TypeError, ValueError) as error:
+                send_json(self, {"error": "invalid_grading_request", "detail": str(error)}, 400)
+                return
+            send_json(self, {
+                "package_id": CATALOG["package_id"],
+                "package_version": package_version,
+                "observation": observation,
+            })
+            return
         session_id = str(payload.get("session_id", "demo-session"))
         provenance = payload.get("provenance") if isinstance(payload.get("provenance"), dict) else {}
         provenance.setdefault("package_version", LESSON["package_version"])
+        data = payload.get("data", {})
+        try:
+            if not isinstance(data, dict):
+                raise ValueError("event data must be an object")
+            validate_structured_observation(str(payload.get("type", "unknown")), data, provenance)
+        except (TypeError, ValueError) as error:
+            send_json(self, {"error": "invalid_event", "detail": str(error)}, 400)
+            return
         try:
             result = STORE.append_event(
                 session_id=session_id,
                 lesson_id=LESSON["id"],
                 event_type=str(payload.get("type", "unknown")),
                 phase=str(payload.get("phase", "")),
-                data=payload.get("data", {}),
+                data=data,
                 provenance=provenance,
             )
         except TransitionError as error:
