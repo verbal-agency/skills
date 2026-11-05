@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Learning Studio · PyTorch foundations</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark">LS</div>
+      <div>
+        <div class="eyebrow">LEARNING STUDIO</div>
+        <div class="brand-title">A focused session for learning by evidence</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="status-pill"><span class="status-dot"></span> Local replay mode</span>
+        <button class="ghost-button" id="reset-session">Reset session</button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <aside class="sidebar">
+        <div class="side-section">
+          <div class="eyebrow">CURRENT PATH</div>
+          <h2>PyTorch foundations</h2>
+          <p class="muted">A short diagnostic-to-practice loop for training loops.</p>
+        </div>
+
+        <div class="side-section">
+          <div class="eyebrow">SKILL MAP</div>
+          <div id="skill-list" class="skill-list"></div>
+        </div>
+
+        <div class="side-section session-meta">
+          <div class="eyebrow">SESSION</div>
+          <div class="meta-row"><span>Mode</span><strong>Guided practice</strong></div>
+          <div class="meta-row"><span>Evidence</span><strong id="evidence-count">0 events</strong></div>
+          <div class="meta-row"><span>Review</span><strong id="review-status">Not scheduled</strong></div>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <div class="workspace-header">
+          <div>
+            <div class="eyebrow" id="phase-label">DIAGNOSE</div>
+            <h1 id="lesson-title">Repair a PyTorch training loop</h1>
+            <p id="lesson-objective" class="objective"></p>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Session progress</span><strong id="progress-text">1 / 5</strong></div>
+            <div class="progress-track"><div id="session-progress" class="progress-fill"></div></div>
+          </div>
+        </div>
+
+        <div id="activity-card" class="activity-card"></div>
+      </section>
+
+      <aside class="evidence-panel">
+        <div class="eyebrow">EVIDENCE TRAIL</div>
+        <h2>What the session knows</h2>
+        <p class="muted">This panel is the bridge between a conversation and a learner model.</p>
+        <div id="evidence-list" class="evidence-list"></div>
+        <div class="next-box">
+          <div class="eyebrow">NEXT ACTION</div>
+          <div id="next-action">Answer the diagnostic to establish a baseline.</div>
+        </div>
+      </aside>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

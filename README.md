@@ -23,11 +23,24 @@ with the others. A package normally progresses through `scoped`, `modeled`,
 
 The pipeline has been exercised on three deliberately different domains:
 
-- [AWS three-tier VPC](/Users/wcu/Desktop/portfolio/skills/packages/aws-vpc-three-tier/manifest.yaml) — network objects, traffic paths, layered controls, and two-AZ resilience.
-- [Mistral on-prem serving](/Users/wcu/Desktop/portfolio/skills/packages/mistral-on-prem-serving/manifest.yaml) — model profiles, tokenizer/template correctness, vLLM serving, benchmarks, and endpoint hardening.
-- [Bayesian diagnostic reasoning](/Users/wcu/Desktop/portfolio/skills/packages/bayesian-diagnostic-reasoning/manifest.yaml) — conditional probability, test characteristics, Bayesian updates, and decision thresholds.
-- [LangChain Certified Agent Engineer](/Users/wcu/Desktop/portfolio/skills/packages/langchain-certified-agent-engineer/manifest.yaml) — building, testing, deploying, and monitoring agents across the current LCAE domains.
+- [AWS three-tier VPC](packages/aws-vpc-three-tier/manifest.yaml) — network objects, traffic paths, layered controls, and two-AZ resilience.
+- [Mistral on-prem serving](packages/mistral-on-prem-serving/manifest.yaml) — model profiles, tokenizer/template correctness, vLLM serving, benchmarks, and endpoint hardening.
+- [Bayesian diagnostic reasoning](packages/bayesian-diagnostic-reasoning/manifest.yaml) — conditional probability, test characteristics, Bayesian updates, and decision thresholds.
+- [LangChain Certified Agent Engineer](packages/langchain-certified-agent-engineer/manifest.yaml) — building, testing, deploying, and monitoring agents across the current LCAE domains.
 
 All three are currently `assembled` with conditional audits. The remaining
 evidence is intentionally explicit: live AWS and GPU serving runs, plus learner
 responses and transfer evidence for the Bayesian package.
+
+## Runnable learning studio
+
+The first runtime slice is a local, replayable PyTorch learning session. Start
+it with uv from the repository root:
+
+```bash
+uv run --locked python apps/learning-studio/server.py
+```
+
+Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/). Operator instructions,
+smoke checks, reset behavior, and current boundaries are documented in
+[docs/operator-runbook.md](docs/operator-runbook.md).

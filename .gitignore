@@ -1,2 +1,21 @@
 # Learner-specific attempts, misconceptions, and outcomes are private session data.
 packages/*/learner-state/
+
+# Private, work-in-progress curriculum.
+packages/*-safety-research-fellowship/
+
+# Local experiments and operator-run labs are not publishable package content.
+scratch/
+
+# Generated learning packets and render previews stay local until curated.
+artifacts/
+
+# Local credentials and environment configuration.
+.env
+.env.*
+!.env.example
+
+# uv-managed environments and Python bytecode.
+.venv/
+__pycache__/
+*.py[cod]

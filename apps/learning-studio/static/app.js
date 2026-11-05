@@ -1,0 +1,250 @@
+const STORAGE_KEY = "learning-studio-demo-v1";
+const SESSION_ID = "local-demo-session";
+
+const state = {
+  lesson: null,
+  phaseIndex: 0,
+  answer: "",
+  selectedOption: null,
+  hintsUsed: 0,
+  feedback: null,
+  evidence: [],
+  events: [],
+  reviewScheduled: false,
+};
+
+const phaseLabels = {
+  diagnose: "DIAGNOSE",
+  teach: "TEACH",
+  practice: "PRACTICE",
+  verify: "VERIFY",
+  review: "REVIEW",
+};
+
+const $ = (id) => document.getElementById(id);
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    phaseIndex: state.phaseIndex,
+    answer: state.answer,
+    selectedOption: state.selectedOption,
+    hintsUsed: state.hintsUsed,
+    feedback: state.feedback,
+    evidence: state.evidence,
+    events: state.events,
+    reviewScheduled: state.reviewScheduled,
+  }));
+}
+
+function restore() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    if (!saved) return;
+    Object.assign(state, saved);
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
+async function recordEvent(type, phase, data = {}) {
+  const event = { type, phase, data, at: new Date().toISOString() };
+  state.events.push(event);
+  try {
+    await fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: SESSION_ID, type, phase, data }),
+    });
+  } catch {
+    // Local replay remains usable if the optional event endpoint is unavailable.
+  }
+  save();
+}
+
+function renderSkills() {
+  $("skill-list").innerHTML = state.lesson.skills.map((skill) => `
+    <div class="skill-row">
+      <div class="skill-name"><span>${skill.label}</span><strong>${Math.round(skill.progress * 100)}%</strong></div>
+      <div class="mini-track"><div class="mini-fill" style="width:${Math.round(skill.progress * 100)}%"></div></div>
+    </div>
+  `).join("");
+}
+
+function renderEvidence() {
+  $("evidence-count").textContent = `${state.evidence.length} event${state.evidence.length === 1 ? "" : "s"}`;
+  $("review-status").textContent = state.reviewScheduled ? "Due in 2 days" : "Not scheduled";
+  const list = $("evidence-list");
+  if (!state.evidence.length) {
+    list.innerHTML = `<div class="empty-state">No evidence yet. The diagnostic will establish a baseline.</div>`;
+  } else {
+    list.innerHTML = state.evidence.map((item) => `
+      <div class="evidence-item ${item.kind}">
+        <strong>${item.title}</strong>
+        <span>${item.detail}</span>
+      </div>
+    `).join("");
+  }
+}
+
+function setFeedback(kind, text) {
+  state.feedback = { kind, text };
+  save();
+}
+
+function feedbackHtml() {
+  return state.feedback ? `<div class="feedback ${state.feedback.kind}">${state.feedback.text}</div>` : "";
+}
+
+function moveTo(nextIndex) {
+  state.phaseIndex = nextIndex;
+  state.answer = "";
+  state.selectedOption = null;
+  state.feedback = null;
+  save();
+  render();
+}
+
+function renderDiagnose() {
+  const d = state.lesson.diagnostic;
+  return `
+    <div class="activity-topline"><div><div class="activity-kicker">Baseline check · 4 minutes</div><h2 class="activity-title">Show what you already understand</h2></div><div class="eyebrow">1 / 5</div></div>
+    <p class="activity-copy">Before explaining anything, the tutor wants to see your current mental model. A partial answer is useful evidence too.</p>
+    <div class="callout"><strong>Question</strong>${d.prompt}</div>
+    <div class="answer-area"><textarea id="answer-box" placeholder="Write your best explanation, or say what feels uncertain."></textarea></div>
+    ${state.hintsUsed ? `<div class="feedback warning"><strong>Hint used:</strong> ${d.hint}</div>` : ""}
+    ${feedbackHtml()}
+    <div class="button-row"><button class="hint-button" id="hint-button">Need a hint</button><button class="primary-button" id="submit-diagnose">Submit baseline</button></div>
+  `;
+}
+
+function renderTeach() {
+  return `
+    <div class="activity-topline"><div><div class="activity-kicker">Targeted explanation · 5 minutes</div><h2 class="activity-title">Gradients accumulate by default</h2></div><div class="eyebrow">2 / 5</div></div>
+    <p class="activity-copy">PyTorch adds new gradients to the existing <code>.grad</code> values on parameters. A normal training loop clears those values before computing the next batch's gradients.</p>
+    <div class="callout"><strong>Core idea</strong><code>optimizer.zero_grad()</code> is not a cosmetic reset. It prevents the next update from mixing evidence from the current batch with gradients left over from earlier batches.</div>
+    <div class="code-block">optimizer.zero_grad()\nlogits = model(X)\nloss = loss_fn(logits, y)\nloss.backward()\noptimizer.step()</div>
+    <p class="activity-copy">The next activity asks you to recognize this pattern inside a real loop. You will get a test result, not just a model-generated opinion.</p>
+    ${feedbackHtml()}
+    <div class="button-row"><button class="primary-button" id="continue-teach">Try the repair task</button></div>
+  `;
+}
+
+function renderPractice() {
+  const p = state.lesson.practice;
+  const letters = ["A", "B", "C", "D"];
+  return `
+    <div class="activity-topline"><div><div class="activity-kicker">Runnable reasoning · 8 minutes</div><h2 class="activity-title">Repair the missing training step</h2></div><div class="eyebrow">3 / 5</div></div>
+    <p class="activity-copy">The code below runs forward and backward, but one training step is missing. Choose the line and place it before the forward pass.</p>
+    <div class="code-block">${p.code}</div>
+    <div class="option-list">${p.options.map((option, index) => `
+      <button class="option ${state.selectedOption === index ? "selected" : ""}" data-option="${index}"><span class="option-mark">${letters[index]}</span><span>${option}</span></button>
+    `).join("")}</div>
+    ${feedbackHtml()}
+    <div class="button-row"><button class="primary-button" id="submit-practice">Run verification</button></div>
+  `;
+}
+
+function renderVerify() {
+  return `
+    <div class="activity-topline"><div><div class="activity-kicker">Ground-truth check · completed</div><h2 class="activity-title">The repair passed the test</h2></div><div class="eyebrow">4 / 5</div></div>
+    <p class="activity-copy">The simulated runner checked the training loop contract. The missing reset was placed before the forward pass, so each update uses the current batch's gradients.</p>
+    <div class="result-grid"><div class="result-box"><div class="eyebrow">Test result</div><strong>4 / 4 passed</strong></div><div class="result-box"><div class="eyebrow">Evidence</div><strong>Procedural success</strong></div><div class="result-box"><div class="eyebrow">Hints</div><strong>${state.hintsUsed} used</strong></div></div>
+    <div class="callout"><strong>What this does not prove</strong>Passing one repair task does not yet prove independent mastery. The final review changes the wording and asks you to predict the failure mode.</div>
+    ${feedbackHtml()}
+    <div class="button-row"><button class="primary-button" id="continue-verify">Take the transfer review</button></div>
+  `;
+}
+
+function renderReview() {
+  const r = state.lesson.review;
+  return `
+    <div class="activity-topline"><div><div class="activity-kicker">Transfer review · 4 minutes</div><h2 class="activity-title">Explain the failure mode</h2></div><div class="eyebrow">5 / 5</div></div>
+    <p class="activity-copy">This is a new prompt with the same underlying skill. Use your own words; a correct phrase without the mechanism is only partial evidence.</p>
+    <div class="callout"><strong>Review question</strong>${r.prompt}</div>
+    <div class="answer-area"><textarea id="review-box" placeholder="Explain what happens and why."></textarea></div>
+    ${state.hintsUsed > 1 ? `<div class="feedback warning"><strong>Hint used:</strong> ${r.hint}</div>` : ""}
+    ${feedbackHtml()}
+    <div class="button-row"><button class="hint-button" id="review-hint">Need a hint</button><button class="primary-button" id="submit-review">Finish session</button></div>
+  `;
+}
+
+function bindActivity() {
+  const phase = state.lesson.phases[state.phaseIndex];
+  if (phase === "diagnose") {
+    const box = $("answer-box");
+    box.value = state.answer;
+    box.addEventListener("input", (e) => { state.answer = e.target.value; save(); });
+    $("hint-button").addEventListener("click", async () => { state.hintsUsed += 1; await recordEvent("hint.used", phase, { hint: "gradient_accumulation" }); render(); });
+    $("submit-diagnose").addEventListener("click", async () => {
+      const answer = state.answer.trim();
+      if (!answer) { setFeedback("warning", "Write a partial model or state what feels uncertain so the tutor has something to diagnose."); render(); return; }
+      const lower = answer.toLowerCase();
+      const understands = lower.includes("accumul") || lower.includes("clear") || lower.includes("previous") || lower.includes("carry");
+      state.evidence.push({ kind: understands ? "good" : "warn", title: understands ? "Baseline: promising model" : "Baseline: suspected gap", detail: understands ? "Mentions gradient carry-over or clearing." : "Needs a targeted explanation of gradient accumulation." });
+      await recordEvent("diagnostic.submitted", phase, { answer, diagnosis: understands ? "promising_model" : "suspected_gradient_accumulation" });
+      moveTo(1);
+    });
+  }
+  if (phase === "teach") {
+    $("continue-teach").addEventListener("click", async () => { await recordEvent("activity.completed", phase, { concept: "gradient_accumulation" }); moveTo(2); });
+  }
+  if (phase === "practice") {
+    document.querySelectorAll("[data-option]").forEach((button) => button.addEventListener("click", () => { state.selectedOption = Number(button.dataset.option); save(); render(); }));
+    $("submit-practice").addEventListener("click", async () => {
+      if (state.selectedOption === null) { setFeedback("warning", "Choose the missing line before running verification."); render(); return; }
+      const correct = state.selectedOption === state.lesson.practice.correct;
+      if (!correct) { setFeedback("warning", "The verification caught a mismatch. Ask which operation resets accumulated gradients, then try again."); await recordEvent("practice.failed", phase, { selected: state.selectedOption }); render(); return; }
+      state.evidence.push({ kind: "good", title: "Code repair verified", detail: "4 / 4 simulated tests passed; procedural evidence recorded." });
+      await recordEvent("code.verified", phase, { tests_passed: 4, tests_total: 4 });
+      moveTo(3);
+    });
+  }
+  if (phase === "verify") {
+    $("continue-verify").addEventListener("click", async () => { await recordEvent("activity.completed", phase, { evidence: "procedural_success" }); moveTo(4); });
+  }
+  if (phase === "review") {
+    const box = $("review-box");
+    box.value = state.answer;
+    box.addEventListener("input", (e) => { state.answer = e.target.value; save(); });
+    $("review-hint").addEventListener("click", async () => { state.hintsUsed += 1; await recordEvent("hint.used", phase, { hint: "gradient_accumulation" }); render(); });
+    $("submit-review").addEventListener("click", async () => {
+      const answer = state.answer.trim();
+      const lower = answer.toLowerCase();
+      const understands = lower.includes("accumul") || lower.includes("carry") || lower.includes("previous") || lower.includes("larger");
+      if (!answer) { setFeedback("warning", "Write your prediction before finishing the review."); render(); return; }
+      if (!understands) { setFeedback("warning", "Your answer needs one more mechanism: describe what carries over between batches."); render(); return; }
+      state.evidence.push({ kind: "good", title: "Transfer review passed", detail: "Explains the failure mode on a new prompt." });
+      state.reviewScheduled = true;
+      await recordEvent("review.completed", phase, { result: "passed", next_review: "P2D" });
+      setFeedback("success", "Session complete. The skill is now scheduled for a two-day review with a fresh variant.");
+      render();
+    });
+  }
+}
+
+function render() {
+  const phase = state.lesson.phases[state.phaseIndex];
+  $("phase-label").textContent = phaseLabels[phase];
+  $("progress-text").textContent = `${Math.min(state.phaseIndex + 1, state.lesson.phases.length)} / ${state.lesson.phases.length}`;
+  $("session-progress").style.width = `${((state.phaseIndex + 1) / state.lesson.phases.length) * 100}%`;
+  $("activity-card").innerHTML = phase === "diagnose" ? renderDiagnose() : phase === "teach" ? renderTeach() : phase === "practice" ? renderPractice() : phase === "verify" ? renderVerify() : renderReview();
+  $("next-action").textContent = state.reviewScheduled ? "Return in two days for a fresh transfer item." : phase === "review" ? "Complete the transfer review to schedule the next check." : "Answer the current activity; the next step is gated by evidence.";
+  renderEvidence();
+  bindActivity();
+}
+
+async function boot() {
+  const response = await fetch("/api/lesson");
+  state.lesson = await response.json();
+  restore();
+  $("lesson-title").textContent = state.lesson.title;
+  $("lesson-objective").textContent = state.lesson.objective;
+  renderSkills();
+  render();
+  $("reset-session").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); window.location.reload(); });
+  await recordEvent("session.started", state.lesson.phases[state.phaseIndex], { lesson_id: state.lesson.id });
+}
+
+boot().catch((error) => {
+  document.body.innerHTML = `<main style="font-family:system-ui;padding:40px"><h1>Learning Studio could not start</h1><p>${error.message}</p></main>`;
+});

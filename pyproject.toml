@@ -1,0 +1,9 @@
+[project]
+name = "learning-studio"
+version = "0.1.0"
+description = "A local, replayable learning-studio runtime"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.uv]
+package = false
