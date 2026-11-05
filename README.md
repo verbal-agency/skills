@@ -1,9 +1,10 @@
-# Learning skills
+# Theo
 
-This repository contains composable skills for turning a learning goal into a
-researched, structured, teachable, and auditable learning package. Subjects
-such as AWS infrastructure or on-premises model serving are generated package
-content, not hard-coded skills.
+Theo is an evidence-based learning companion. It pairs a local **Learning
+Studio** app with a toolchain of composable skills for turning a learning goal
+into a researched, structured, teachable, and auditable learning package.
+Subjects such as AWS infrastructure or on-premises model serving are generated
+package content, not hard-coded skills.
 
 ## Pipeline
 
