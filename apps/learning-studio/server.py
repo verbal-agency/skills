@@ -18,6 +18,7 @@ from urllib.parse import parse_qs, urlparse
 import tutor
 from grading import grade_choice, grade_open_response
 from storage import SessionStore, TransitionError
+from tutor import build_disambiguation_request
 
 
 ROOT = Path(__file__).resolve().parent
@@ -44,6 +45,12 @@ LESSON = {
     "diagnostic": {
         "prompt": "Why should optimizer.zero_grad() usually run before loss.backward() in a training loop?",
         "hint": "Think about what happens to a parameter's .grad value after a backward pass.",
+        "disambiguator": {
+            "id": "disambiguator.gradient-accumulation.double-backward",
+            "prompt": "Run two backward passes on the same scalar without zero_grad. What happens to .grad, and what does that tell you about the accumulation window?",
+            "target_label": "gradient_accumulation",
+            "source": "packages/pytorch-foundations/diagnostics/misconceptions.yaml#MIS-PT-003",
+        },
     },
     "practice": {
         "prompt": "Which missing line should be added before the forward pass?",
@@ -260,6 +267,22 @@ class Handler(BaseHTTPRequestHandler):
             learner_message=message,
         )
         actor = "model-tutor" if turn["source"] == "model" else "scripted-tutor"
+        deterministic_observation = None
+        if phase == "diagnose":
+            deterministic_observation = grade_open_response(
+                "diagnostic.gradient-accumulation.baseline", message, package_version
+            )
+        elif phase == "review":
+            deterministic_observation = grade_open_response(
+                "review.gradient-accumulation.transfer", message, package_version
+            )
+        proposal = turn.get("proposed_observation")
+        disambiguation = build_disambiguation_request(
+            proposal,
+            deterministic_observation,
+            phase=phase,
+            item=LESSON["diagnostic"]["disambiguator"],
+        )
         try:
             STORE.append_event(
                 session_id=session_id,
@@ -283,7 +306,6 @@ class Handler(BaseHTTPRequestHandler):
                 },
                 provenance={"actor": actor, "package_version": package_version},
             )
-            proposal = turn.get("proposed_observation")
             if proposal:
                 STORE.append_event(
                     session_id=session_id,
@@ -297,6 +319,19 @@ class Handler(BaseHTTPRequestHandler):
                         "evaluator": proposal.get("confidence_source"),
                     },
                 )
+            if disambiguation:
+                STORE.append_event(
+                    session_id=session_id,
+                    lesson_id=LESSON["id"],
+                    event_type="tutor.disambiguation.requested",
+                    phase=phase,
+                    data=disambiguation,
+                    provenance={
+                        "actor": "learning-controller",
+                        "package_version": package_version,
+                        "evaluator": disambiguation["source"],
+                    },
+                )
         except TransitionError as error:
             send_json(self, {"error": "invalid_transition", "detail": str(error)}, 409)
             return
@@ -305,6 +340,7 @@ class Handler(BaseHTTPRequestHandler):
             "source": turn["source"],
             "model": turn.get("model"),
             "fallback_reason": turn.get("fallback_reason"),
+            "disambiguation_requested": bool(disambiguation),
         }
         send_json(self, result, 201)
 

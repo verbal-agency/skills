@@ -34,6 +34,7 @@ def default_state(phases: list[str]) -> dict[str, Any]:
         # by replaying events; neither can change mastery, evidence, or phase.
         "thread": [],
         "tutor_proposals": [],
+        "disambiguation_requests": [],
     }
 
 
@@ -267,6 +268,7 @@ def validate_transition(
         "chat.learner": set(phases),
         "chat.tutor": set(phases),
         "tutor.observation.proposed": set(phases),
+        "tutor.disambiguation.requested": set(phases),
     }
     if event_type not in allowed or current not in allowed[event_type]:
         raise TransitionError(f"event {event_type!r} is not legal in phase {current!r}")
@@ -329,6 +331,12 @@ def replay_events(events: list[dict[str, Any]], phases: list[str]) -> dict[str, 
             observation = data.get("observation")
             if isinstance(observation, dict):
                 state["tutor_proposals"].append(observation)
+        elif event_type == "tutor.disambiguation.requested":
+            # A conflict or abstention schedules a clarifying item, but it is
+            # still only a request; answering it must produce a separate,
+            # controller-validated evidence event.
+            if isinstance(data, dict):
+                state["disambiguation_requests"].append(data)
     state["phase"] = phases[state["phase_index"]]
     return state
 

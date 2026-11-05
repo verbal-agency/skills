@@ -270,6 +270,7 @@ textarea:focus { outline: none; border-color: var(--phos); }
 .msg.learner .bubble::before { content: "you> "; color: var(--cyan); }
 .msg.pending .bubble { color: var(--fg-faint); }
 .proposal { border: 1px solid var(--magenta); padding: 9px 11px; }
+.proposal.disambiguation { border-color: var(--cyan); }
 .proposal .eyebrow { color: var(--magenta); }
 .proposal .eyebrow::before { content: "! "; }
 .proposal .p-label { color: var(--fg-bright); font-size: 16px; margin-top: 3px; text-transform: uppercase; letter-spacing: .5px; }

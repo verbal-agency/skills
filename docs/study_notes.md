@@ -54,3 +54,12 @@
 3. Why is `calibration: not_applicable` the correct result for a categorical
    grader, and what held-out evidence would be required before numeric scores
    could affect learner state?
+
+## G4 review questions
+
+1. Why is a model proposal stored separately from deterministic evidence, even
+   when the model and grader agree on the label?
+2. What three cases should request a disambiguating item, and why is a request
+   not itself evidence of a misconception?
+3. Which parts of an agent trajectory must be recorded so a replay can explain
+   tool selection without calling the live model again?

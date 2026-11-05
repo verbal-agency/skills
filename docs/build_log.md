@@ -148,3 +148,40 @@ answer is no: it means the implementation matches its ten synthetic labels.
 The work supports a replayable evidence contract and explicit abstention; it
 does not support generalization, calibrated probabilities, learner improvement,
 or model diagnosis accuracy.
+
+## G4 — Advisory model diagnosis and conflict routing
+
+- **Prior limitation:** G3 made deterministic evidence replayable, but the
+  learner had no conversational tutor that could propose an interpretation or
+  expose ambiguity without becoming an unreviewed grader.
+- **Hypothesis:** An optional structured-output tutor can widen explanation
+  coverage if its proposals remain advisory and disagreements become narrower
+  questions rather than hidden mastery updates.
+- **Capability built:** Added the phase-aware tutor and three-pane cockpit,
+  stored tutor proposals with model/prompt provenance, and added
+  `tutor.disambiguation.requested` events for model abstention, deterministic
+  abstention, or label conflict. Disambiguation requests replay separately from
+  evidence and render as clarifying-item cards.
+- **Observed:** 8 storage, 4 grader, and 9 tutor tests pass; JavaScript syntax
+  and diff checks pass. A disambiguation request survives a fresh SQLite replay
+  and leaves phase and evidence unchanged. The tutor emits categorical proposal
+  statuses, not numeric confidence.
+- **Interpretation / attribution confidence:** High confidence in the local
+  event and authority boundary for this authored lesson; low confidence in
+  model proposal quality because no held-out live-model agreement study has
+  been run. The implementation proves safe routing, not diagnosis accuracy.
+- **Decision:** Mark the categorical advisory slice complete. Keep numeric
+  confidence unavailable, route the next cycle to Agents SDK orchestration,
+  and preserve proposal-quality evaluation as a later evidence task.
+
+Interview explanation: “I added a model tutor without letting the model become
+the source of truth. Every proposal is advisory, and if the model abstains or
+disagrees with the deterministic grader, the controller records a narrower
+disambiguating item instead of changing mastery. The next question is whether
+an agent runtime can coordinate bounded teaching tools while preserving that
+authority boundary.”
+
+Likely follow-up: “Does this prove the model diagnoses misconceptions well?”
+The answer is no: it proves replayable conflict handling and explicit
+abstention for one authored PyTorch lesson, not model accuracy or learner
+improvement across subjects.

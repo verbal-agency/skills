@@ -46,7 +46,9 @@ then rerun the command above.
 
 The verification step is still a deterministic simulated runner, but open
 responses and choice activities now pass through a versioned structured grader
-before their observations enter the event stream. An advisory model tutor (G4,
-pulled forward) can propose diagnosis observations, but those proposals stay out
-of mastery until calibration exists. The session/event substrate is durable and
-replayable; a later roadmap cycle adds a bounded PyTorch execution sandbox.
+before their observations enter the event stream. The categorical advisory
+model tutor (G4) can propose diagnosis observations; conflicts and abstentions
+create replayable disambiguation requests, but neither proposals nor requests
+enter mastery. The session/event substrate is durable and replayable; G4.5 adds
+an Agents SDK orchestration layer before the later bounded PyTorch execution
+sandbox.

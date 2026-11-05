@@ -200,6 +200,31 @@ class SessionStoreTests(unittest.TestCase):
         self.assertEqual(result["state"]["phase"], "teach")
         self.assertEqual(len(result["state"]["thread"]), 1)
 
+    def test_disambiguation_request_replays_without_affecting_evidence(self) -> None:
+        session_id = "disambiguation-test"
+        request = {
+            "schema": "learning-disambiguation/v1",
+            "reason": "evaluator_conflict",
+            "source": {"type": "derived", "evaluator_id": "tutor-conflict-g4-v1", "evaluator_version": 1},
+            "item": {"id": "disambiguator.gradient-accumulation.double-backward", "prompt": "Trace two backward passes."},
+        }
+        self.store.append_event(session_id, "lesson-v1", "session.started", "diagnose", {})
+        self.store.append_event(
+            session_id,
+            "lesson-v1",
+            "tutor.disambiguation.requested",
+            "diagnose",
+            request,
+            {"actor": "learning-controller", "evaluator": request["source"]},
+        )
+        first = self.store.snapshot(session_id, "lesson-v1")
+        restarted = SessionStore(Path(self.tempdir.name) / "session.sqlite3", PHASES)
+        second = restarted.snapshot(session_id, "lesson-v1")
+        self.assertEqual(first["state"], second["state"])
+        self.assertEqual(second["state"]["disambiguation_requests"], [request])
+        self.assertEqual(second["state"]["evidence"], [])
+        self.assertEqual(second["state"]["phase"], "diagnose")
+
 
 if __name__ == "__main__":
     unittest.main()

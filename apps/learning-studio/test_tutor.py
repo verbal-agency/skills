@@ -84,6 +84,42 @@ class ScriptedTutorTests(unittest.TestCase):
 
 
 class ModelTutorTests(unittest.TestCase):
+    def test_abstention_requests_disambiguator_without_evidence(self) -> None:
+        proposal = {
+            "label": "gradient_accumulation",
+            "status": "abstained",
+            "advisory": True,
+        }
+        request = tutor.build_disambiguation_request(
+            proposal,
+            {"label": "gradient_accumulation", "status": "abstained"},
+            phase="diagnose",
+            item={"id": "disambiguator.test", "prompt": "Trace two backward passes."},
+        )
+        self.assertIsNotNone(request)
+        self.assertEqual(request["reason"], "model_abstained")
+        self.assertEqual(request["schema"], "learning-disambiguation/v1")
+        self.assertEqual(request["item"]["id"], "disambiguator.test")
+
+    def test_matching_candidate_does_not_request_disambiguator(self) -> None:
+        request = tutor.build_disambiguation_request(
+            {"label": "gradient_accumulation", "status": "candidate"},
+            {"label": "gradient_accumulation", "status": "supported"},
+            phase="diagnose",
+            item={"id": "disambiguator.test", "prompt": "Trace two backward passes."},
+        )
+        self.assertIsNone(request)
+
+    def test_conflicting_candidate_requests_disambiguator(self) -> None:
+        request = tutor.build_disambiguation_request(
+            {"label": "stale_gradient_accumulation", "status": "candidate"},
+            {"label": "gradient_accumulation", "status": "supported"},
+            phase="diagnose",
+            item={"id": "disambiguator.test", "prompt": "Trace two backward passes."},
+        )
+        self.assertIsNotNone(request)
+        self.assertEqual(request["reason"], "evaluator_conflict")
+
     def test_model_json_is_parsed_and_proposal_is_advisory(self) -> None:
         payload = json.dumps({
             "reply": "What happens to .grad right after backward?",

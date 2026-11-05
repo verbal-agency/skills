@@ -2,9 +2,10 @@
 
 This document is for the person starting, demonstrating, and resetting the
 local Learning Studio runtime. The current implementation is a single-process,
-dependency-light demo through G3: a replayable PyTorch session, package-backed
-Knowledge surface, learner-owned exploration overlay, and deterministic
-structured evidence grader.
+dependency-light demo through the categorical advisory slice of G4: a replayable
+PyTorch session, package-backed Knowledge surface, learner-owned exploration
+overlay, deterministic structured evidence grader, and optional tutor with
+replayable disambiguation requests.
 
 ## 1. Prerequisites
 
@@ -76,7 +77,7 @@ uv run --locked python apps/learning-studio/test_tutor.py
 uv run --locked python apps/learning-studio/evaluate_g3.py
 ```
 
-The expected result is seven storage tests, four grader tests, and six tutor
+The expected result is eight storage tests, four grader tests, and nine tutor
 tests. The seeded G3
 report should show 1.0 macro precision and recall, an explicit abstention rate,
 and `calibration.status: not_applicable`: this grader emits categorical results,
@@ -155,7 +156,8 @@ run rather than deleting learner data casually.
 - Do not enter private learner data into a shared screen or commit browser
   storage exports to the repository.
 
-G4's advisory model tutor is now present but intentionally cannot affect mastery;
-calibrating its proposals against a held-out labeled set is the remaining G4
-work. Real PyTorch execution belongs in G5, after sandbox limits and evidence
-semantics are implemented.
+G4's categorical advisory model tutor is present but intentionally cannot affect
+mastery. Model or deterministic abstention and label conflict create a
+replayable disambiguation request; neither request nor proposal is evidence.
+Agents SDK orchestration belongs to G4.5. Real PyTorch execution belongs in G5,
+after sandbox limits and evidence semantics are implemented.

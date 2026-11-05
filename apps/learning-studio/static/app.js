@@ -19,6 +19,7 @@ const state = {
   reviewScheduled: false,
   thread: [],
   tutorProposals: [],
+  disambiguationRequests: [],
   tutorInfo: { available: false, model: null },
   chatBusy: false,
 };
@@ -62,6 +63,7 @@ function applySession(snapshot) {
   state.routeProposals = sessionState.route_proposals || [];
   state.thread = sessionState.thread || [];
   state.tutorProposals = sessionState.tutor_proposals || [];
+  state.disambiguationRequests = sessionState.disambiguation_requests || [];
 }
 
 async function recordEvent(type, phase, data = {}) {
@@ -553,6 +555,17 @@ function renderThread() {
       <div class="p-note">${escapeHtml(p.detail || "Advisory model signal; the deterministic grader still owns mastery.")}</div>
     </div>
   `).join("");
+  html += (state.disambiguationRequests || []).map((request) => {
+    const item = request.item || {};
+    const reason = (request.reason || "uncertain signal").replace(/_/g, " ");
+    return `
+      <div class="proposal disambiguation">
+        <div class="eyebrow">Clarify before grading · ${escapeHtml(reason)}</div>
+        <div class="p-label">${escapeHtml(item.id || "disambiguating item")}</div>
+        <div class="p-note">${escapeHtml(item.prompt || "The tutor found competing explanations. Answer a narrower question before we interpret it.")}</div>
+      </div>
+    `;
+  }).join("");
   el.innerHTML = html;
   el.scrollTop = el.scrollHeight;
 }
