@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Small local learning-studio runtime for the first roadmap slice.
+"""Local learning-studio runtime with a replayable SQLite session store.
 
 This deliberately uses only the Python standard library. It provides a static
-UI, a lesson fixture endpoint, and an in-memory event endpoint so the browser
-can exercise the same session/event shape that the live agent runtime will use.
+UI, a lesson fixture endpoint, and a server-owned event endpoint. Session state
+is derived by replaying typed events from a local SQLite database.
 """
 
 from __future__ import annotations
@@ -14,10 +14,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from storage import SessionStore, TransitionError
+
 
 ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "static"
 PORT = int(os.environ.get("LEARNING_STUDIO_PORT", "8765"))
+REPO_ROOT = ROOT.parent.parent
+DB_PATH = Path(os.environ.get("LEARNING_STUDIO_DB", REPO_ROOT / ".local" / "learning-studio.sqlite3"))
 
 LESSON = {
     "id": "pytorch-training-loop-001",
@@ -51,7 +55,7 @@ LESSON = {
     },
 }
 
-EVENTS: dict[str, list[dict]] = {}
+STORE: SessionStore
 
 
 def send_json(handler: BaseHTTPRequestHandler, payload: object, status: int = 200) -> None:
@@ -75,9 +79,13 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/lesson":
             send_json(self, LESSON)
             return
-        if parsed.path == "/api/events":
+        if parsed.path in ("/api/session", "/api/events"):
             session_id = parse_qs(parsed.query).get("session_id", ["demo-session"])[0]
-            send_json(self, {"session_id": session_id, "events": EVENTS.get(session_id, [])})
+            snapshot = STORE.snapshot(session_id, LESSON["id"])
+            if parsed.path == "/api/events":
+                send_json(self, {"session_id": session_id, "events": snapshot["events"], "state": snapshot["state"], "exists": snapshot["exists"]})
+            else:
+                send_json(self, snapshot)
             return
         self.serve_static(parsed.path)
 
@@ -88,19 +96,30 @@ class Handler(BaseHTTPRequestHandler):
             return
         try:
             size = int(self.headers.get("Content-Length", "0"))
+            if size > 256 * 1024:
+                send_json(self, {"error": "payload_too_large"}, 413)
+                return
             payload = json.loads(self.rfile.read(size) or b"{}")
         except (ValueError, json.JSONDecodeError):
             send_json(self, {"error": "invalid_json"}, 400)
             return
         session_id = str(payload.get("session_id", "demo-session"))
-        event = {
-            "sequence": len(EVENTS.setdefault(session_id, [])) + 1,
-            "type": str(payload.get("type", "unknown")),
-            "phase": payload.get("phase"),
-            "data": payload.get("data", {}),
-        }
-        EVENTS[session_id].append(event)
-        send_json(self, event, 201)
+        try:
+            result = STORE.append_event(
+                session_id=session_id,
+                lesson_id=LESSON["id"],
+                event_type=str(payload.get("type", "unknown")),
+                phase=str(payload.get("phase", "")),
+                data=payload.get("data", {}),
+                provenance=payload.get("provenance"),
+            )
+        except TransitionError as error:
+            send_json(self, {"error": "invalid_transition", "detail": str(error)}, 409)
+            return
+        except ValueError as error:
+            send_json(self, {"error": "invalid_event", "detail": str(error)}, 400)
+            return
+        send_json(self, result, 201)
 
     def serve_static(self, request_path: str) -> None:
         relative = "index.html" if request_path in ("", "/") else request_path.lstrip("/")
@@ -126,8 +145,11 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
+    global STORE
+    STORE = SessionStore(DB_PATH, LESSON["phases"])
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"Learning Studio running at http://127.0.0.1:{PORT}")
+    print(f"SQLite session store: {DB_PATH}")
     print("Press Ctrl-C to stop.")
     try:
         server.serve_forever()

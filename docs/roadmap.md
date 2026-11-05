@@ -109,7 +109,7 @@ Unlocks: live agent integration without changing the UI contract.
 The current G0 fixture intentionally uses a brittle keyword heuristic and a
 simulated code check. Those are UI probes, not trusted learner evidence.
 
-### G1 — Persistent session and event substrate
+### G1 — Persistent session and event substrate (complete)
 
 Move session authority from browser-only state into a local SQLite store while
 keeping the event stream append-only and replayable.
@@ -125,6 +125,10 @@ Acceptance criteria:
 
 Unlocks: reliable diagnosis and model-assisted evaluation without trusting
 browser state.
+
+G1 evidence: `apps/learning-studio/storage.py`, the three replay/transition
+ tests in `test_storage.py`, the API restart probe, and the browser smoke pass
+ against the persisted session projection.
 
 ### G2 — PyTorch subject package
 
@@ -251,23 +255,22 @@ Unlocks: safe expansion to additional technical and didactic subjects.
 - If a model judge cannot produce calibrated scores or reliable abstentions,
   keep it advisory and do not let it update mastery.
 
-## Next cycle stub — G1
+## Next cycle stub — G2
 
-- **Objective:** move session authority and event replay into a local SQLite
-  store.
-- **Consumer:** the learner and the package author who needs a reproducible
-  explanation of how a session state was derived.
-- **Outcome hypothesis:** server-owned append-only events will make refresh,
-  restart, replay, and later diagnosis trustworthy without changing the UI
-  contract.
-- **Disconfirming evidence:** replaying the same fixture events produces a
-  different state, or the schema cannot preserve package/evaluator versions.
-- **Stop condition:** do not add model calls or real code execution until the
-  event log and phase-transition rules are deterministic across restart.
+- **Objective:** create a versioned PyTorch knowledge package with concepts,
+  capabilities, misconceptions, rubrics, activities, and transfer items.
+- **Consumer:** the session runtime and package author who needs subject
+  content without subject-specific controller branches.
+- **Outcome hypothesis:** a typed package will make activities and failure
+  routes declarative while preserving the same UI and event contract.
+- **Disconfirming evidence:** required activities cannot be represented without
+  runtime-specific branches, or misconception routes lack distinguishing
+  diagnostics.
+- **Stop condition:** do not add model-assisted diagnosis until the package
+  has a reviewed rubric and held-out fixture cases for each route.
 
 ## Current implementation boundary
 
-G0 is complete. The next cycle is G1: a local SQLite event store and
-server-owned session state. Live Claude calls, model-assisted diagnosis, and
-real code execution remain later goals and should not be smuggled into the
-persistence slice.
+G0 and G1 are complete. The next cycle is G2: the versioned PyTorch knowledge
+package. Model-assisted diagnosis and real code execution remain later goals
+and should not be smuggled into package authoring.

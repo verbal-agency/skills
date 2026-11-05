@@ -1,4 +1,4 @@
-const STORAGE_KEY = "learning-studio-demo-v1";
+const STORAGE_KEY = "learning-studio-draft-v2";
 const SESSION_ID = "local-demo-session";
 
 const state = {
@@ -25,14 +25,8 @@ const $ = (id) => document.getElementById(id);
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    phaseIndex: state.phaseIndex,
     answer: state.answer,
     selectedOption: state.selectedOption,
-    hintsUsed: state.hintsUsed,
-    feedback: state.feedback,
-    evidence: state.evidence,
-    events: state.events,
-    reviewScheduled: state.reviewScheduled,
   }));
 }
 
@@ -46,19 +40,35 @@ function restore() {
   }
 }
 
+function applySession(snapshot) {
+  const sessionState = snapshot.state || {};
+  state.phaseIndex = sessionState.phase_index || 0;
+  state.evidence = sessionState.evidence || [];
+  state.hintsUsed = sessionState.hints_used || 0;
+  state.reviewScheduled = Boolean(sessionState.review_scheduled);
+  state.events = snapshot.events || [];
+}
+
 async function recordEvent(type, phase, data = {}) {
-  const event = { type, phase, data, at: new Date().toISOString() };
-  state.events.push(event);
   try {
-    await fetch("/api/events", {
+    const response = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: SESSION_ID, type, phase, data }),
+      body: JSON.stringify({ session_id: SESSION_ID, type, phase, data, provenance: { actor: "learner-ui" } }),
     });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.detail || payload.error || "Event rejected");
+    applySession(payload);
+    if (["diagnostic.submitted", "activity.completed", "code.verified", "review.completed"].includes(type)) {
+      state.answer = "";
+      state.selectedOption = null;
+    }
+    save();
+    return true;
   } catch {
-    // Local replay remains usable if the optional event endpoint is unavailable.
+    setFeedback("warning", "The session server could not record this action. Check that the local server is running, then try again.");
+    return false;
   }
-  save();
 }
 
 function renderSkills() {
@@ -93,15 +103,6 @@ function setFeedback(kind, text) {
 
 function feedbackHtml() {
   return state.feedback ? `<div class="feedback ${state.feedback.kind}">${state.feedback.text}</div>` : "";
-}
-
-function moveTo(nextIndex) {
-  state.phaseIndex = nextIndex;
-  state.answer = "";
-  state.selectedOption = null;
-  state.feedback = null;
-  save();
-  render();
 }
 
 function renderDiagnose() {
@@ -174,19 +175,18 @@ function bindActivity() {
     const box = $("answer-box");
     box.value = state.answer;
     box.addEventListener("input", (e) => { state.answer = e.target.value; save(); });
-    $("hint-button").addEventListener("click", async () => { state.hintsUsed += 1; await recordEvent("hint.used", phase, { hint: "gradient_accumulation" }); render(); });
+    $("hint-button").addEventListener("click", async () => { if (await recordEvent("hint.used", phase, { hint: "gradient_accumulation" })) render(); });
     $("submit-diagnose").addEventListener("click", async () => {
       const answer = state.answer.trim();
       if (!answer) { setFeedback("warning", "Write a partial model or state what feels uncertain so the tutor has something to diagnose."); render(); return; }
       const lower = answer.toLowerCase();
       const understands = lower.includes("accumul") || lower.includes("clear") || lower.includes("previous") || lower.includes("carry");
-      state.evidence.push({ kind: understands ? "good" : "warn", title: understands ? "Baseline: promising model" : "Baseline: suspected gap", detail: understands ? "Mentions gradient carry-over or clearing." : "Needs a targeted explanation of gradient accumulation." });
-      await recordEvent("diagnostic.submitted", phase, { answer, diagnosis: understands ? "promising_model" : "suspected_gradient_accumulation" });
-      moveTo(1);
+      const evidence = { kind: understands ? "good" : "warn", title: understands ? "Baseline: promising model" : "Baseline: suspected gap", detail: understands ? "Mentions gradient carry-over or clearing." : "Needs a targeted explanation of gradient accumulation." };
+      if (await recordEvent("diagnostic.submitted", phase, { answer, diagnosis: understands ? "promising_model" : "suspected_gradient_accumulation", evidence })) render();
     });
   }
   if (phase === "teach") {
-    $("continue-teach").addEventListener("click", async () => { await recordEvent("activity.completed", phase, { concept: "gradient_accumulation" }); moveTo(2); });
+    $("continue-teach").addEventListener("click", async () => { if (await recordEvent("activity.completed", phase, { concept: "gradient_accumulation" })) render(); });
   }
   if (phase === "practice") {
     document.querySelectorAll("[data-option]").forEach((button) => button.addEventListener("click", () => { state.selectedOption = Number(button.dataset.option); save(); render(); }));
@@ -194,30 +194,29 @@ function bindActivity() {
       if (state.selectedOption === null) { setFeedback("warning", "Choose the missing line before running verification."); render(); return; }
       const correct = state.selectedOption === state.lesson.practice.correct;
       if (!correct) { setFeedback("warning", "The verification caught a mismatch. Ask which operation resets accumulated gradients, then try again."); await recordEvent("practice.failed", phase, { selected: state.selectedOption }); render(); return; }
-      state.evidence.push({ kind: "good", title: "Code repair verified", detail: "4 / 4 simulated tests passed; procedural evidence recorded." });
-      await recordEvent("code.verified", phase, { tests_passed: 4, tests_total: 4 });
-      moveTo(3);
+      const evidence = { kind: "good", title: "Code repair verified", detail: "4 / 4 simulated tests passed; procedural evidence recorded." };
+      if (await recordEvent("code.verified", phase, { tests_passed: 4, tests_total: 4, evidence })) render();
     });
   }
   if (phase === "verify") {
-    $("continue-verify").addEventListener("click", async () => { await recordEvent("activity.completed", phase, { evidence: "procedural_success" }); moveTo(4); });
+    $("continue-verify").addEventListener("click", async () => { if (await recordEvent("activity.completed", phase, { evidence: "procedural_success" })) render(); });
   }
   if (phase === "review") {
     const box = $("review-box");
     box.value = state.answer;
     box.addEventListener("input", (e) => { state.answer = e.target.value; save(); });
-    $("review-hint").addEventListener("click", async () => { state.hintsUsed += 1; await recordEvent("hint.used", phase, { hint: "gradient_accumulation" }); render(); });
+    $("review-hint").addEventListener("click", async () => { if (await recordEvent("hint.used", phase, { hint: "gradient_accumulation" })) render(); });
     $("submit-review").addEventListener("click", async () => {
       const answer = state.answer.trim();
       const lower = answer.toLowerCase();
       const understands = lower.includes("accumul") || lower.includes("carry") || lower.includes("previous") || lower.includes("larger");
       if (!answer) { setFeedback("warning", "Write your prediction before finishing the review."); render(); return; }
       if (!understands) { setFeedback("warning", "Your answer needs one more mechanism: describe what carries over between batches."); render(); return; }
-      state.evidence.push({ kind: "good", title: "Transfer review passed", detail: "Explains the failure mode on a new prompt." });
-      state.reviewScheduled = true;
-      await recordEvent("review.completed", phase, { result: "passed", next_review: "P2D" });
-      setFeedback("success", "Session complete. The skill is now scheduled for a two-day review with a fresh variant.");
-      render();
+      const evidence = { kind: "good", title: "Transfer review passed", detail: "Explains the failure mode on a new prompt." };
+      if (await recordEvent("review.completed", phase, { result: "passed", next_review: "P2D", evidence })) {
+        setFeedback("success", "Session complete. The skill is now scheduled for a two-day review with a fresh variant.");
+        render();
+      }
     });
   }
 }
@@ -240,9 +239,14 @@ async function boot() {
   $("lesson-title").textContent = state.lesson.title;
   $("lesson-objective").textContent = state.lesson.objective;
   renderSkills();
+  const sessionResponse = await fetch(`/api/session?session_id=${encodeURIComponent(SESSION_ID)}`);
+  const session = await sessionResponse.json();
+  applySession(session);
+  if (!session.exists) {
+    await recordEvent("session.started", state.lesson.phases[0], { lesson_id: state.lesson.id });
+  }
   render();
   $("reset-session").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); window.location.reload(); });
-  await recordEvent("session.started", state.lesson.phases[state.phaseIndex], { lesson_id: state.lesson.id });
 }
 
 boot().catch((error) => {

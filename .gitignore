@@ -10,6 +10,9 @@ scratch/
 # Generated learning packets and render previews stay local until curated.
 artifacts/
 
+# Local learner session database.
+.local/
+
 # Local credentials and environment configuration.
 .env
 .env.*

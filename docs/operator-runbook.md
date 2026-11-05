@@ -58,6 +58,24 @@ curl -fsS -X POST http://127.0.0.1:8765/api/events \
 The first command should return the PyTorch lesson fixture. The second should
 return an event with `sequence: 1` and HTTP status `201`.
 
+Run the deterministic replay and transition checks with:
+
+```bash
+uv run --locked python apps/learning-studio/test_storage.py
+```
+
+The expected result is three passing tests. The suite proves that illegal phase
+transitions are rejected and that a new store reconstructs the same state from
+the recorded events.
+
+Session events are written to `.local/learning-studio.sqlite3`, which is
+ignored by Git. To use a different local database for an isolated run:
+
+```bash
+LEARNING_STUDIO_DB=/tmp/learning-studio-check.sqlite3 \
+  uv run --locked python apps/learning-studio/server.py
+```
+
 In the browser, complete the five visible phases:
 
 1. **Diagnose:** answer why `optimizer.zero_grad()` runs before backward.
@@ -75,9 +93,12 @@ The browser stores demo progress under local storage. Use the **Reset session**
 button in the top bar to clear the current replay and start again. A normal
 refresh should preserve the current phase and evidence.
 
-The server's event endpoint is intentionally in memory. Restarting the server
-clears events; browser-local UI state remains until the reset button or browser
-storage is cleared.
+The server owns the canonical phase, evidence, and event state. Restarting the
+server preserves completed events because they are replayed from SQLite. The
+browser only keeps unsent drafts and UI convenience state in local storage.
+The **Reset session** button clears the browser draft; it does not delete the
+server database. Use a separate `LEARNING_STUDIO_DB` path for a clean isolated
+run rather than deleting learner data casually.
 
 ## 5. Stop and troubleshoot
 
@@ -94,7 +115,8 @@ storage is cleared.
 
 - Verification is a deterministic simulated runner, not arbitrary PyTorch code
   execution.
-- Events are held in server memory and are not a durable learner record.
+- Events are local and durable, but this is still a single-user SQLite demo,
+  not a backup or multi-user learner record.
 - The app binds to `127.0.0.1`; it is not a hosted or multi-user service.
 - Do not enter private learner data into a shared screen or commit browser
   storage exports to the repository.

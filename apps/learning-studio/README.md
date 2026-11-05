@@ -15,10 +15,10 @@ uv run --locked python apps/learning-studio/server.py
 Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/) in a browser.
 
 The repository includes a dependency-free `pyproject.toml`, so uv creates and
-uses the project environment without installing a package. No API key or
-database is required. Progress is stored in the browser's local storage for
-this demo. The server exposes the lesson fixture at `/api/lesson` and records
-local session events at `/api/events`.
+uses the project environment without installing a package. No API key is
+required. Session state and events are stored in the ignored `.local/` SQLite
+database. The server exposes the lesson fixture at `/api/lesson`, the current
+session at `/api/session`, and typed events at `/api/events`.
 
 If uv is not installed yet, follow the install instructions at
 [docs.astral.sh/uv/getting-started/installation](https://docs.astral.sh/uv/getting-started/installation/),
@@ -26,6 +26,7 @@ then rerun the command above.
 
 ## Current boundary
 
-The verification step is a deterministic simulated runner. The next roadmap
-cycle adds durable session events and then replaces the simulated check with a
-bounded PyTorch execution sandbox.
+The verification step is a deterministic simulated runner. The session/event
+substrate is now durable and replayable; later roadmap cycles replace the
+simulated check with a bounded PyTorch execution sandbox and add structured
+grader evidence.
