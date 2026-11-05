@@ -106,6 +106,43 @@ class SessionStoreTests(unittest.TestCase):
         self.assertEqual(replayed["state"]["overlay"]["concept_ids"], ["CON-PT-001"])
         self.assertTrue(all(event["package_version"] == package_version for event in replayed["events"]))
 
+    def test_structured_observation_replays_with_evaluator_provenance(self) -> None:
+        session_id = "structured-evidence-test"
+        provenance = {
+            "package_version": "0.1.0",
+            "actor": "grader-api",
+            "evaluator": {
+                "type": "deterministic",
+                "evaluator_id": "rubric-pt-g3-gradient-accumulation",
+                "evaluator_version": 1,
+            },
+        }
+        observation = {
+            "schema": "learning-evidence/v1",
+            "activity_id": "diagnostic.gradient-accumulation.baseline",
+            "label": "gradient_accumulation",
+            "status": "abstained",
+            "result": "abstain",
+            "evidence_spans": [],
+            "alternatives": ["stale_gradient_accumulation"],
+            "evaluator": provenance["evaluator"],
+            "failure_type": "knowledge_gap",
+        }
+        self.store.append_event(session_id, "lesson-v1", "session.started", "diagnose", {}, provenance)
+        first = self.store.append_event(
+            session_id,
+            "lesson-v1",
+            "diagnostic.submitted",
+            "diagnose",
+            {"observation": observation},
+            provenance,
+        )
+        restarted = SessionStore(Path(self.tempdir.name) / "session.sqlite3", PHASES)
+        replayed = restarted.snapshot(session_id, "lesson-v1")
+        self.assertEqual(replayed["state"]["evidence"], [observation])
+        self.assertEqual(first["events"][-1]["evaluator"], provenance["evaluator"])
+        self.assertEqual(replayed["events"][-1]["evaluator"], provenance["evaluator"])
+
 
 if __name__ == "__main__":
     unittest.main()

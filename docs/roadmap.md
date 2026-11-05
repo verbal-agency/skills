@@ -278,8 +278,9 @@ Acceptance criteria:
   invented probabilities.
 - Replay fixtures cover knowledge gap, misconception, procedural error,
   transfer failure, and execution slip.
-- A seeded labeled set reports diagnosis precision, recall, abstention, and
-  calibration before the grader can affect learner state.
+- A seeded labeled set reports diagnosis precision, recall, and abstention;
+  its calibration report explicitly records `not_applicable` for this
+  categorical grader, and no numeric confidence can affect learner state.
 
 Unlocks: a defensible model-assisted diagnostician.
 
@@ -381,9 +382,9 @@ Unlocks: safe expansion to additional technical and didactic subjects.
 
 ## Current implementation boundary
 
-G0, G1, G2, and G2.5 are complete. The next cycle is G3: structured evidence
-and deterministic graders. Model-assisted diagnosis and real code execution
-remain later goals and should not be smuggled into route authoring.
+G0, G1, G2, G2.5, and G3 are complete. The next cycle is G4: optional
+model-assisted diagnosis. Real code execution remains a later goal and should
+not be smuggled into route authoring or grading.
 
 ## Completed cycle record — G2.5
 
@@ -415,7 +416,7 @@ remain later goals and should not be smuggled into route authoring.
   study trace, activity, and evidence event; card exposure must not be counted
   as mastery.
 
-## Next cycle stub — G3
+## Activated goal contract — G3 (completed)
 
 - **Objective:** replace the G0 keyword diagnosis and simulated success path
   with versioned rubrics, evidence observations, and deterministic checks that
@@ -444,3 +445,72 @@ remain later goals and should not be smuggled into route authoring.
   evidence; preserve package-version provenance; treat route proposals as
   advisory until prerequisite and capability checks exist; use the six authored
   misconception records as the initial labeled failure library.
+
+## Completed cycle record — G3
+
+- **Objective:** replace the browser keyword diagnosis and hard-coded success
+  path with versioned, replayable deterministic evidence observations.
+- **Completed dependencies:** G2.5 package-backed concepts, overlay events, and
+  package-version provenance; G2 authored misconception records and activity
+  rubrics.
+- **Project outcomes and scenarios:** advances S2 Learn through evidence and
+  S3 Repair a gap while preserving S0's exploratory route choices.
+- **Consumer:** the learner receives actionable categorical feedback; the
+  package author can inspect the exact signals, alternatives, and evaluator
+  version behind an observation.
+- **Outcome hypothesis:** a deterministic, abstaining grader with a seeded
+  labeled set can make the evidence contract auditable before any model judge
+  is allowed to participate.
+- **Observed:** `/api/grade` returns structured observations with labels,
+  statuses, evidence spans, alternatives, and deterministic evaluator
+  provenance. The ten-case fixture reports macro precision 1.0, macro recall
+  1.0, abstention rate 0.3, and calibration `not_applicable`. API replay stores
+  the observation and evaluator metadata in SQLite without a model call; a
+  tampered observation is rejected with HTTP 400 before append.
+- **Interpretation:** high confidence that the runtime boundary is now
+  server-owned and replayable for this authored slice; low confidence that the
+  rubric generalizes beyond its ten synthetic cases. The metrics are fixture
+  validation, not learner diagnosis accuracy.
+- **Decision:** mark G3 complete for the first deterministic rubric slice. Keep
+  numeric confidence unavailable, keep model diagnosis advisory, and route
+  broader labels, calibration, and ambiguity handling to G4/G6.
+- **Disconfirming evidence:** a replay changes an observation, the API permits
+  a client-supplied evaluator to override the server result, or the fixture
+  report stops distinguishing abstention from a classified failure.
+- **Downstream unlock:** G4 can add a model proposal channel that is compared
+  against the deterministic observation and held-out labels rather than
+  silently changing mastery.
+- **Stop condition:** after two repair attempts or three consecutive slices, if
+  the rubric remains unstable or the synthetic fixture cannot expose an
+  evaluator disagreement, reopen the evidence contract before adding model
+  calls.
+- **Carried-forward findings:** expand the labeled set with independently
+  reviewed variants; add explicit disagreement handling; preserve the
+  `not_applicable` calibration result until numeric scores have a held-out
+  calibration set.
+
+## Next cycle stub — G4
+
+- **Objective:** add an optional model-assisted diagnosis proposal path that
+  cannot directly change phase, mastery, or remediation state.
+- **Dependency:** G3 structured observations, evaluator provenance, abstention,
+  and seeded fixture report must remain replayable without a live model call.
+- **Project outcomes and scenarios:** advances S2 Learn through evidence and S3
+  Repair a gap while preserving S0's route exploration.
+- **Consumer:** the package author needs to compare model proposals with the
+  deterministic rubric and decide whether ambiguity warrants a disambiguating
+  item.
+- **Outcome hypothesis:** a model can improve explanation coverage when its
+  proposal is schema-validated, provenance-tagged, compared with deterministic
+  evidence, and forced to abstain when the held-out set cannot support a score.
+- **Disconfirming evidence:** the model changes learner state without a
+  controller decision, produces untraceable labels, or cannot separate
+  disagreement from confidence on held-out cases.
+- **Downstream unlock:** G6 remediation can use model proposals as advisory
+  context after disagreement handling is explicit.
+- **Stop condition:** after two repair attempts or three consecutive slices, if
+  model proposals cannot be replayed or calibrated, keep the model advisory and
+  pivot to better deterministic coverage.
+- **Carried-forward findings:** no numeric confidence without held-out
+  calibration; preserve package-version and prompt-version provenance; never
+  treat model-generated labels as ground truth.

@@ -1,4 +1,4 @@
-"""SQLite-backed event storage and deterministic session replay for G1."""
+"""SQLite-backed event storage and deterministic session replay for G1/G3."""
 
 from __future__ import annotations
 
@@ -273,15 +273,16 @@ def replay_events(events: list[dict[str, Any]], phases: list[str]) -> dict[str, 
         if event_type == "hint.used":
             state["hints_used"] += 1
         elif event_type == "diagnostic.submitted":
-            evidence = data.get("evidence") or _diagnostic_evidence(data.get("diagnosis"))
+            evidence = data.get("observation") or data.get("evidence") or _diagnostic_evidence(data.get("diagnosis"))
             state["evidence"].append(evidence)
             state["phase_index"] = phases.index("teach")
         elif event_type == "activity.completed" and event["phase"] == "teach":
             state["phase_index"] = phases.index("practice")
         elif event_type == "practice.failed":
-            pass
+            if data.get("observation"):
+                state["evidence"].append(data["observation"])
         elif event_type == "code.verified":
-            evidence = data.get("evidence") or {
+            evidence = data.get("observation") or data.get("evidence") or {
                 "kind": "good",
                 "title": "Code repair verified",
                 "detail": f"{data.get('tests_passed', 0)} / {data.get('tests_total', 0)} simulated tests passed; procedural evidence recorded.",
@@ -290,14 +291,17 @@ def replay_events(events: list[dict[str, Any]], phases: list[str]) -> dict[str, 
             state["phase_index"] = phases.index("verify")
         elif event_type == "activity.completed" and event["phase"] == "verify":
             state["phase_index"] = phases.index("review")
-        elif event_type == "review.completed" and data.get("result") == "passed":
-            state["evidence"].append(data.get("evidence") or {
-                "kind": "good",
-                "title": "Transfer review passed",
-                "detail": "Explains the failure mode on a new prompt.",
-            })
-            state["review_scheduled"] = True
-            state["phase_index"] = phases.index("review")
+        elif event_type == "review.completed":
+            if data.get("result") == "passed":
+                state["evidence"].append(data.get("observation") or data.get("evidence") or {
+                    "kind": "good",
+                    "title": "Transfer review passed",
+                    "detail": "Explains the failure mode on a new prompt.",
+                })
+                state["review_scheduled"] = True
+                state["phase_index"] = phases.index("review")
+            elif data.get("observation"):
+                state["evidence"].append(data["observation"])
         elif event_type in {"concept.viewed", "flashcard.attempted", "concept.explained"}:
             state["study_traces"].append({"type": event_type, **data})
         elif event_type == "overlay.updated":

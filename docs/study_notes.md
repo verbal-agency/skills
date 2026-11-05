@@ -44,3 +44,13 @@
 3. Before G3, what deterministic checks should reject a route proposal: missing
    prerequisites, unavailable practice references, stale package version, or
    something else?
+
+## G3 review questions
+
+1. Why is an abstained deterministic observation safer than guessing a
+   misconception from sparse text?
+2. What does evaluator provenance let us distinguish when a replayed result
+   changes: learner evidence, rubric version, or implementation behavior?
+3. Why is `calibration: not_applicable` the correct result for a categorical
+   grader, and what held-out evidence would be required before numeric scores
+   could affect learner state?

@@ -107,3 +107,44 @@ slice does not claim to know yet: it records the rationale and available
 activity references, while G3 will add deterministic prerequisite/capability
 checks and structured evidence. A model may later propose explanations, but it
 cannot silently promote an overlay or update mastery.
+
+## G3 — Structured evidence and deterministic graders
+
+- **Prior limitation:** G0/G2.5 classified open responses in browser code and
+  treated a hard-coded practice success object as evidence. There was no
+  structured abstention path, evaluator provenance, or seeded failure set.
+- **Hypothesis:** A versioned deterministic rubric can produce inspectable
+  observations for a bounded PyTorch skill before any model judge is trusted.
+- **Capability built:** Added `grading.py` with open-response and choice
+  graders; added `/api/grade`; moved diagnostic, practice, and transfer review
+  grading behind the server boundary; recorded structured observations and
+  evaluator provenance in SQLite replay; added ten seeded labeled cases and a
+  reproducible evaluation report.
+- **Observed:** Four grader tests and five storage tests pass. The seeded report
+  gives macro precision 1.0, macro recall 1.0, abstention rate 0.3, and
+  `calibration.status: not_applicable`. The HTTP probe returned a supported
+  baseline observation, a categorical procedural failure, replayed the
+  observation plus deterministic evaluator metadata into the event stream, and
+  rejected a tampered label with HTTP 400 before append.
+- **Interpretation / attribution confidence:** High confidence that the API,
+  event, and replay boundaries are deterministic for this authored slice;
+  moderate confidence in the rubric itself because the ten cases are synthetic
+  and intentionally narrow. These metrics validate fixture agreement, not
+  learner diagnosis accuracy or transfer.
+- **Decision:** Mark G3 complete for the first deterministic evidence slice.
+  Preserve abstention and categorical results, report calibration as not
+  applicable until numeric scores have held-out labels, and route model
+  proposals to G4 as advisory only.
+
+Interview explanation: “I moved grading behind the server and made it return a
+versioned observation: label, status, evidence spans, alternatives, and the
+deterministic evaluator that produced it. A seeded fixture set exercises a gap,
+misconception, procedural error, transfer failure, and execution slip, while
+the event log stores the observation for replay. The next question is how a
+model proposal can disagree safely without becoming the source of truth.”
+
+Likely follow-up: “Does the 1.0 precision/recall mean the grader works?” The
+answer is no: it means the implementation matches its ten synthetic labels.
+The work supports a replayable evidence contract and explicit abstention; it
+does not support generalization, calibrated probabilities, learner improvement,
+or model diagnosis accuracy.
