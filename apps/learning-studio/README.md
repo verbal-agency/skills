@@ -49,6 +49,20 @@ responses and choice activities now pass through a versioned structured grader
 before their observations enter the event stream. The categorical advisory
 model tutor (G4) can propose diagnosis observations; conflicts and abstentions
 create replayable disambiguation requests, but neither proposals nor requests
-enter mastery. The session/event substrate is durable and replayable; G4.5 adds
-an Agents SDK orchestration layer before the later bounded PyTorch execution
-sandbox.
+enter mastery. The session/event substrate is durable and replayable. G4.5 adds
+an offline `AgentPort` lab with a direct loop and optional Anthropic tool-runner
+adapter; the process-based Claude Agent SDK is not a core dependency. The later
+roadmap adds a bounded PyTorch execution sandbox.
+
+## Agent runtime fixture
+
+Run the offline multi-step fixture without an API key:
+
+```bash
+uv run --locked python apps/learning-studio/agent_runtime_demo.py
+```
+
+The fixture executes an allow-listed concept tool, records the agent trace, and
+replays the final tutor response without a model call. The runtime never writes
+SQLite directly; a controller can record its trace as an `agent.trace.recorded`
+event.

@@ -74,11 +74,14 @@ Run the deterministic replay and transition checks with:
 uv run --locked python apps/learning-studio/test_storage.py
 uv run --locked python apps/learning-studio/test_grading.py
 uv run --locked python apps/learning-studio/test_tutor.py
+uv run --locked python apps/learning-studio/test_agent_runtime.py
+uv run --locked python apps/learning-studio/agent_runtime_demo.py
 uv run --locked python apps/learning-studio/evaluate_g3.py
 ```
 
-The expected result is eight storage tests, four grader tests, and nine tutor
-tests. The seeded G3
+The expected result is nine storage tests, four grader tests, nine tutor tests,
+and three agent-runtime tests. The agent fixture should print a direct-loop
+reply, its tool trace event types, and the same replayed reply. The seeded G3
 report should show 1.0 macro precision and recall, an explicit abstention rate,
 and `calibration.status: not_applicable`: this grader emits categorical results,
 not probabilities.
@@ -159,5 +162,7 @@ run rather than deleting learner data casually.
 G4's categorical advisory model tutor is present but intentionally cannot affect
 mastery. Model or deterministic abstention and label conflict create a
 replayable disambiguation request; neither request nor proposal is evidence.
-Agents SDK orchestration belongs to G4.5. Real PyTorch execution belongs in G5,
-after sandbox limits and evidence semantics are implemented.
+G4.5's offline AgentPort fixture compares the direct loop with the optional
+Anthropic tool runner; the process-based Claude Agent SDK is deferred and is not
+a core dependency. Real PyTorch execution belongs in G5, after sandbox limits
+and evidence semantics are implemented.

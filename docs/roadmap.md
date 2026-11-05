@@ -313,50 +313,59 @@ item. The request remains advisory and cannot change learner state. A broader
 held-out agreement study for model proposal quality remains a future evaluation
 slice rather than a reason to invent a confidence score.
 
-### G4.5 — Agent runtime orchestration
+### G4.5 — Agent runtime primitives lab
 
-Introduce Anthropic's Agents SDK as an orchestration layer after the advisory
-tutor and evidence contracts are stable. The agent may select bounded,
-subject-provided tools for explanation, concept retrieval, diagnostic
-clarification, quiz generation, and remediation proposals, while the session
-controller remains the only authority for evidence, phase transitions, mastery,
-and persistence.
+Study Anthropic's agent-runtime primitives without assuming the Claude Agent SDK
+belongs in the core application. Put a provider-neutral `AgentPort` in front of
+the tutor contract and compare a direct Messages API loop with the Anthropic
+Python tool runner first; consider the process-based Agent SDK only if isolation
+or lifecycle primitives become part of the evidence. The agent may select a
+small set of bounded, subject-provided tools for concept retrieval, diagnostic
+clarification, and next-activity proposals, while the session controller
+remains the only authority for evidence, phase transitions, mastery, and
+persistence.
 
-Dependencies: G4's advisory tutor contract and validated model-diagnosis
-criteria. This goal does not make the agent a grader and does not add arbitrary
-code execution; those remain separate concerns.
+Dependencies: G4's categorical advisory tutor contract and its no-numeric-
+confidence boundary. This goal does not make the agent a grader, add arbitrary
+code execution, or move session persistence into an SDK-managed transcript.
 
 Acceptance criteria:
 
-- A provider-neutral agent adapter can run one tutor interaction through the
-  Agents SDK while preserving the existing structured tutor response and event
-  schemas.
-- Every tool is typed, allow-listed by the active subject package, and routed
-  through controller validation; the agent cannot write learner state or the
-  SQLite store directly.
+- A provider-neutral `AgentPort` has a direct-loop implementation and an
+  optional Anthropic tool-runner implementation, both preserving the existing
+  structured tutor response and event schemas; a Claude Agent SDK adapter is
+  added only if the process-boundary probe is justified.
+- The experiment exposes only three typed, allow-listed tools:
+  `get_concept`, `ask_disambiguating_question`, and `propose_next_activity`.
+  Each request passes controller validation; the agent cannot write learner
+  state or the SQLite store directly.
 - Agent turns, tool calls, tool results, model identifier, SDK version, and
   prompt version are recorded with enough provenance to replay derived state
   without a live model call.
 - The no-credential scripted fallback still works, and tests use recorded
   fixtures rather than a live provider.
-- At least one end-to-end flow demonstrates agent-selected clarification or
-  remediation without changing mastery until deterministic evidence accepts it.
+- A recorded multi-step tutoring fixture demonstrates agent-selected
+  clarification without changing mastery until deterministic evidence accepts
+  it.
+- A decision note compares the direct loop and SDK on replay fidelity, tool
+  authorization, latency, cost, and implementation complexity, and explicitly
+  chooses keep, defer, or remove for the core runtime.
 
-Unlocks: bounded code-lab tools in G5 and agent-selected remediation/review in
-G6 without moving authority into the model runtime.
+Unlocks, if retained: bounded code-lab tools in G5 and agent-selected
+remediation/review in G6 without moving authority into the model runtime.
 
-Hypothesis: an explicit agent loop will support multi-step teaching and tool
-use without sacrificing replayability or evidence authority.
+Hypothesis: working directly with agent-loop, tool, trace, and session
+primitives will improve multi-step teaching and our understanding of the
+runtime without forcing a framework dependency into Theo.
 
 Disconfirming evidence: tool calls require unrestricted permissions, agent
 trajectories cannot be replayed deterministically, latency/cost exceeds the
 local learning workflow, or the SDK adds complexity without improving a
-multi-step interaction over the direct tutor adapter.
+multi-step interaction over the direct loop.
 
-Stop condition: if the SDK cannot preserve the existing event and structured
-output contracts after two bounded integration attempts, keep the direct tutor
-adapter and defer agent orchestration rather than weakening the authority
-boundary.
+Stop condition: after two bounded integration attempts, choose the direct loop
+and remove the SDK from the core dependency surface if the comparison does not
+show a material benefit. Preserve the experiment notes as learning artifacts.
 
 ### G5 — PyTorch code lab
 
@@ -441,10 +450,11 @@ G0, G1, G2, G2.5, G3, and the categorical advisory slice of G4 are complete.
 G4 now records model proposals and conflict/abstention disambiguation requests
 without allowing them to change mastery or phase. The three-pane cockpit UI
 (subject rail + topic roulette, center workspace, right-rail tutor chat) landed
-alongside this tutor. G4.5 is the next agent-runtime goal; the Agents SDK must
-orchestrate bounded tools rather than replace the controller or grader. Real
-code execution (G5) remains a later goal and should not be smuggled into route
-authoring or grading.
+alongside this tutor. G4.5's agent-runtime primitives lab is complete: the
+direct loop is core, the Python tool-runner adapter is optional, and the
+process-based Claude Agent SDK is deferred. G5 is next; real code execution
+should not be smuggled into route authoring or grading before sandbox limits and
+evidence semantics are independently verified.
 
 ## Completed cycle record — G2.5
 
@@ -580,27 +590,44 @@ authoring or grading.
   active package before trusting proposals; preserve package/model/prompt
   provenance; keep chat turns atomic and private.
 
-## Active goal contract — G4.5 (Agent runtime orchestration)
+## Completed cycle record — G4.5
 
-- **Objective:** run one bounded tutor interaction through Anthropic's Agents
-  SDK while preserving the existing structured response, event, replay, and
+- **Objective:** compare one bounded tutor interaction implemented with a direct
+  Messages API loop and an optional Anthropic tool-runner adapter while
+  preserving the existing structured response, event, replay, and
   controller-authority contracts.
-- **Dependency:** the completed categorical advisory G4 slice and its
-  no-numeric-confidence boundary.
+- **Completed dependencies:** G4 categorical advisory tutor and its
+  no-numeric-confidence boundary; discovery confirmed the locked Anthropic
+  client exposes tool-runner primitives.
 - **Project outcomes and scenarios:** advances S0 Explore and shape, S2 Learn
   through evidence, and S3 Repair a gap.
-- **Consumer:** the learner receives coherent multi-step tutoring; the package
-  author can inspect tool selection and the controller's resulting decision.
-- **Outcome hypothesis:** an explicit agent loop improves multi-step teaching
-  and tool use without moving evidence authority into the model runtime.
-- **Disconfirming evidence:** the SDK requires unrestricted tools, agent traces
-  cannot replay, or latency/cost is worse than the direct tutor adapter without
-  improving a canonical scenario.
-- **Downstream unlock:** bounded code-lab tools in G5 and agent-selected
-  remediation/review in G6.
-- **Stop condition:** after two bounded integration attempts, preserve the
-  direct tutor adapter and defer the SDK if the existing contracts cannot be
-  maintained.
-- **Carried-forward findings:** tools must be typed and allow-listed by the
-  subject package; the agent cannot write SQLite or mastery state directly;
-  tests use recorded fixtures rather than a live provider.
+- **Consumer:** the learner can receive a multi-step fixture response; the
+  package author can inspect tool selection; the project author has an
+  evidence-based framework decision.
+- **Observed:** `AgentPort` has direct-loop and tool-runner implementations;
+  three tools are typed and allow-listed; traces record tool calls, results,
+  model/SDK/prompt provenance; `agent.trace.recorded` replays without evidence;
+  and the offline fixture passes 3 agent-runtime tests alongside 9 storage, 4
+  grader, and 9 tutor tests.
+- **Interpretation:** high confidence in tool authorization, trace shape, and
+  replay for the fixture; low confidence in live latency, cost, and teaching
+  lift because no provider call was made.
+- **Decision:** keep `AgentPort` and the direct loop in core; keep the Python
+  tool-runner adapter as an optional learning implementation; defer the
+  process-based Claude Agent SDK and do not add it as a dependency.
+- **Disconfirming evidence:** a fixture replay changes the final response, an
+  allow-listed tool can write learner state, or a future live probe shows the
+  direct loop is materially worse without a safe SDK benefit.
+- **Downstream unlock:** G5 can add bounded code-lab tools behind the same
+  controller boundary; G6 can later use agent-selected remediation.
+- **Carried-forward findings:** live latency/cost and teaching lift remain
+  unmeasured; agent traces must remain private and controller-recorded; the
+  process-based SDK remains a separate future probe, not a core dependency.
+
+## Next ready goal — G5 (PyTorch code lab)
+
+G5 is the next implementation goal. It should expose a bounded simulated code
+tool first, then add real PyTorch execution only after time, memory, filesystem,
+and network limits are testable. The AgentPort tool contract is available for
+later integration, but code execution must not be granted to the agent until
+the sandbox and evidence boundaries pass independently.

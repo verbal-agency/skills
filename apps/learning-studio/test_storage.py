@@ -225,6 +225,34 @@ class SessionStoreTests(unittest.TestCase):
         self.assertEqual(second["state"]["evidence"], [])
         self.assertEqual(second["state"]["phase"], "diagnose")
 
+    def test_agent_trace_replays_without_becoming_evidence(self) -> None:
+        session_id = "agent-trace-test"
+        trace = {
+            "schema": "learning-agent-trace/v1",
+            "runtime": "messages-loop",
+            "model": "fixture-model",
+            "sdk_version": "fixture",
+            "prompt_version": "agent-tutor-g45-v1",
+            "events": [
+                {"sequence": 1, "type": "tool.call", "data": {"name": "get_concept"}},
+                {"sequence": 2, "type": "agent.response", "data": {"result": {"reply": "Trace it."}}},
+            ],
+        }
+        self.store.append_event(session_id, "lesson-v1", "session.started", "diagnose", {})
+        self.store.append_event(
+            session_id,
+            "lesson-v1",
+            "agent.trace.recorded",
+            "diagnose",
+            {"trace": trace},
+            {"actor": "agent-runtime", "evaluator": {"type": "runtime", "runtime": "messages-loop"}},
+        )
+        restarted = SessionStore(Path(self.tempdir.name) / "session.sqlite3", PHASES)
+        state = restarted.snapshot(session_id, "lesson-v1")["state"]
+        self.assertEqual(state["agent_traces"], [trace])
+        self.assertEqual(state["evidence"], [])
+        self.assertEqual(state["phase"], "diagnose")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -35,6 +35,7 @@ def default_state(phases: list[str]) -> dict[str, Any]:
         "thread": [],
         "tutor_proposals": [],
         "disambiguation_requests": [],
+        "agent_traces": [],
     }
 
 
@@ -269,6 +270,7 @@ def validate_transition(
         "chat.tutor": set(phases),
         "tutor.observation.proposed": set(phases),
         "tutor.disambiguation.requested": set(phases),
+        "agent.trace.recorded": set(phases),
     }
     if event_type not in allowed or current not in allowed[event_type]:
         raise TransitionError(f"event {event_type!r} is not legal in phase {current!r}")
@@ -337,6 +339,11 @@ def replay_events(events: list[dict[str, Any]], phases: list[str]) -> dict[str, 
             # controller-validated evidence event.
             if isinstance(data, dict):
                 state["disambiguation_requests"].append(data)
+        elif event_type == "agent.trace.recorded":
+            # Agent traces are diagnostic/runtime records, not learner evidence.
+            trace = data.get("trace")
+            if isinstance(trace, dict):
+                state["agent_traces"].append(trace)
     state["phase"] = phases[state["phase_index"]]
     return state
 

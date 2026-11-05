@@ -185,3 +185,38 @@ Likely follow-up: “Does this prove the model diagnoses misconceptions well?”
 The answer is no: it proves replayable conflict handling and explicit
 abstention for one authored PyTorch lesson, not model accuracy or learner
 improvement across subjects.
+
+## G4.5 — Agent runtime primitives lab
+
+- **Prior limitation:** the tutor could make one advisory model request, but
+  there was no explicit agent boundary for multi-step tool use, trace capture,
+  or a framework choice.
+- **Hypothesis:** A provider-neutral agent port plus three safe tools can expose
+  useful agent-loop primitives without forcing a process-based SDK into the
+  local event-sourced runtime.
+- **Capability built:** Added `AgentPort`, a direct Messages loop, an optional
+  Anthropic Python tool-runner adapter, typed tools for concept retrieval,
+  disambiguation, and next-activity proposals, JSON-safe trace recording,
+  `agent.trace.recorded` replay, and an offline runnable fixture.
+- **Observed:** The direct loop and tool-runner fixture both execute an
+  allow-listed tool and return the structured tutor contract. The trace
+  replays the final response without a model call. The full suite passes: 9
+  storage, 4 grader, 9 tutor, and 3 agent-runtime tests.
+- **Interpretation / attribution confidence:** High confidence in tool
+  allow-listing, trace shape, and replay behavior for the fixture; low
+  confidence in live latency, cost, and teaching lift because no provider call
+  was made.
+- **Decision:** Keep `AgentPort` and the direct loop in the core runtime; keep
+  the Python tool-runner adapter as an optional learning implementation; defer
+  the process-based Claude Agent SDK until process isolation or lifecycle
+  becomes a measured requirement.
+
+Interview explanation: “I compared an explicit Messages loop with Anthropic's
+tool runner behind the same port. Both can retrieve authored context and make
+advisory proposals, but the controller records the trace and still owns state.
+The experiment taught me the primitives without turning a framework into an
+architecture decision.”
+
+Likely follow-up: “Why not use the full Agent SDK?” The answer is that this
+local app already owns persistence and replay; the process-based runtime is
+deferred until isolation or lifecycle evidence justifies its operational cost.
